@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,9 +74,8 @@ fun CardTidakLulus(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Selamat! Anda telah menyelesaikan kuis topik ini.\n" +
-                            "Silakan lanjutkan dengan mengerjakan Project\n" +
-                            "Gambar Manual untuk Topik 1 di menu sebelah.",
+                    text = "Gagal!\n" +
+                            "Nilai anda tidak lulus,silahkan coba lagi..",
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
                     color = Color(
@@ -101,7 +101,7 @@ fun CardTidakLulus(modifier: Modifier = Modifier) {
                 onClick = { /* TODO: Aksi tombol */ },
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00AA13), // Hijau seperti di gambar
+                    containerColor = Color(0xFFF50909), // Hijau seperti di gambar
                     contentColor = Color.White
                 ),
                 modifier = Modifier
@@ -115,7 +115,7 @@ fun CardTidakLulus(modifier: Modifier = Modifier) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Lanjut Gambar",
+                        text = "Coba Lagi",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = jostfamily,
@@ -130,9 +130,9 @@ fun CardTidakLulus(modifier: Modifier = Modifier) {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Lanjut",
-                            tint = Color(0xFF00AA13),
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Coba Lagi",
+                            tint = Color(0xFFF50909),
                             modifier = Modifier.size(20.dp)
                         )
                     }
