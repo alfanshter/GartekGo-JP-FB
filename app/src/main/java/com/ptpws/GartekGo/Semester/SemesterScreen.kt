@@ -73,7 +73,8 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
                     },
                     navigationIcon = {
                         IconButton(onClick = { /* back */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+
                         }
                     }
                 )

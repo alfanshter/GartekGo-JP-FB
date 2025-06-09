@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ptpws.GartekGo.Commond.poppinsfamily
+import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,12 +56,13 @@ fun VidioScreen(modifier: Modifier = Modifier) {
             title = {
                 Text(
                     text = "Topik 1 : MATERI",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold, fontFamily = poppinsfamily, fontSize = 24.sp, color = Color.Black
                 )
             },
             navigationIcon = {
                 IconButton(onClick = { /* back */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = Color.White // TopAppBar background

@@ -52,7 +52,8 @@ fun TopikScreen(modifier: Modifier = Modifier) {
             },
             navigationIcon = {
                 IconButton(onClick = { /* back */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = Color.White // TopAppBar background
