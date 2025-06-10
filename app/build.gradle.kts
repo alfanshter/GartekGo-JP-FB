@@ -52,6 +52,12 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation(libs.androidx.constraintlayout)
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    // Accompanist permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    // Activity Compose
+    implementation("androidx.activity:activity-compose:1.7.2")
+    // Coil untuk load gambar dari URI
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

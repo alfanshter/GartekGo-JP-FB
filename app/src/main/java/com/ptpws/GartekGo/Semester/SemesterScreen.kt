@@ -37,6 +37,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,7 +77,7 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
                             Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
 
                         }
-                    }
+                    }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
                 )
 
                 TabRow(
