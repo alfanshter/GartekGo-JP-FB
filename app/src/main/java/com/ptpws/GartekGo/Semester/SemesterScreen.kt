@@ -69,7 +69,10 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
                     title = {
                         Text(
                             text = "Semester 1",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            fontFamily = poppinsfamily,
+                            color = Color.Black
                         )
                     },
                     navigationIcon = {

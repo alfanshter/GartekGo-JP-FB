@@ -50,7 +50,10 @@ fun MateriScreen(modifier: Modifier = Modifier) {
             title = {
                 Text(
                     text = "Topik 1 : MATERI",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    fontFamily = poppinsfamily,
+                    color = Color.Black
                 )
             },
             navigationIcon = {

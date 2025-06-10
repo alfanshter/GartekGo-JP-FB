@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.ptpws.GartekGo.Auth.LoginScreen
+import com.ptpws.GartekGo.Semester.UploadScreen
 import com.ptpws.GartekGo.SplashScreen.SplashScreen
 import com.ptpws.GartekGo.ui.theme.GartekGoTheme
 
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
             GartekGoTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                    LoginScreen()
+                    UploadScreen()
                 }
             }
         }
