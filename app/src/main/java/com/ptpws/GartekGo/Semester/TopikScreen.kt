@@ -42,7 +42,7 @@ import com.ptpws.GartekGo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopikScreen(modifier: Modifier = Modifier) {
-    Scaffold(modifier = Modifier, containerColor = Color.White, topBar = {
+    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
@@ -56,7 +56,7 @@ fun TopikScreen(modifier: Modifier = Modifier) {
 
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color.White // TopAppBar background
+                containerColor = Color(0xffF5F9FF) // TopAppBar background
             )
         )
     }

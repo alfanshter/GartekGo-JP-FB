@@ -83,7 +83,7 @@ fun SoalScreen(modifier: Modifier = Modifier) {
                     )
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color.White // TopAppBar background
+                containerColor = Color(0xffF5F9FF) // TopAppBar background
             )
         )
 

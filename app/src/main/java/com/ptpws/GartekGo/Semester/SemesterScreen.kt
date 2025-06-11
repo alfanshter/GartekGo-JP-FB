@@ -61,7 +61,7 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
     val tabTitles = listOf("Pembelajaran", "Project")
 
 
-    Scaffold( modifier = Modifier, containerColor = Color.White,
+    Scaffold( modifier = Modifier, containerColor = Color(0xffF5F9FF),
         //topbar start
         topBar = {
             Column {
@@ -80,7 +80,7 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
                             Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
 
                         }
-                    }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                    }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
                 )
 
                 TabRow(

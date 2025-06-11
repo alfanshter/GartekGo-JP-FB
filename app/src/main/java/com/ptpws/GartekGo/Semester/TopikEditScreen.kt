@@ -71,11 +71,11 @@ fun TopikEditScreen(modifier: Modifier = Modifier) {
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFF4F7FA)
+                    containerColor = Color(0xFFF5F9FF)
                 )
             )
         },
-        containerColor = Color(0xFFF4F7FA)
+        containerColor = Color(0xFFF5F9FF)
     ) { innerPadding ->
         Box(
             modifier = Modifier

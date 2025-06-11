@@ -58,7 +58,7 @@ fun TopikReviewScreen(modifier: Modifier = Modifier) {
 
     val options = listOf("Pilihan 1", "Pilihan 2", "Pilihan 3", "Pilihan 4")
 
-    Scaffold(modifier = Modifier, containerColor = Color.White, topBar = {
+    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
@@ -78,7 +78,7 @@ fun TopikReviewScreen(modifier: Modifier = Modifier) {
                     )
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color.White // TopAppBar background
+                containerColor = Color(0xffF5F9FF) // TopAppBar background
             )
         )
 
