@@ -65,7 +65,7 @@ fun TopikScreen(modifier: Modifier = Modifier) {
         LazyColumn(
             contentPadding = innerPadding,
             modifier = Modifier.fillMaxSize()
-                .background(color = Color.White)
+                .background(color = Color(0xffF5F9FF))
                 .padding(start = 35.dp, end = 34.dp)
         ) {
             item {

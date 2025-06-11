@@ -51,7 +51,7 @@ import com.ptpws.GartekGo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VidioScreen(modifier: Modifier = Modifier) {
-    Scaffold(modifier = Modifier, containerColor = Color.White, topBar = {
+    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
@@ -76,7 +76,7 @@ fun VidioScreen(modifier: Modifier = Modifier) {
             contentPadding = innerPadding,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(Color(0xffF5F9FF))
         ) {
             item {
                 val isInPreview = LocalInspectionMode.current

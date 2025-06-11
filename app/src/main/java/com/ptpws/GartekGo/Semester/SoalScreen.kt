@@ -63,7 +63,7 @@ fun SoalScreen(modifier: Modifier = Modifier) {
 
     val options = listOf("Pilihan 1", "Pilihan 2", "Pilihan 3", "Pilihan 4")
 
-    Scaffold(modifier = Modifier, containerColor = Color.White, topBar = {
+    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
@@ -107,7 +107,7 @@ fun SoalScreen(modifier: Modifier = Modifier) {
                         bottom.linkTo(button.top)
                         height = Dimension.fillToConstraints
                     }
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 24.dp).background(color = Color(0xffF5F9FF))
             ) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

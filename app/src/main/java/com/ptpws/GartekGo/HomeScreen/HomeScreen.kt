@@ -43,7 +43,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 10.dp).background(color = Color(0xffFFFFFF)), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(top = 10.dp).background(color = Color(0xffF5F9FF)), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             Icon(

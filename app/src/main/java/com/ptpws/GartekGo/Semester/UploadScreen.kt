@@ -54,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,8 +96,13 @@ fun UploadScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Topik 1 : MATERI",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        text = "Topik 1 :\nBelajar Membaca",
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = poppinsfamily,
+                        fontSize = 24.sp,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 navigationIcon = {
@@ -115,7 +121,7 @@ fun UploadScreen(
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding).background(color = Color.White)
+                .padding(padding).background(color = Color(0xffF5F9FF))
         ) {
             val (imageBox, iconRow, submitButton) = createRefs()
 

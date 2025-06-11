@@ -35,7 +35,7 @@ import com.ptpws.GartekGo.R
 
 @Composable
 fun ProjectScreen( ) {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 21.dp).background(color = Color.White)) {
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 21.dp).background(color = Color(0xffF5F9FF))) {
         item {
             Card(
                 modifier = Modifier

@@ -45,7 +45,7 @@ import com.ptpws.GartekGo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MateriScreen(modifier: Modifier = Modifier) {
-    Scaffold(modifier = Modifier, containerColor = Color.White, topBar = {
+    Scaffold(modifier = Modifier, containerColor = Color(0xffC2D8FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(

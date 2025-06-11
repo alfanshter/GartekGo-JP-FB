@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Semester
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -99,7 +100,7 @@ fun SoalSelesaiScreen(modifier: Modifier = Modifier) {
                         bottom.linkTo(button.top)
                         height = Dimension.fillToConstraints
                     }
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 24.dp).background(color = Color(0xffF5F9FF))
             ) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

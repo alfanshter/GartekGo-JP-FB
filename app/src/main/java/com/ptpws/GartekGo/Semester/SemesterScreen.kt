@@ -127,7 +127,7 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
             contentPadding = innerPadding,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 17.dp, start = 35.dp),
+                .padding(top = 17.dp, start = 35.dp).background(color = Color(0xffF5F9FF)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -140,7 +140,7 @@ fun SemesterScreen(modifier: Modifier = Modifier) {
                         .height(129.dp), // <== Tinggi diganti
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE1EBFF)
+                        containerColor = Color(0xFFC2D8FF)
                     )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
