@@ -65,8 +65,8 @@ fun TopikEditScreen(modifier: Modifier = Modifier) {
                 navigationIcon = {
                     IconButton(onClick = { /* TODO: Back */ }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = "Back", tint = Color.Unspecified
                         )
                     }
                 },
