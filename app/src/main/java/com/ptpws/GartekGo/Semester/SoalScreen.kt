@@ -52,13 +52,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SoalScreen(modifier: Modifier = Modifier) {
+fun SoalScreen(navController: NavController) {
     var selectedOption by remember { mutableStateOf("") }
 
     val options = listOf("Pilihan 1", "Pilihan 2", "Pilihan 3", "Pilihan 4")
@@ -75,7 +77,7 @@ fun SoalScreen(modifier: Modifier = Modifier) {
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { /* back */ }) {
+                IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.back),
                         contentDescription = null,
@@ -233,7 +235,7 @@ fun SoalScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun SoalScreenPreview() {
-    SoalScreen()
+    SoalScreen(navController = rememberNavController())
 
 
 }

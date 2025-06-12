@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,12 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MateriScreen(modifier: Modifier = Modifier) {
+fun MateriScreen(navController: NavController) {
     Scaffold(modifier = Modifier, containerColor = Color(0xffC2D8FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
@@ -57,7 +61,7 @@ fun MateriScreen(modifier: Modifier = Modifier) {
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { /* back */ }) {
+                IconButton(onClick = {navController.popBackStack() }) {
                     Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
 
                 }
@@ -110,7 +114,7 @@ fun MateriScreen(modifier: Modifier = Modifier) {
                                 )
 
                                 Button(
-                                    onClick = { /* TODO: aksi */ },
+                                    onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Vidio.route) },
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF005DFF),
@@ -184,6 +188,6 @@ fun MateriScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun MateriScreenPreview() {
-    MateriScreen()
+    MateriScreen(navController = rememberNavController())
 
 }

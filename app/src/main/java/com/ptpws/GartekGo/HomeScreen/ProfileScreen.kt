@@ -36,11 +36,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -53,7 +56,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: back */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.back),
                             contentDescription = "Back",
@@ -102,13 +105,13 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .padding(start = 27.dp)
                 ) {
-                    Text(text = "Email", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text(text = "Email", fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Program Keahlian", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text(text = "Program Keahlian", fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Nomor Absen", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text(text = "Nomor Absen", fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Kelas", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text(text = "Kelas", fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
                 }
 
             }
@@ -131,6 +134,6 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
-    ProfileScreen()
+    ProfileScreen(navController = rememberNavController())
 
 }

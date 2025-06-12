@@ -45,12 +45,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VidioScreen(modifier: Modifier = Modifier) {
+fun VidioScreen(navController: NavController) {
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
@@ -60,7 +63,7 @@ fun VidioScreen(modifier: Modifier = Modifier) {
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { /* back */ }) {
+                IconButton(onClick = { navController.popBackStack() }) {
                     Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
 
                 }
@@ -88,7 +91,7 @@ fun VidioScreen(modifier: Modifier = Modifier) {
                                 settings.javaScriptEnabled = true
                                 settings.loadWithOverviewMode = true
                                 settings.useWideViewPort = true
-                                loadUrl("https://www.youtube.com/embed/VIDEO_ID?autoplay=0&modestbranding=1&rel=0")
+                                loadUrl("https://youtu.be/8-NbT05VykQ?si=FaFKzgUZwRkiB29I")
                             }
                         },
                         modifier = Modifier
@@ -123,7 +126,7 @@ fun VidioScreen(modifier: Modifier = Modifier) {
 
             item {
                 Button(
-                    onClick = { /* TODO: aksi lanjut */ },
+                    onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Soal.route) },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF005DFF),
@@ -182,6 +185,6 @@ fun VidioScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun VidioScreenPreview() {
-    VidioScreen()
+    VidioScreen(navController = rememberNavController())
 
 }

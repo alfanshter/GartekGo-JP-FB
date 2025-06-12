@@ -1,5 +1,6 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,17 +34,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.mulishfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 10.dp).background(color = Color(0xffF5F9FF)), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(top = 10.dp)
+            .background(color = Color(0xffF5F9FF)),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             Icon(
@@ -88,48 +94,53 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
 
             Spacer(Modifier.height(36.dp))
-            Card(
-                modifier = Modifier
-                    .width(360.dp)
-                    .height(89.dp), shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Column(modifier = Modifier.fillMaxSize().padding(start = 34.dp, end = 34.dp)) {
+                Card(
+                    modifier = Modifier
+                        .width(360.dp)
+                        .height(89.dp)
+                        .clickable {
+                            navController.navigate(AppScreen.Home.Semester.route)
+                        }, shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
                 ) {
-                    Text(
-                        text = "Semester 1",
-                        fontFamily = mulishfamily,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 36.sp, color = Color.White
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Semester 1",
+                            fontFamily = mulishfamily,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 36.sp, color = Color.White
+                        )
+
+                    }
 
                 }
-
-            }
-            Spacer(Modifier.height(36.dp))
-            Card(
-                modifier = Modifier
-                    .width(360.dp)
-                    .height(89.dp), shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(Modifier.height(36.dp))
+                Card(
+                    modifier = Modifier
+                        .width(360.dp)
+                        .height(89.dp), shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
                 ) {
-                    Text(
-                        text = "Semester 2",
-                        fontFamily = mulishfamily,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 36.sp, color = Color.White
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Semester 2",
+                            fontFamily = mulishfamily,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 36.sp, color = Color.White
+                        )
+
+                    }
 
                 }
-
             }
             Column(
                 modifier = Modifier
@@ -154,7 +165,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         .height(167.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE1EBFF) // Biru muda
+                        containerColor = Color(0xFFC2D8FF) // Biru muda
                     )
                 ) {
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -179,7 +190,10 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                                 modifier = Modifier
                                     .fillMaxWidth(0.5f) // Tetap 50% seperti keinginanmu
                                     .height(6.dp)
-                                    .background(Color.White, RoundedCornerShape(3.dp)) // shape di sini
+                                    .background(
+                                        Color.White,
+                                        RoundedCornerShape(3.dp)
+                                    ) // shape di sini
                             ) {
                                 LinearProgressIndicator(
                                     progress = { 0.7f },
@@ -227,7 +241,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                                     Text(
                                         " (Terkunci)",
                                         color = Color.Black,
-                                        fontSize = 12.sp, fontFamily = poppinsfamily, fontWeight = FontWeight.Medium
+                                        fontSize = 12.sp,
+                                        fontFamily = poppinsfamily,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
@@ -239,7 +255,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             onClick = { /* aksi */ },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(top =12.dp, end = 24.dp)
+                                .padding(top = 12.dp, end = 24.dp)
                                 .size(36.dp)
                                 .background(Color(0xFF337DFF), shape = CircleShape)
                         ) {
@@ -264,6 +280,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(navController = rememberNavController())
 
 }

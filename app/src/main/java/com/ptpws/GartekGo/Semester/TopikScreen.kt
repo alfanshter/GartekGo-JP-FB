@@ -1,4 +1,5 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,23 +37,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopikScreen(modifier: Modifier = Modifier) {
+fun TopikScreen(navController: NavController) {
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
                     text = "Topik 1",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    fontFamily = poppinsfamily,
+                    color = Color.Black
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { /* back */ }) {
-                    Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
 
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -64,7 +75,8 @@ fun TopikScreen(modifier: Modifier = Modifier) {
 
         LazyColumn(
             contentPadding = innerPadding,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .background(color = Color(0xffF5F9FF))
                 .padding(start = 35.dp, end = 34.dp)
         ) {
@@ -72,14 +84,20 @@ fun TopikScreen(modifier: Modifier = Modifier) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp), colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF)), shape = RoundedCornerShape(23.dp)
+                        .height(129.dp).clickable{ navController.navigate(AppScreen.Home.Semester.Topik.Materi.route)},
+                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF)),
+                    shape = RoundedCornerShape(23.dp)
                 ) {
-                    Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
                         Text(
                             "MATERI 1",
                             fontFamily = poppinsfamily,
                             fontSize = 36.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold, color = Color.Black
                         )
                         // Tombol Play tetap di pojok kanan atas
                         IconButton(
@@ -103,7 +121,8 @@ fun TopikScreen(modifier: Modifier = Modifier) {
 
                 Card(
                     modifier = Modifier
-                        .width(359.dp).height(129.dp),
+                        .width(359.dp)
+                        .height(129.dp),
                     shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFDCDCDC)) // Abu-abu terang
                 ) {
@@ -118,16 +137,18 @@ fun TopikScreen(modifier: Modifier = Modifier) {
                         ) {
                             Text(
                                 text = "VIDEO",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E2F) // Warna gelap
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E1E2F) // Warna gelap
                                 , fontFamily = poppinsfamily, fontSize = 36.sp
 
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Baca Materi Terlebih Dahulu",
-                                fontFamily = poppinsfamily, fontSize = 12.sp, fontWeight = FontWeight.Normal ,
-                                    color = Color(0xFF1E1E2F)
+                                fontFamily = poppinsfamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = Color(0xFF1E1E2F)
 
                             )
                         }
@@ -155,7 +176,8 @@ fun TopikScreen(modifier: Modifier = Modifier) {
 
                 Card(
                     modifier = Modifier
-                        .width(359.dp).height(129.dp),
+                        .width(359.dp)
+                        .height(129.dp),
                     shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFDCDCDC)) // Abu-abu terang
                 ) {
@@ -178,7 +200,9 @@ fun TopikScreen(modifier: Modifier = Modifier) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Tonton Video  Terlebih Dahulu",
-                                fontFamily = poppinsfamily, fontSize = 12.sp, fontWeight = FontWeight.Normal ,
+                                fontFamily = poppinsfamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Normal,
                                 color = Color(0xFF1E1E2F)
 
                             )
@@ -204,7 +228,6 @@ fun TopikScreen(modifier: Modifier = Modifier) {
                 }
 
 
-
             }
         }
 
@@ -214,11 +237,9 @@ fun TopikScreen(modifier: Modifier = Modifier) {
 }
 
 
-
-
 @Preview(showBackground = true)
 @Composable
 private fun TopikScreenPreview() {
-    TopikScreen()
+    TopikScreen(navController = rememberNavController())
 
 }

@@ -30,11 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun ProjectScreen( ) {
+fun ProjectScreen(navController: NavController ) {
     LazyColumn(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
         item {
             Card(
@@ -196,6 +198,6 @@ fun ProjectScreen( ) {
 @Preview(showBackground = true)
 @Composable
 private fun ProjectScreenPreview() {
-    ProjectScreen()
+    ProjectScreen(navController = rememberNavController())
 
 }

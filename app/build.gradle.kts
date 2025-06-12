@@ -58,6 +58,13 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.7.2")
     // Coil untuk load gambar dari URI
     implementation("io.coil-kt:coil-compose:2.2.2")
+    // Navigasi
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation(libs.androidx.navigation.compose.android)
+
+    //system ui controller
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

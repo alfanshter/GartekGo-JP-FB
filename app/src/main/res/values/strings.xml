@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">GartekGo</string>
     <string name="title_activity_home">HomeActivity</string>
+    <string name="home">Home</string>
+    <string name="nilai">Nilai</string>
+    <string name="profil">Profile</string>
+    <string name="semester">semester</string>
 </resources>
