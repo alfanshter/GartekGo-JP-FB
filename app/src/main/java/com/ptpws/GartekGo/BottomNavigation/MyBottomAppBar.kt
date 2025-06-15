@@ -170,7 +170,7 @@ fun MyBottomAppBar(navController: NavController) {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(AppScreen.Home.route) { HomeScreen(navigationController) }
-                composable(AppScreen.Home.Semester.route) { SemesterScreen(navigationController) }
+                composable(AppScreen.Home.Semester.route) { SemesterScreen(navigationController, onTambahClick = {}, pilihan = 0) }
                 composable(AppScreen.Home.Semester.Topik.route) { TopikScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Materi.route) { MateriScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Vidio.route) { VidioScreen(navigationController) }

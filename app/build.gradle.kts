@@ -65,6 +65,9 @@ dependencies {
     //system ui controller
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
+    //pager
+    implementation("androidx.compose.foundation:foundation:1.6.0")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
