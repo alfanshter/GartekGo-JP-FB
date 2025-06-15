@@ -1,9 +1,6 @@
 package com.ptpws.GartekGo.Admin.Dialog
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,24 +16,17 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -47,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -62,17 +51,18 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahMateriDialog() {
-    var showDialogmateri by remember { mutableStateOf(true) }
+fun TambahVidioDialog() {
+    var showDialogvidio by remember { mutableStateOf(true) }
     var materiText by remember { mutableStateOf("") }
     var selectedTopik by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    var linkvidio by remember { mutableStateOf("") }
 
     val topikList = listOf("Topik 1", "Topik 2", "Topik 3")
 
-    if (showDialogmateri) {
+    if (showDialogvidio) {
         Dialog(
-            onDismissRequest = { showDialogmateri = false },
+            onDismissRequest = { showDialogvidio = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
@@ -99,7 +89,7 @@ fun TambahMateriDialog() {
                             onValueChange = { materiText = it },
                             placeholder = {
                                 Text(
-                                    "Nama Materi",
+                                    "Nama vidio",
                                     fontFamily = poppinsfamily,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 16.sp
@@ -118,27 +108,59 @@ fun TambahMateriDialog() {
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Upload File (dummy)
+                        // Upload File ()
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Upload File PDF",
+                                "Link Vidio",
                                 fontFamily = poppinsfamily,
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xff020202),
                                 fontSize = 12.sp
                             )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White, RoundedCornerShape(12.dp))
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+
+                            Box(
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Materi Ajar 2.pdf", modifier = Modifier.weight(1f))
-                                IconButton(onClick = {}) {
-                                    Icon(Icons.Default.Delete, contentDescription = null)
+                                TextField(
+                                    value = linkvidio,
+                                    onValueChange = { linkvidio = it },
+                                    placeholder = {
+                                        Text(
+                                            "Masukkan Link",
+                                            fontFamily = poppinsfamily,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 16.sp
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(), // memberi ruang untuk ikon hapus
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color.White,
+                                        unfocusedContainerColor = Color.White,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
+                                    )
+                                )
+
+                                // Icon hapus
+                                if (linkvidio.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { linkvidio = "" },
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .padding(end = 8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Hapus teks"
+                                        )
+                                    }
                                 }
                             }
+
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -209,7 +231,7 @@ fun TambahMateriDialog() {
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Button(
-                                onClick = { showDialogmateri = false },
+                                onClick = { showDialogvidio = false },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.width(120.dp)
@@ -220,7 +242,7 @@ fun TambahMateriDialog() {
                             }
 
                             Button(
-                                onClick = { showDialogmateri = false },
+                                onClick = { showDialogvidio = false },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(
                                         0xFF00C853
@@ -253,7 +275,7 @@ fun TambahMateriDialog() {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        IconButton(onClick = { showDialogmateri = false }) {
+                        IconButton(onClick = { showDialogvidio = false }) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = Color.Black)
                         }
                     }
@@ -261,12 +283,12 @@ fun TambahMateriDialog() {
             }
         }
     }
+
 }
 
-
-@Preview(showBackground = true)
+@Preview
 @Composable
-private fun TambahMateriDialogPreview() {
-    TambahMateriDialog()
+private fun TambahVidioDialogPreview() {
+    TambahVidioDialog()
 
 }
