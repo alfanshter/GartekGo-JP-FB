@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,7 @@ import com.ptpws.GartekGo.R
 @Composable
 fun TambahVidioDialog() {
     var showDialogvidio by remember { mutableStateOf(true) }
-    var materiText by remember { mutableStateOf("") }
+    var vidioText by remember { mutableStateOf("") }
     var selectedTopik by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var linkvidio by remember { mutableStateOf("") }
@@ -85,8 +86,8 @@ fun TambahVidioDialog() {
                     ) {
                         // Nama Materi
                         TextField(
-                            value = materiText,
-                            onValueChange = { materiText = it },
+                            value = vidioText,
+                            onValueChange = { vidioText = it },
                             placeholder = {
                                 Text(
                                     "Nama vidio",
@@ -95,6 +96,12 @@ fun TambahVidioDialog() {
                                     fontSize = 16.sp
                                 )
                             },
+                            textStyle = TextStyle(
+                                fontFamily = poppinsfamily,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            ),
                             shape = RoundedCornerShape(10.dp),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
@@ -132,6 +139,12 @@ fun TambahVidioDialog() {
                                             fontSize = 16.sp
                                         )
                                     },
+                                    textStyle = TextStyle(
+                                        fontFamily = poppinsfamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        color = Color.Black
+                                    ),
                                     shape = RoundedCornerShape(10.dp),
                                     singleLine = true,
                                     modifier = Modifier
@@ -183,6 +196,12 @@ fun TambahVidioDialog() {
                                         fontSize = 16.sp
                                     )
                                 },
+                                textStyle = TextStyle(
+                                    fontFamily = poppinsfamily,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                ),
                                 trailingIcon = {
                                     Icon(
                                         painter = painterResource(id = R.drawable.tambahdrop), // panah kiri
@@ -212,7 +231,12 @@ fun TambahVidioDialog() {
                             ) {
                                 topikList.forEach { topik ->
                                     DropdownMenuItem(
-                                        text = { Text(topik) },
+                                        text = { Text(topik,
+                                                fontFamily = poppinsfamily,
+                                                fontWeight = FontWeight.Medium,
+                                                fontSize = 16.sp,
+                                                color = Color.Black
+                                            ) },
                                         onClick = {
                                             selectedTopik = topik
                                             expanded = false

@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -105,6 +106,12 @@ fun TambahMateriDialog() {
                                     fontSize = 16.sp
                                 )
                             },
+                            textStyle = TextStyle(
+                                fontFamily = poppinsfamily,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            ),
                             shape = RoundedCornerShape(10.dp),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
@@ -161,6 +168,12 @@ fun TambahMateriDialog() {
                                         fontSize = 16.sp
                                     )
                                 },
+                                textStyle = TextStyle(
+                                    fontFamily = poppinsfamily,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                ),
                                 trailingIcon = {
                                     Icon(
                                         painter = painterResource(id = R.drawable.tambahdrop), // panah kiri
@@ -190,7 +203,12 @@ fun TambahMateriDialog() {
                             ) {
                                 topikList.forEach { topik ->
                                     DropdownMenuItem(
-                                        text = { Text(topik) },
+                                        text = { Text(topik,
+                                                fontFamily = poppinsfamily,
+                                                fontWeight = FontWeight.Medium,
+                                                fontSize = 16.sp,
+                                                color = Color.Black
+                                            ) },
                                         onClick = {
                                             selectedTopik = topik
                                             expanded = false

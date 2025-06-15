@@ -12,8 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Pages.SoalListScreen
 import com.ptpws.GartekGo.Auth.LoginScreen
 import com.ptpws.GartekGo.HomeScreen.MainHomeScreen
+import com.ptpws.GartekGo.Semester.SoalSelesaiScreen
 import com.ptpws.GartekGo.Semester.UploadScreen
 import com.ptpws.GartekGo.SplashScreen.SplashScreen
 import com.ptpws.GartekGo.ui.theme.GartekGoTheme
@@ -26,7 +29,7 @@ class MainActivity : ComponentActivity() {
             GartekGoTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                    MainHomeScreen()
+                    SoalListScreen(navController = rememberNavController())
                 }
             }
         }
