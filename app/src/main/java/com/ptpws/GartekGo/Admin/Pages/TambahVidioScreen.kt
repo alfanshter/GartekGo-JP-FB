@@ -1,4 +1,4 @@
-package com.ptpws.GartekGo.Admin
+package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,7 +53,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahMateriScreen(navController: NavController) {
+fun TambahVidioScreen(navController: NavController) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Semester 1", "Semester 2")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
@@ -66,7 +67,7 @@ fun TambahMateriScreen(navController: NavController) {
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = "MATERI",
+                                text = "VIDIO",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
                                 fontFamily = poppinsfamily,
@@ -133,7 +134,7 @@ fun TambahMateriScreen(navController: NavController) {
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
-                    MateriListContent(
+                    VidioListContent(
                         onTambahClick = {
 
                         }
@@ -149,13 +150,15 @@ fun TambahMateriScreen(navController: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-private fun TambahMateriScreenPreview() {
-    TambahMateriScreen(navController = rememberNavController())
+private fun TambahVidioScreenPreview() {
+    TambahVidioScreen(navController = rememberNavController())
 
 }
 
+
+
 @Composable
-fun MateriListContent(
+fun VidioListContent(
     onTambahClick: () -> Unit
 ) {
     LazyColumn(
@@ -179,20 +182,33 @@ fun MateriListContent(
                 ) {
                     Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
                         Text(
-                            text = "Nama Materi",
+                            text = "Vidio 1",
                             fontWeight = FontWeight.Bold,
                             fontFamily = poppinsfamily,
                             fontSize = 24.sp,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Dibuat 16/08/2025",
-                            fontSize = 12.sp,
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
-                        )
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Vidio ",
+                                fontSize = 12.sp,
+                                fontFamily = poppinsfamily,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black
+                            )
+
+
+                            Text(
+                                text = "Diupload 16/08/2025",
+                                fontSize = 12.sp,
+                                fontFamily = poppinsfamily,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black
+                            )
+
+                        }
+
                     }
                 }
             }
@@ -225,7 +241,7 @@ fun MateriListContent(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Tambah Materi",
+                        text = "Tambah Vidio",
                         color = Color.Black,
                         fontWeight = FontWeight.Medium,
                         fontFamily = poppinsfamily,
