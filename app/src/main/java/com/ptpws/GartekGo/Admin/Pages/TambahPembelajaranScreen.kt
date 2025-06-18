@@ -2,7 +2,9 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -68,7 +70,7 @@ fun TambahPembelajaranScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color(0xffF5F9FF))
-                .padding(start = 35.dp, end = 34.dp)
+                .padding(start = 35.dp, end = 34.dp, top = 43.dp)
         ) {
             item {
                 Card(
@@ -77,8 +79,88 @@ fun TambahPembelajaranScreen(navController: NavController) {
                         .height(129.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
                 ) {
-                    Row(modifier = Modifier.fillMaxSize().padding(start = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Image(painter = painterResource(id = R.drawable.tambahmateri),contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.size(91.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 18.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.tambahmaterii),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier.size(91.dp)
+                        )
+                        Spacer(Modifier.width(19.dp))
+
+                        Text(
+                            "MATERI",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 36.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+                Spacer(Modifier.height(17.dp))
+                Card(
+                    modifier = Modifier
+                        .width(360.dp)
+                        .height(129.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 18.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.tambahvidioo),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier.size(91.dp)
+                        )
+                        Spacer(Modifier.width(19.dp))
+
+                        Text(
+                            "VIDIO",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 36.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(17.dp))
+                Card(
+                    modifier = Modifier
+                        .width(360.dp)
+                        .height(129.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 18.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.tambahsoall),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier.size(91.dp)
+                        )
+                        Spacer(Modifier.width(19.dp))
+
+                        Text(
+                            "SOAL",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 36.sp,
+                            color = Color.Black
+                        )
                     }
                 }
             }
