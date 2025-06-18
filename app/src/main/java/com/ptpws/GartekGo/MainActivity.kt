@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
 import com.ptpws.GartekGo.Admin.Pages.SoalListScreen
 import com.ptpws.GartekGo.Auth.LoginScreen
 import com.ptpws.GartekGo.HomeScreen.MainHomeScreen
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
             GartekGoTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                    SoalListScreen(navController = rememberNavController())
+                    PenilaianScreen(navController = rememberNavController())
                 }
             }
         }

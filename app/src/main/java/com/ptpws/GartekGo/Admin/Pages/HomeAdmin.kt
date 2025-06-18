@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +52,11 @@ fun HomeAdmin() {
                             color = Color.Black
                         )
                     },
-
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color(0xffF5F9FF)
                     )
+
+                )
 
             }
         }) { innerPadding ->
@@ -91,7 +95,14 @@ fun HomeAdmin() {
                                     )
                                 }
                             }
-                            Text("Topik", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Color.Black, modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+                            Text(
+                                "Topik",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            )
 
                         }
 
@@ -112,7 +123,14 @@ fun HomeAdmin() {
                                     )
                                 }
                             }
-                            Text("Pembelajaran", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Color.Black, modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+                            Text(
+                                "Pembelajaran",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            )
 
 
                         }
@@ -141,7 +159,14 @@ fun HomeAdmin() {
                                     )
                                 }
                             }
-                            Text("Project", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Color.Black, modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+                            Text(
+                                "Project",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            )
 
                         }
 
@@ -162,13 +187,19 @@ fun HomeAdmin() {
                                     )
                                 }
                             }
-                            Text("Siswa", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Color.Black, modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+                            Text(
+                                "Siswa",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            )
 
 
                         }
 
                     }
-
 
 
                 }
