@@ -183,13 +183,13 @@ private fun PenilaianScreenPreview() {
 fun PenilaianContent() {
     val chipLabels =
         listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
-    var selectedChipIndex by remember { mutableStateOf(1) } // index chip yang aktif
+    var selectedChipgambarIndex by remember { mutableStateOf(1) } // index chip yang aktif
     val context = LocalContext.current
 
 
     Column(modifier = Modifier.fillMaxSize()) {
         FlowRow(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp).background(color = Color(0xffF5F9FF)),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -198,17 +198,20 @@ fun PenilaianContent() {
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (selectedChipIndex == index) Color(0xFF2962FF) else Color.Gray
+                        color = if (selectedChipgambarIndex == index) Color(0xFF2962FF) else Color.Gray
                     ),
                     color = Color.Transparent,
                     modifier = Modifier
-                        .clickable { selectedChipIndex = index }
+                        .height(23.dp)
+                        .clickable { selectedChipgambarIndex = index }
                 ) {
                     Text(
                         text = label,
-                        fontWeight = if (selectedChipIndex == index) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selectedChipIndex == index) Color(0xFF2962FF) else Color.Gray,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        fontWeight = if (selectedChipgambarIndex == index) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = poppinsfamily,
+                        fontSize = 11.sp,
+                        color = if (selectedChipgambarIndex == index) Color(0xFF2962FF) else Color.Gray,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -216,7 +219,9 @@ fun PenilaianContent() {
 
 
         // LazyColumn content di bawahnya
-        LazyColumn(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
+        LazyColumn(modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))) {
             item {
                 Card(
                     shape = RoundedCornerShape(22.dp),
@@ -328,7 +333,9 @@ fun PenilaianContent() {
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
+                    Column(modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxSize()) {
                         Row(modifier = Modifier.padding(vertical = 2.dp)) {
                             Text(
                                 text = "Nama :",
@@ -430,7 +437,9 @@ fun PenilaianContent() {
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
+                    Column(modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxSize()) {
                         Row(modifier = Modifier.padding(vertical = 2.dp)) {
                             Text(
                                 text = "Nama :",
@@ -532,7 +541,9 @@ fun PenilaianContent() {
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
+                    Column(modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxSize()) {
                         Row(modifier = Modifier.padding(vertical = 2.dp)) {
                             Text(
                                 text = "Nama :",
