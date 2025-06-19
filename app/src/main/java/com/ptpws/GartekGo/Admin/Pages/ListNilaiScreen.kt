@@ -1,6 +1,3 @@
-package com.ptpws.GartekGo.Admin.Pages
-
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,13 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,21 +42,21 @@ import androidx.navigation.compose.rememberNavController
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun PenilaianSiswa(navController: NavController) {
-    val chipLabels =
+fun ListNilaiScreen(navController: NavController) {
+    val chipLabelsnilai =
         listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
-    var selectedChipsiswaIndex by remember { mutableStateOf(1) } // index chip yang aktif
+    var selectedChipnilaiIndex by remember { mutableStateOf(1) } // index chip yang aktif
     val context = LocalContext.current
 
-    Scaffold(  //topbar start
+    Scaffold(
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Penilaian",
+                            text = "Nilai",
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp,
                             fontFamily = poppinsfamily,
@@ -85,39 +79,43 @@ fun PenilaianSiswa(navController: NavController) {
                 )
 
             }
-        }) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF)).padding(innerPadding)) {
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xffF5F9FF))
+                .padding(innerPadding)
+        ) {
             FlowRow(
                 modifier = Modifier.padding(16.dp).background(color = Color(0xffF5F9FF)),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                chipLabels.forEachIndexed { index, label ->
+                chipLabelsnilai.forEachIndexed { index, label ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(
                             width = 1.dp,
-                            color = if (selectedChipsiswaIndex == index) Color(0xFF2962FF) else Color.Gray
+                            color = if (selectedChipnilaiIndex == index) Color(0xFF2962FF) else Color.Gray
                         ),
                         color = Color.Transparent,
                         modifier = Modifier
                             .height(23.dp)
-                            .clickable { selectedChipsiswaIndex = index }
+                            .clickable { selectedChipnilaiIndex = index }
                     ) {
                         Text(
                             text = label,
-                            fontWeight = if (selectedChipsiswaIndex == index) FontWeight.Bold else FontWeight.Normal,
+                            fontWeight = if (selectedChipnilaiIndex == index) FontWeight.Bold else FontWeight.Normal,
                             fontFamily = poppinsfamily,
                             fontSize = 11.sp,
-                            color = if (selectedChipsiswaIndex == index) Color(0xFF2962FF) else Color.Gray,
+                            color = if (selectedChipnilaiIndex == index) Color(0xFF2962FF) else Color.Gray,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                         )
                     }
                 }
             }
-
-
-            // LazyColumn content di bawahnya
+            //lazycontent
             LazyColumn(modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color(0xffF5F9FF))) {
@@ -214,7 +212,6 @@ fun PenilaianSiswa(navController: NavController) {
 
                         }
                     }
-
                     Spacer(Modifier.height(7.dp))
 
                     Card(
@@ -312,7 +309,6 @@ fun PenilaianSiswa(navController: NavController) {
 
                         }
                     }
-
                     Spacer(Modifier.height(7.dp))
 
                     Card(
@@ -411,57 +407,15 @@ fun PenilaianSiswa(navController: NavController) {
 
 
                 }
-                // Tombol Tambah Topik
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(96.dp).padding(start = 34.dp, end = 34.dp),
-                        border = BorderStroke(2.dp, Color(0xFF2F80ED)),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        onClick = { }
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.tambahsiswa),
-                                contentDescription = "Tambah",
-                                tint = Color.Unspecified
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "Tambah Siswa",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Medium,
-                                fontFamily = poppinsfamily,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
             }
 
         }
-
     }
-
-
 
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun PenilaianSiswaPreview() {
-    PenilaianSiswa(navController = rememberNavController())
-
+private fun ListNilaiScreenPreview() {
+    ListNilaiScreen(navController = rememberNavController())
 }

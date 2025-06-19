@@ -181,7 +181,7 @@ private fun PenilaianScreenPreview() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PenilaianContent() {
-    val chipLabels =
+    val chipLabelsgambar =
         listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
     var selectedChipgambarIndex by remember { mutableStateOf(1) } // index chip yang aktif
     val context = LocalContext.current
@@ -193,7 +193,7 @@ fun PenilaianContent() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            chipLabels.forEachIndexed { index, label ->
+            chipLabelsgambar.forEachIndexed { index, label ->
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(
