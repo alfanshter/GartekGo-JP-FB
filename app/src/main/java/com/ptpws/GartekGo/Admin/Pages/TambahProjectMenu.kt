@@ -2,7 +2,6 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,12 +37,12 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahPembelajaranScreen(navController: NavController) {
+fun TambahProjectMenu(navController: NavController) {
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
                 Text(
-                    text = "Pembelajaran",
+                    text = "Project",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     fontFamily = poppinsfamily,
@@ -95,67 +94,6 @@ fun TambahPembelajaranScreen(navController: NavController) {
                         Spacer(Modifier.width(19.dp))
 
                         Text(
-                            "MATERI",
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 36.sp,
-                            color = Color.Black
-                        )
-                    }
-                }
-                Spacer(Modifier.height(17.dp))
-                Card(
-                    modifier = Modifier
-                        .width(360.dp)
-                        .height(129.dp), shape = RoundedCornerShape(23.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.tambahvidioo),
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.size(91.dp)
-                        )
-                        Spacer(Modifier.width(19.dp))
-
-                        Text(
-                            "VIDIO",
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 36.sp,
-                            color = Color.Black
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(17.dp))
-                Card(
-                    modifier = Modifier
-                        .width(360.dp)
-                        .height(129.dp), shape = RoundedCornerShape(23.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.tambahsoall),
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.size(91.dp)
-                        )
-                        Spacer(Modifier.width(19.dp))
-
-                        Text(
                             "SOAL",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Bold,
@@ -164,6 +102,38 @@ fun TambahPembelajaranScreen(navController: NavController) {
                         )
                     }
                 }
+                Spacer(Modifier.height(17.dp))
+                Card(
+                    modifier = Modifier
+                        .width(360.dp)
+                        .height(129.dp), shape = RoundedCornerShape(23.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.penilaiann),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier.size(91.dp)
+                        )
+                        Spacer(Modifier.width(17.dp))
+
+                        Text(
+                            "PENILAIAN",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 36.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+
+
             }
         }
 
@@ -174,7 +144,7 @@ fun TambahPembelajaranScreen(navController: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-private fun TambahPembelajaranPreview() {
-    TambahPembelajaranScreen(navController = rememberNavController())
+private fun TambahProjectMenuPreview() {
+    TambahProjectMenu(navController = rememberNavController())
 
 }
