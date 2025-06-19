@@ -202,7 +202,7 @@ fun PenilaianContent() {
                     ),
                     color = Color.Transparent,
                     modifier = Modifier
-                        .height(23.dp)
+                        .height(30.dp)
                         .clickable { selectedChipgambarIndex = index }
                 ) {
                     Text(

@@ -101,7 +101,7 @@ fun PenilaianSiswa(navController: NavController) {
                         ),
                         color = Color.Transparent,
                         modifier = Modifier
-                            .height(23.dp)
+                            .height(30.dp)
                             .clickable { selectedChipsiswaIndex = index }
                     ) {
                         Text(
