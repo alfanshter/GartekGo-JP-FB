@@ -2,14 +2,18 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,15 +34,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeAdmin() {
+fun HomeAdmin(navController: NavController) {
     Scaffold(//topbar start
         topBar = {
             Column {
@@ -59,20 +67,30 @@ fun HomeAdmin() {
                 )
 
             }
-        }) { innerPadding ->
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))
+            .navigationBarsPadding()
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(
+                    bottom = 0.dp,
+                    top = innerPadding.calculateTopPadding(),
+                    start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = innerPadding.calculateEndPadding(LayoutDirection.Ltr)
+                )
                 .fillMaxSize()
                 .background(color = Color(0xffF5F9FF))
         ) {
             item {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Image(
                         painter = painterResource(id = R.drawable.admin),
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.size(381.dp)
+                        modifier = Modifier.size(320.dp)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -80,7 +98,8 @@ fun HomeAdmin() {
                     ) {
                         Column {
                             Card(
-                                modifier = Modifier.size(130.dp),
+                                modifier = Modifier.size(130.dp).clickable{ navController.navigate(
+                                    AppScreen.Home.Admin.TambahTopik.route)},
                                 shape = RoundedCornerShape(45.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                             ) {
@@ -108,7 +127,8 @@ fun HomeAdmin() {
 
                         Column {
                             Card(
-                                modifier = Modifier.size(130.dp),
+                                modifier = Modifier.size(130.dp).clickable{ navController.navigate(
+                                    AppScreen.Home.Admin.TambahPembelajaran.route) },
                                 shape = RoundedCornerShape(45.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                             ) {
@@ -217,6 +237,6 @@ fun HomeAdmin() {
 @Preview(showBackground = true)
 @Composable
 private fun HomeAdminPreview() {
-    HomeAdmin()
+    HomeAdmin(navController = rememberNavController())
 
 }

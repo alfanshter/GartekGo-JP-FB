@@ -34,6 +34,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
+import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.HomeScreen.ProfileScreen
@@ -179,7 +181,9 @@ fun MyBottomAppBar(navController: NavController) {
                 composable(AppScreen.Nilai.route) { ProjectScreen( navigationController) }
                 composable(AppScreen.Profile.route) { ProfileScreen(navigationController) }
 
-//            profilNav(navigationController )
+                //admin
+                composable(AppScreen.Home.Admin.TambahTopik.route) { TambahTopikScreen(navigationController) }
+
 
             }
         }

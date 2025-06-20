@@ -2,6 +2,7 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
@@ -77,6 +79,7 @@ fun TambahPembelajaranScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .width(360.dp)
+                        .clickable { navController.navigate(AppScreen.Home.Admin.TambahMateri.route) }
                         .height(129.dp), shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))
                 ) {
@@ -105,7 +108,7 @@ fun TambahPembelajaranScreen(navController: NavController) {
                 }
                 Spacer(Modifier.height(17.dp))
                 Card(
-                    modifier = Modifier
+                    modifier = Modifier.clickable{navController.navigate(AppScreen.Home.Admin.TambahVidio.route)}
                         .width(360.dp)
                         .height(129.dp), shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))

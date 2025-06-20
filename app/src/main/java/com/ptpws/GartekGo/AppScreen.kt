@@ -16,7 +16,16 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
 
 
         }
+        object Admin : AppScreen(R.string.admin, R.drawable.home, "admin"){
+            object TambahTopik : AppScreen(R.string.admin,R.drawable.topik,"tambahtopik")
+            object TambahPembelajaran : AppScreen(R.string.admin,R.drawable.topik,"tambahpembelajaran")
+            object TambahMateri : AppScreen(R.string.admin,R.drawable.tambahmaterii,"tambahmateri")
+            object TambahVidio : AppScreen(R.string.admin,R.drawable.tambahvidioo,"tambahvidio")
+
+        }
     }
+
+
     object Nilai : AppScreen(R.string.nilai, R.drawable.piala, "nilai")
     object Profile : AppScreen(R.string.profil, R.drawable.profilenav, "profile")
 

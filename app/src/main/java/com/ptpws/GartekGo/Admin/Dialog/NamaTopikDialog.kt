@@ -21,8 +21,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -44,8 +42,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.ptpws.GartekGo.Commond.poppinsfamily
 
 @Composable
-fun NamaTopikDialog(
-) {
+fun NamaTopikDialog(onDismissRequest: () -> Unit) {
     var showDialognamatopik by remember { mutableStateOf(true) }
     var topicText by remember { mutableStateOf("") }
 
@@ -175,8 +172,8 @@ fun NamaTopikDialog(
 @Preview(showBackground = true)
 @Composable
 private fun NamaTopikDialogPreview() {
-    NamaTopikDialog(
+    NamaTopikDialog {
 
-    )
+    }
 
 }

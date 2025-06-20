@@ -46,17 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Dialog.NamaTopikDialog
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahTopikScreen(navController: NavController) {
+fun TambahTopikScreen(navController: NavController, outerPadding: PaddingValues = PaddingValues()) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Semester 1", "Semester 2")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
     val coroutineScope = rememberCoroutineScope()
+
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -84,11 +86,15 @@ fun TambahTopikScreen(navController: NavController) {
                     )
 
                 }
-            },
+            }, modifier = Modifier.background(color = Color(0xffF5F9FF))
         ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
             ) {
@@ -157,13 +163,15 @@ private fun TambahTopikScreenPreview() {
 
 @Composable
 fun TopikListContent( onTambahClick: () -> Unit) {
+    var showDialognamatopik by remember { mutableStateOf(false) }
+    var topicText by remember { mutableStateOf("") }
     // LazyColumn berisi semua konten termasuk tombol
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 34.dp, end = 34.dp).background(color = Color(0xffF5F9FF)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
+        contentPadding = PaddingValues(top = 8.dp)
     ) {
         // Card 1
         item {
@@ -266,7 +274,7 @@ fun TopikListContent( onTambahClick: () -> Unit) {
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                onClick = { /* Aksi tambah */ }
+                onClick = { showDialognamatopik = true }
             ) {
                 Column(
                     modifier = Modifier
@@ -286,9 +294,13 @@ fun TopikListContent( onTambahClick: () -> Unit) {
                         fontWeight = FontWeight.Medium, fontFamily = poppinsfamily, fontSize = 12.sp
                     )
                 }
-            }
+                if (showDialognamatopik== true) {
+                    NamaTopikDialog( onDismissRequest =  {
+                        showDialognamatopik = false
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    })
+                }
+            }
         }
     }
     
