@@ -15,8 +15,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
+import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
+import com.ptpws.GartekGo.Admin.Pages.PenilaianSiswa
 import com.ptpws.GartekGo.Admin.Pages.TambahMateriScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahPembelajaranScreen
+import com.ptpws.GartekGo.Admin.Pages.TambahProjectMenu
+import com.ptpws.GartekGo.Admin.Pages.TambahProjectScreen
+import com.ptpws.GartekGo.Admin.Pages.TambahSoalScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahVidioScreen
 import com.ptpws.GartekGo.AppScreen
@@ -39,6 +44,12 @@ fun MainAdminScreen() {
             composable(AppScreen.Home.Admin.TambahPembelajaran.route) { TambahPembelajaranScreen(navController) }
             composable(AppScreen.Home.Admin.TambahMateri.route) { TambahMateriScreen(navController) }
             composable(AppScreen.Home.Admin.TambahVidio.route) { TambahVidioScreen(navController) }
+            composable(AppScreen.Home.Admin.TambahSoal.route) { TambahSoalScreen(navController) }
+            composable(AppScreen.Home.Admin.TambahProject.route) { TambahProjectMenu(navController) }
+            composable(AppScreen.Home.Admin.TambahSiswa.route) { PenilaianSiswa(navController) }
+            composable(AppScreen.Home.Admin.TambahSoalProject.route) { TambahProjectScreen(navController) }
+            composable(AppScreen.Home.Admin.Penilaian.route) { PenilaianScreen(navController) }
+
         }
 
 

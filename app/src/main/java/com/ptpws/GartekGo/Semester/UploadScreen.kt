@@ -59,6 +59,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
@@ -66,7 +68,7 @@ import com.ptpws.GartekGo.Utils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadScreen(
+fun UploadScreen(navController: NavController,
     onBackClick: () -> Unit = {},
     onSubmitClick: () -> Unit = {}
 ) {
@@ -259,7 +261,7 @@ fun UploadScreen(
 @Preview(showBackground = true)
 @Composable
 private fun UploadScreenPreview() {
-    UploadScreen()
+    UploadScreen(navController = rememberNavController())
     
 }
 

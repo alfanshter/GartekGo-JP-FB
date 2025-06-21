@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -52,8 +53,7 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahVidioDialog() {
-    var showDialogvidio by remember { mutableStateOf(true) }
+fun TambahVidioDialog(onDismis: () -> Unit) {
     var vidioText by remember { mutableStateOf("") }
     var selectedTopik by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
@@ -61,9 +61,8 @@ fun TambahVidioDialog() {
 
     val topikList = listOf("Topik 1", "Topik 2", "Topik 3")
 
-    if (showDialogvidio) {
-        Dialog(
-            onDismissRequest = { showDialogvidio = false },
+        AlertDialog(
+            onDismissRequest = { onDismis() },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
@@ -168,7 +167,7 @@ fun TambahVidioDialog() {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus teks"
+                                            contentDescription = "Hapus teks", tint = Color.Black
                                         )
                                     }
                                 }
@@ -255,7 +254,7 @@ fun TambahVidioDialog() {
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Button(
-                                onClick = { showDialogvidio = false },
+                                onClick = { onDismis() },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.width(120.dp)
@@ -266,7 +265,7 @@ fun TambahVidioDialog() {
                             }
 
                             Button(
-                                onClick = { showDialogvidio = false },
+                                onClick = { onDismis() },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(
                                         0xFF00C853
@@ -299,7 +298,7 @@ fun TambahVidioDialog() {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        IconButton(onClick = { showDialogvidio = false }) {
+                        IconButton(onClick = { onDismis() }) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = Color.Black)
                         }
                     }
@@ -308,11 +307,11 @@ fun TambahVidioDialog() {
         }
     }
 
-}
+
 
 @Preview
 @Composable
 private fun TambahVidioDialogPreview() {
-    TambahVidioDialog()
+    TambahVidioDialog(onDismis = { /*TODO*/ })
 
 }

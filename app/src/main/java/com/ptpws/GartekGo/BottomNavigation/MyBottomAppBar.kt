@@ -43,6 +43,7 @@ import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.Semester.ProjectScreen
 import com.ptpws.GartekGo.Semester.SemesterScreen
 import com.ptpws.GartekGo.Semester.SoalScreen
+import com.ptpws.GartekGo.Semester.UploadScreen
 
 @Composable
 fun MyBottomAppBar(navController: NavController) {
@@ -177,6 +178,7 @@ fun MyBottomAppBar(navController: NavController) {
                 composable(AppScreen.Home.Semester.Topik.Materi.route) { MateriScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Vidio.route) { VidioScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Soal.route) { SoalScreen(navigationController) }
+                composable(AppScreen.Home.Semester.Topik.Upload.route) { UploadScreen(navigationController) }
 
                 composable(AppScreen.Nilai.route) { ProjectScreen( navigationController) }
                 composable(AppScreen.Profile.route) { ProfileScreen(navigationController) }

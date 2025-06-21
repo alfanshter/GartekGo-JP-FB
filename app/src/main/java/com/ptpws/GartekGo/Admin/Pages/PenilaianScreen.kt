@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,7 +67,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PenilaianScreen(navController: NavController) {
+fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = PaddingValues()) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Sudah Dinilai", "Belum Dinilai")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
@@ -109,9 +110,13 @@ fun PenilaianScreen(navController: NavController) {
                 }
             },
         ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
             ) {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -23,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,189 +48,53 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeAdmin(navController: NavController) {
-    Scaffold(//topbar start
-        topBar = {
-            Column {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = "ADMIN",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                            fontFamily = poppinsfamily,
-                            color = Color.Black
-                        )
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color(0xffF5F9FF)
-                    )
-
-                )
-
-            }
-        },
+fun HomeAdmin(navController: NavController,  outerPadding: PaddingValues = PaddingValues()) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xffF5F9FF))
-            .navigationBarsPadding()
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(
-                    bottom = 0.dp,
-                    top = innerPadding.calculateTopPadding(),
-                    start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                    end = innerPadding.calculateEndPadding(LayoutDirection.Ltr)
-                )
-                .fillMaxSize()
-                .background(color = Color(0xffF5F9FF))
-        ) {
-            item {
-                Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(
-                        painter = painterResource(id = R.drawable.admin),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.size(320.dp)
+    ) {
+        Scaffold(
+            //topbar start
+            topBar = {
+                Column {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                text = "ADMIN",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                fontFamily = poppinsfamily,
+                                color = Color.Black
+                            )
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color(0xffF5F9FF)
+                        )
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Column {
-                            Card(
-                                modifier = Modifier.size(130.dp).clickable{ navController.navigate(
-                                    AppScreen.Home.Admin.TambahTopik.route)},
-                                shape = RoundedCornerShape(45.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.topik),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified
-                                    )
-                                }
-                            }
-                            Text(
-                                "Topik",
-                                fontFamily = jostfamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                            )
-
-                        }
-
-                        Column {
-                            Card(
-                                modifier = Modifier.size(130.dp).clickable{ navController.navigate(
-                                    AppScreen.Home.Admin.TambahPembelajaran.route) },
-                                shape = RoundedCornerShape(45.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.belajar),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified
-                                    )
-                                }
-                            }
-                            Text(
-                                "Pembelajaran",
-                                fontFamily = jostfamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                            )
-
-
-                        }
-
-                    }
-                    Spacer(Modifier.height(34.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Column {
-                            Card(
-                                modifier = Modifier.size(130.dp),
-                                shape = RoundedCornerShape(45.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.project),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified
-                                    )
-                                }
-                            }
-                            Text(
-                                "Project",
-                                fontFamily = jostfamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                            )
-
-                        }
-
-                        Column {
-                            Card(
-                                modifier = Modifier.size(130.dp),
-                                shape = RoundedCornerShape(45.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.siswa),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified
-                                    )
-                                }
-                            }
-                            Text(
-                                "Siswa",
-                                fontFamily = jostfamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                            )
-
-
-                        }
-
-                    }
-
 
                 }
+            },
+        ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
+            Column(
+                modifier = Modifier
+                    .padding(combinedPadding)
+                    .fillMaxSize()
+                    .background(color = Color(0xffF5F9FF))
+            ) {
+                HomeAdminComponent(navController = navController)
+                // Tab Row
+                // TAB ROW DILETAKKAN DI SINI, DI BAWAH TOPBAR
 
+
+
+                // LazyColumn berisi semua konten termasuk tombol
             }
-
-
         }
-
     }
 
 
@@ -238,5 +104,161 @@ fun HomeAdmin(navController: NavController) {
 @Composable
 private fun HomeAdminPreview() {
     HomeAdmin(navController = rememberNavController())
+
+}
+
+@Composable
+fun HomeAdminComponent(navController: NavController) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))
+    ) {
+        item {
+            Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = painterResource(id = R.drawable.admin),
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.size(320.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column {
+                        Card(
+                            modifier = Modifier.size(130.dp).clickable{ navController.navigate(
+                                AppScreen.Home.Admin.TambahTopik.route)},
+                            shape = RoundedCornerShape(45.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.topik),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+                            }
+                        }
+                        Text(
+                            "Topik",
+                            fontFamily = jostfamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        )
+
+                    }
+
+                    Column {
+                        Card(
+                            modifier = Modifier.size(130.dp).clickable{ navController.navigate(
+                                AppScreen.Home.Admin.TambahPembelajaran.route) },
+                            shape = RoundedCornerShape(45.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.belajar),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+                            }
+                        }
+                        Text(
+                            "Pembelajaran",
+                            fontFamily = jostfamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        )
+
+
+                    }
+
+                }
+                Spacer(Modifier.height(34.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column {
+                        Card(
+                            modifier = Modifier.size(130.dp).clickable{navController.navigate(
+                                AppScreen.Home.Admin.TambahProject.route)},
+                            shape = RoundedCornerShape(45.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.project),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+                            }
+                        }
+                        Text(
+                            "Project",
+                            fontFamily = jostfamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        )
+
+                    }
+
+                    Column {
+                        Card(
+                            modifier = Modifier.size(130.dp).clickable{navController.navigate(
+                                AppScreen.Home.Admin.TambahSiswa.route)},
+                            shape = RoundedCornerShape(45.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.siswa),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+                            }
+                        }
+                        Text(
+                            "Siswa",
+                            fontFamily = jostfamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        )
+
+
+                    }
+
+                }
+
+
+            }
+
+        }
+
+
+    }
 
 }

@@ -18,6 +18,7 @@ import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
 import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
 import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
 import com.ptpws.GartekGo.Admin.Pages.SoalListScreen
+import com.ptpws.GartekGo.Admin.Pages.Teshomeadmin
 import com.ptpws.GartekGo.Auth.LoginScreen
 import com.ptpws.GartekGo.HomeScreen.MainHomeScreen
 import com.ptpws.GartekGo.Semester.SoalSelesaiScreen

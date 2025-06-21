@@ -54,6 +54,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
@@ -172,7 +173,7 @@ fun SoalScreen(navController: NavController) {
 
             // Tombol tetap di bawah layar
             Button(
-                onClick = { /* TODO: aksi */ },
+                onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Upload.route) },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF009A0F), // Warna biru

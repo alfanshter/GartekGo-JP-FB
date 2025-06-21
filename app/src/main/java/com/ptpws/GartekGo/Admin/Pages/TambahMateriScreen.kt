@@ -2,6 +2,7 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Dialog.NamaTopikDialog
+import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
@@ -164,6 +167,8 @@ private fun TambahMateriScreenPreview() {
 fun MateriListContent(
     onTambahClick: () -> Unit
 ) {
+    var showDialogmateri by remember { mutableStateOf(false) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -222,12 +227,12 @@ fun MateriListContent(
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth().clickable{showDialogmateri = true}
                     .height(96.dp),
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                onClick = onTambahClick
+
             ) {
                 Column(
                     modifier = Modifier
@@ -250,9 +255,15 @@ fun MateriListContent(
                         fontSize = 12.sp
                     )
                 }
+                if (showDialogmateri== true) {
+                    TambahMateriDialog(onDismis =  {
+                        showDialogmateri= false
+
+                    })
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+
         }
     }
 }

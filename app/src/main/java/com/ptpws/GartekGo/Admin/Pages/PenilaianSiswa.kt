@@ -127,8 +127,7 @@ fun PenilaianSiswa(navController: NavController) {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+                            .fillMaxWidth().padding(start = 16.dp, end = 16.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(modifier = Modifier.padding(vertical = 2.dp)) {
@@ -223,7 +222,7 @@ fun PenilaianSiswa(navController: NavController) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(start = 16.dp, end = 16.dp)
                     ) {
                         Column(modifier = Modifier
                             .padding(16.dp)
@@ -321,7 +320,7 @@ fun PenilaianSiswa(navController: NavController) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(start = 16.dp, end = 16.dp)
                     ) {
                         Column(modifier = Modifier
                             .padding(16.dp)

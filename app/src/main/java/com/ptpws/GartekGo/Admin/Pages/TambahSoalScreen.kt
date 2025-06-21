@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahSoalScreen(navController: NavController) {
+fun TambahSoalScreen(navController: NavController,  outerPadding: PaddingValues = PaddingValues()) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Semester 1", "Semester 2")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
@@ -69,7 +69,7 @@ fun TambahSoalScreen(navController: NavController) {
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = "VIDIO",
+                                text = "SOAL",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
                                 fontFamily = poppinsfamily,
@@ -87,9 +87,13 @@ fun TambahSoalScreen(navController: NavController) {
                 }
             },
         ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
             ) {

@@ -2,6 +2,7 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -163,7 +164,7 @@ private fun TambahTopikScreenPreview() {
 
 @Composable
 fun TopikListContent( onTambahClick: () -> Unit) {
-    var showDialognamatopik by remember { mutableStateOf(false) }
+    var showDialogtopik by remember { mutableStateOf(false) }
     var topicText by remember { mutableStateOf("") }
     // LazyColumn berisi semua konten termasuk tombol
     LazyColumn(
@@ -270,11 +271,10 @@ fun TopikListContent( onTambahClick: () -> Unit) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(96.dp),
+                    .height(96.dp) .clickable { showDialogtopik = true },
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                onClick = { showDialognamatopik = true }
             ) {
                 Column(
                     modifier = Modifier
@@ -294,12 +294,14 @@ fun TopikListContent( onTambahClick: () -> Unit) {
                         fontWeight = FontWeight.Medium, fontFamily = poppinsfamily, fontSize = 12.sp
                     )
                 }
-                if (showDialognamatopik== true) {
-                    NamaTopikDialog( onDismissRequest =  {
-                        showDialognamatopik = false
+
+                if (showDialogtopik== true) {
+                    NamaTopikDialog(onDismis =  {
+                        showDialogtopik= false
 
                     })
                 }
+
             }
         }
     }

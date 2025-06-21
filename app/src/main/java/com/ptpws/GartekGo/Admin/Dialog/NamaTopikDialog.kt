@@ -15,10 +15,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -41,14 +43,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ptpws.GartekGo.Commond.poppinsfamily
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NamaTopikDialog(onDismissRequest: () -> Unit) {
-    var showDialognamatopik by remember { mutableStateOf(true) }
+fun NamaTopikDialog( onDismis: () -> Unit) {
     var topicText by remember { mutableStateOf("") }
 
-    if (showDialognamatopik) {
-        Dialog(
-            onDismissRequest = { showDialognamatopik = false },
+
+        AlertDialog(
+            onDismissRequest = {onDismis()  },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
@@ -113,7 +115,7 @@ fun NamaTopikDialog(onDismissRequest: () -> Unit) {
                             Button(
                                 onClick = {
                                     topicText = ""
-                                    showDialognamatopik = false
+                                    onDismis()
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                                 shape = RoundedCornerShape(12.dp),
@@ -125,7 +127,7 @@ fun NamaTopikDialog(onDismissRequest: () -> Unit) {
                             Button(
                                 onClick = {
                                     // Simpan data di sini jika perlu
-                                    showDialognamatopik = false
+                                    onDismis()
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(
@@ -153,7 +155,7 @@ fun NamaTopikDialog(onDismissRequest: () -> Unit) {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        IconButton(onClick = { showDialognamatopik = false }) {
+                        IconButton(onClick = { onDismis()  }) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Tutup",
@@ -166,14 +168,12 @@ fun NamaTopikDialog(onDismissRequest: () -> Unit) {
         }
     }
 
-}
+
 
 
 @Preview(showBackground = true)
 @Composable
 private fun NamaTopikDialogPreview() {
-    NamaTopikDialog {
-
-    }
+    NamaTopikDialog (onDismis = { /*TODO*/ })
 
 }

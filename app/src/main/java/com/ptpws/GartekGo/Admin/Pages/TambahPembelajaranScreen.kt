@@ -139,7 +139,7 @@ fun TambahPembelajaranScreen(navController: NavController) {
 
                 Spacer(Modifier.height(17.dp))
                 Card(
-                    modifier = Modifier
+                    modifier = Modifier.clickable{navController.navigate(AppScreen.Home.Admin.TambahSoal.route)}
                         .width(360.dp)
                         .height(129.dp), shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF))

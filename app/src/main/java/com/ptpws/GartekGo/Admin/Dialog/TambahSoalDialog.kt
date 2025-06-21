@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -52,8 +53,7 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahSoalDialog() {
-    var showDialogsoal by remember { mutableStateOf(true) }
+fun TambahSoalDialog(onDismis: () -> Unit) {
     var soalText by remember { mutableStateOf("") }
     var selectedTopik by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
@@ -61,9 +61,8 @@ fun TambahSoalDialog() {
 
     val topikList = listOf("Topik 1", "Topik 2", "Topik 3")
 
-    if (showDialogsoal) {
-        Dialog(
-            onDismissRequest = { showDialogsoal = false },
+        AlertDialog(
+            onDismissRequest = { onDismis() },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
@@ -168,7 +167,7 @@ fun TambahSoalDialog() {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus teks"
+                                            contentDescription = "Hapus teks", tint = Color.Black
                                         )
                                     }
                                 }
@@ -255,7 +254,7 @@ fun TambahSoalDialog() {
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Button(
-                                onClick = { showDialogsoal = false },
+                                onClick = { onDismis() },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.width(120.dp)
@@ -266,7 +265,7 @@ fun TambahSoalDialog() {
                             }
 
                             Button(
-                                onClick = { showDialogsoal = false },
+                                onClick = { onDismis() },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(
                                         0xFF00C853
@@ -299,7 +298,7 @@ fun TambahSoalDialog() {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        IconButton(onClick = { showDialogsoal = false }) {
+                        IconButton(onClick = { onDismis() }) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = Color.Black)
                         }
                     }
@@ -308,11 +307,11 @@ fun TambahSoalDialog() {
         }
     }
 
-}
+
 
 @Preview(showBackground = true)
 @Composable
 private fun TambahSoalDialogPreview() {
-    TambahSoalDialog()
+    TambahSoalDialog(onDismis = { })
 
 }

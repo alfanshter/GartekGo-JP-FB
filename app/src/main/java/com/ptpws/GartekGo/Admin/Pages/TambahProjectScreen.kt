@@ -2,6 +2,7 @@ package com.ptpws.GartekGo.Admin.Pages
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,13 +48,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Dialog.TambahSoalDialog
+import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialog
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahProjectScreen(navController: NavController) {
+fun TambahProjectScreen(navController: NavController, outerPadding: PaddingValues = PaddingValues()) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Semester 1", "Semester 2")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
@@ -87,9 +90,13 @@ fun TambahProjectScreen(navController: NavController) {
                 }
             },
         ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
             ) {
@@ -156,6 +163,7 @@ private fun TambahProjectPreview() {
 
 @Composable
 fun ProjectListContent() {
+    var showDialogsoal by remember { mutableStateOf(false) }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -214,12 +222,12 @@ fun ProjectListContent() {
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth().clickable{showDialogsoal = true}
                     .height(96.dp),
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                onClick = { }
+
             ) {
                 Column(
                     modifier = Modifier
@@ -242,9 +250,14 @@ fun ProjectListContent() {
                         fontSize = 12.sp
                     )
                 }
+                if (showDialogsoal== true) {
+                    TambahSoalDialog(onDismis =  {
+                        showDialogsoal= false
+
+                    })
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
     
