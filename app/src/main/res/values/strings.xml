@@ -6,4 +6,7 @@
     <string name="profil">Profile</string>
     <string name="semester">semester</string>
     <string name="admin">admin</string>
+    <string name="title_activity_auth">AuthActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_admin">AdminActivity</string>
 </resources>

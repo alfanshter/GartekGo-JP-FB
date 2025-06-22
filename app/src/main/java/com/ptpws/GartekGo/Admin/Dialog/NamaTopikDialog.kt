@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Dialog
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Commond.poppinsfamily
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,8 +129,22 @@ fun NamaTopikDialog( onDismis: () -> Unit) {
 
                             Button(
                                 onClick = {
+                                    val db = Firebase.firestore
+
+                                    val dataTopik = hashMapOf(
+                                        "nama" to topicText,
+                                        "semester" to "1"
+                                    )
+                                    db.collection("topik")
+                                        .add(dataTopik)
+                                        .addOnSuccessListener {
+                                            Log.d("Firestore", "Topik berhasil ditambahkan dengan ID: ${it.id}")
+                                        }
+                                        .addOnFailureListener {
+                                            Log.e("Firestore", "Gagal menambahkan topik: ${it.message}")
+                                        }
                                     // Simpan data di sini jika perlu
-                                    onDismis()
+
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(

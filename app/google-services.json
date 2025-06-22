@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "878530304048",
+    "project_id": "gartekgo",
+    "storage_bucket": "gartekgo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878530304048:android:b58ab22a9b3c3b824eb5f5",
+        "android_client_info": {
+          "package_name": "com.ptpws.GartekGo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVJsnsIRjEE13CF-qV1RRwnDVFmyp1YHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

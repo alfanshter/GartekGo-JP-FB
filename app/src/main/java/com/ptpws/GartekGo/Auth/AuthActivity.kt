@@ -1,4 +1,4 @@
-package com.ptpws.GartekGo
+package com.ptpws.GartekGo.Auth
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,19 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
-import com.ptpws.GartekGo.Admin.MainAdminScreen
-import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
-import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
-import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
-import com.ptpws.GartekGo.Admin.Pages.SoalListScreen
-import com.ptpws.GartekGo.Auth.LoginScreen
-import com.ptpws.GartekGo.HomeScreen.MainHomeScreen
-import com.ptpws.GartekGo.Semester.SoalSelesaiScreen
-import com.ptpws.GartekGo.Semester.UploadScreen
-import com.ptpws.GartekGo.SplashScreen.SplashScreen
-import com.ptpws.GartekGo.ui.theme.GartekGoTheme
+import com.ptpws.GartekGo.Auth.ui.theme.GartekGoTheme
 
-class MainActivity : ComponentActivity() {
+class AuthActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,9 +25,10 @@ class MainActivity : ComponentActivity() {
             GartekGoTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                  MainHomeScreen()
+                    LoginScreen(navController = rememberNavController())
                 }
             }
         }
     }
 }
+

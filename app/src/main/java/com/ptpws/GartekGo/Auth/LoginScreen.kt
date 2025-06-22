@@ -1,5 +1,9 @@
 package com.ptpws.GartekGo.Auth
 
+import android.app.Activity
+import android.content.Intent
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -50,17 +55,33 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import com.ptpws.GartekGo.Admin.AdminActivity
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.mulishfamily
+import com.ptpws.GartekGo.MainActivity
 import com.ptpws.GartekGo.R
 
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    var context = LocalContext.current
+
+    //panggil inisialisasi Firebase Auth
+    var database = FirebaseAuth.getInstance()
+
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -195,7 +216,62 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
                 // Masuk Button
                 Button(
-                    onClick = { /* TODO: Login action */ },
+                    onClick = {
+//                        loginWithEmail(email,password, onSuccess = {
+//
+//                    }, onError = {  error ->
+//                        errorMessage = error })
+                        Log.d("muhib", "${email} $password ")
+
+
+                        var loginWithFirebase = database.signInWithEmailAndPassword(email, password)
+                        val db = Firebase.firestore
+                        //read data
+                        loginWithFirebase.addOnSuccessListener {
+                            val role = db.collection("users").document(it.user!!.uid).get()
+                            role.addOnSuccessListener {
+                                val data = it.get("role").toString()
+                                if (data == "user") {
+                                    val intent = Intent(context, MainActivity::class.java)
+                                    context.startActivity(intent)
+                                    Toast.makeText(
+                                        context,
+                                        "User Berhasil Login",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                    // Tutup Activity Login
+                                    (context as? AuthActivity)?.finish()
+                                } else if (data == "guru") {
+                                    val intent = Intent(context, AdminActivity::class.java)
+                                    context.startActivity(intent)
+                                    Toast.makeText(context, "Guru Berhasil Login", Toast.LENGTH_SHORT).show()
+                                    (context as? Activity)?.finish()
+
+
+                                } else {
+                                    Toast.makeText(context, "Role tidak dikenali: $role", Toast.LENGTH_SHORT).show()
+                                }
+
+                            }
+
+                            role.addOnFailureListener {
+                                Log.d("Muhib", it.message.toString())
+                                Toast.makeText(context, "Gagal LOgin", Toast.LENGTH_SHORT).show()
+                            }
+//
+                        }
+
+
+
+                        loginWithFirebase.addOnFailureListener {
+                            Log.d("Muhib ", "${it.message}")
+                            Toast.makeText(context, "Gagal Login", Toast.LENGTH_SHORT).show()
+
+                        }
+
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
@@ -215,6 +291,10 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.align(Alignment.Center)
                         )
+                        errorMessage?.let {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = it, color = Color.Red)
+                        }
 
                         // Icon di kanan dalam lingkaran
                         Box(
@@ -254,11 +334,9 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 }
 
 
-
-
 @Preview(showBackground = true)
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(navController = rememberNavController())
 
 }
