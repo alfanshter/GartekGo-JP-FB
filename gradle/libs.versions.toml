@@ -13,6 +13,8 @@ navigationComposeAndroid = "2.9.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.2.1"
 firebaseFirestore = "25.1.4"
+navigationRuntimeAndroid = "2.9.0"
+firebaseStorage = "21.0.2"
 
 
 [libraries]
@@ -34,6 +36,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

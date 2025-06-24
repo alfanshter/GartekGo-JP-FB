@@ -70,6 +70,8 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.6.0")
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.firebase.storage)
 
 
     testImplementation(libs.junit)

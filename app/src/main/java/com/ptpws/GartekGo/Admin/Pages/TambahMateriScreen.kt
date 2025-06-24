@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +35,9 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,28 +45,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.ptpws.GartekGo.Admin.Dialog.NamaTopikDialog
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
+import com.ptpws.GartekGo.Admin.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahMateriScreen(navController: NavController,  outerPadding: PaddingValues = PaddingValues()) {
+fun TambahMateriScreen(
+    navController: NavController,
+    outerPadding: PaddingValues = PaddingValues()
+) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Semester 1", "Semester 2")
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(color = Color(0xffF5F9FF))) {
         Scaffold(
             //topbar start
             topBar = {
@@ -79,10 +94,17 @@ fun TambahMateriScreen(navController: NavController,  outerPadding: PaddingValue
                         },
                         navigationIcon = {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.back),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
 
                             }
-                        }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color(0xffF5F9FF)
+                        )
                     )
 
                 }
@@ -96,7 +118,8 @@ fun TambahMateriScreen(navController: NavController,  outerPadding: PaddingValue
             Column(
                 modifier = Modifier
                     .padding(combinedPadding)
-                    .fillMaxSize().background(color = Color(0xffF5F9FF))
+                    .fillMaxSize()
+                    .background(color = Color(0xffF5F9FF))
             ) {
                 // Tab Row
                 // TAB ROW DILETAKKAN DI SINI, DI BAWAH TOPBAR
@@ -142,10 +165,14 @@ fun TambahMateriScreen(navController: NavController,  outerPadding: PaddingValue
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
+                    val semester = if (page == 0) "1" else "2" // ← sesuai tab
+
                     MateriListContent(
                         onTambahClick = {
 
-                        }
+                        },
+                        semester = if (page == 0) "1" else "2"
+
                     )
                 }
 
@@ -165,9 +192,32 @@ private fun TambahMateriScreenPreview() {
 
 @Composable
 fun MateriListContent(
-    onTambahClick: () -> Unit
+    onTambahClick: () -> Unit,
+    semester : String
 ) {
     var showDialogmateri by remember { mutableStateOf(false) }
+    val topikList = remember { mutableStateListOf<TopikModel>() }
+    val context = LocalContext.current
+
+    LaunchedEffect(semester) {
+        val db = Firebase.firestore
+        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        db.collection("topik").whereEqualTo("semester", semesterLabel)
+            .get()
+            .addOnSuccessListener { result ->
+                for (doc in result.documents) {
+                    val topik = doc.toObject(TopikModel::class.java)?.copy(id = doc.id)
+                    if (topik != null) topikList.add(topik)
+
+                }
+            }.addOnFailureListener {
+                Toast.makeText(
+                    context,
+                    "gagal ambil data: ${it.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -177,48 +227,55 @@ fun MateriListContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
     ) {
-        item {
-            repeat(3) {
+        items(topikList){data ->
+
+            val tanggalUpload = data.uploadedMateriAt?.toDate()?.let {
+                SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(it)
+            } ?: "Tanggal tidak tersedia"
+
+            if (data.nama_materi!=null){
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(96.dp)
+                        .height(130.dp)
                         .padding(vertical = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
                     shape = RoundedCornerShape(23.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
-                        Text(
-                            text = "Nama Materi",
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = poppinsfamily,
-                            fontSize = 24.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // Bagian atas: nama topik
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 22.dp, top = 12.dp)
+                        ) {
                             Text(
-                                text = "Nama Topik  ",
-                                fontSize = 12.sp,
+                                text = data.nama,
+                                fontWeight = FontWeight.Bold,
                                 fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
-                            )
-
-
-                            Text(
-                                text = "Dibuat 16/08/2025",
                                 fontSize = 12.sp,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
+                                color = Color.Black,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
                             )
-
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
+
+                        // Bagian bawah kiri: tanggal upload
+                        Text(
+                            text = "dibuat ${tanggalUpload}",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
                     }
                 }
             }
+
         }
 
         // Tombol Tambah Topik
@@ -227,13 +284,14 @@ fun MateriListContent(
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().clickable{showDialogmateri = true}
+                    .fillMaxWidth()
+                    .clickable { showDialogmateri = true }
                     .height(96.dp),
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
 
-            ) {
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -255,11 +313,11 @@ fun MateriListContent(
                         fontSize = 12.sp
                     )
                 }
-                if (showDialogmateri== true) {
-                    TambahMateriDialog(onDismis =  {
-                        showDialogmateri= false
+                if (showDialogmateri == true) {
+                    TambahMateriDialog(onDismis = {
+                        showDialogmateri = false
 
-                    })
+                    }, semester = semester, topikList )
                 }
             }
 
