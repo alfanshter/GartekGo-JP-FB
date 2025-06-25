@@ -75,8 +75,6 @@ fun SplashScreen() {
             context.startActivity(intent)
         }
 
-        // Tutup SplashActivity agar tidak bisa kembali dengan tombol back
-        (context as? Activity)?.finish()
     }
 
     Box(modifier = Modifier

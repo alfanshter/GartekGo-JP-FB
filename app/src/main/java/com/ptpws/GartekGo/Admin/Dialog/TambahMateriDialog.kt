@@ -76,13 +76,15 @@ import com.ptpws.GartekGo.R
 fun TambahMateriDialog(
     onDismis: () -> Unit,
     semester: String,
-    topikList: SnapshotStateList<TopikModel>
+    topikList: SnapshotStateList<TopikModel>,
+    onSave: (TopikModel) -> Unit
 ) {
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) } // 0f sampai 100f
 
     var materiText by remember { mutableStateOf("") }
     var selectedTopik by remember { mutableStateOf("") }
+    var selectedNameTopik by remember { mutableStateOf("") }
     var selectedIdTopik by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var context = LocalContext.current
@@ -245,7 +247,7 @@ fun TambahMateriDialog(
                         ) {
                             topikList.forEach { topik ->
                                 val sudahAdaMateri = !topik.nama_materi.isNullOrBlank()
-                                Log.d("dinda","${topik}")
+                                Log.d("dinda", "${topik}")
                                 DropdownMenuItem(
                                     text = {
                                         Text(
@@ -261,7 +263,7 @@ fun TambahMateriDialog(
                                             selectedTopik = topik.nama
                                             selectedIdTopik = topik.id
                                             expanded = false
-                                        }else{
+                                        } else {
                                             Toast.makeText(
                                                 context,
                                                 "Topik sudah ada materi",
@@ -309,7 +311,17 @@ fun TambahMateriDialog(
                                                 idTopik = selectedIdTopik, // atau input dari UI
                                                 fileUrl = url,
                                                 onSuccess = {
+                                                    //bikin feedback
+                                                    val newTopik = TopikModel(
+                                                        id = selectedIdTopik,
+                                                        nama = selectedTopik,
+                                                        semester = semester,
+                                                        nama_materi = materiText,
+                                                        file_materi = url
+                                                    )
+
                                                     isUploading = false
+                                                    onSave(newTopik)
                                                     Toast.makeText(
                                                         context,
                                                         "Upload dan simpan ke Firestore berhasil!",
@@ -324,7 +336,8 @@ fun TambahMateriDialog(
                                                         "Gagal simpan Firestore: ${it.message}",
                                                         Toast.LENGTH_SHORT
                                                     ).show()
-                                                }
+                                                },
+                                                namaTopik = selectedTopik
                                             )
                                         },
                                         onFailure = {
@@ -455,12 +468,14 @@ fun savePdfMetadataToFirestore(
     idTopik: String,
     fileUrl: String,
     onSuccess: () -> Unit,
-    onFailure: (Exception) -> Unit
+    onFailure: (Exception) -> Unit,
+    namaTopik : String
 ) {
     val firestore = FirebaseFirestore.getInstance()
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
     val data = hashMapOf(
+        "nama" to namaTopik,
         "nama_materi" to nama,
         "file_materi" to fileUrl,
         "uploadedMateriBy" to userId,
@@ -468,7 +483,8 @@ fun savePdfMetadataToFirestore(
     )
 
     firestore.collection("topik").document(idTopik).update(data)
-        .addOnSuccessListener { onSuccess() }
+        .addOnSuccessListener {
+            onSuccess() }
         .addOnFailureListener { onFailure(it) }
 }
 
@@ -479,6 +495,8 @@ private fun TambahMateriDialogPreview() {
     TambahMateriDialog(
         onDismis = { /*TODO*/ },
         semester = "1",
-        topikList = remember { mutableStateListOf() })
+        topikList = remember { mutableStateListOf() },
+        onSave = {}
+    )
 
 }

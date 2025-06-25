@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,9 +74,11 @@ fun TambahMateriScreen(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(color = Color(0xffF5F9FF))) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))
+    ) {
         Scaffold(
             //topbar start
             topBar = {
@@ -193,11 +194,13 @@ private fun TambahMateriScreenPreview() {
 @Composable
 fun MateriListContent(
     onTambahClick: () -> Unit,
-    semester : String
+    semester: String
 ) {
     var showDialogmateri by remember { mutableStateOf(false) }
     val topikList = remember { mutableStateListOf<TopikModel>() }
     val context = LocalContext.current
+    var idTopik by remember { mutableStateOf("") }
+
 
     LaunchedEffect(semester) {
         val db = Firebase.firestore
@@ -227,18 +230,22 @@ fun MateriListContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
     ) {
-        items(topikList){data ->
+        items(topikList) { data ->
 
             val tanggalUpload = data.uploadedMateriAt?.toDate()?.let {
                 SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(it)
             } ?: "Tanggal tidak tersedia"
 
-            if (data.nama_materi!=null){
+            if (data.nama_materi != null) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(130.dp)
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 6.dp)
+                        .clickable {
+                            showDialogmateri = true
+                            idTopik = data.id
+                        },
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
                     shape = RoundedCornerShape(23.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -285,7 +292,10 @@ fun MateriListContent(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDialogmateri = true }
+                    .clickable {
+                        showDialogmateri = true
+
+                    }
                     .height(96.dp),
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
@@ -314,10 +324,33 @@ fun MateriListContent(
                     )
                 }
                 if (showDialogmateri == true) {
-                    TambahMateriDialog(onDismis = {
-                        showDialogmateri = false
+                    TambahMateriDialog(
+                        onDismis = {
+                            showDialogmateri = false
 
-                    }, semester = semester, topikList )
+                        }, semester = semester,
+                        topikList,
+                        onSave = { topik ->
+                            if (idTopik != "") {
+                                // Jika sedang update berdasarkan ID
+                                val index = topikList.indexOfFirst { it.id == topik.id }
+                                if (index != -1) {
+                                    topikList[index] = topik.copy(nama = topik.nama, semester = topik.semester)
+                                }
+                            } else {
+                                // Jika sedang menambah data baru → cek dulu berdasarkan nama
+                                val existingIndex = topikList.indexOfFirst { it.nama.equals(topik.nama, ignoreCase = true) }
+                                if (existingIndex != -1) {
+                                    // Jika sudah ada nama yang sama, update datanya
+                                    topikList[existingIndex] = topik.copy(nama = topik.nama, semester = topik.semester)
+                                } else {
+                                    // Nama belum ada, tambah ke list
+                                    topikList.add(topik)
+                                }
+                            }
+                        }
+
+                    )
                 }
             }
 
