@@ -1,6 +1,7 @@
 package com.ptpws.GartekGo.Admin
 
 import HomeScreen
+import ListNilaiScreen
 import MyBottomAppBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
+import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
 import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
 import com.ptpws.GartekGo.Admin.Pages.PenilaianSiswa
 import com.ptpws.GartekGo.Admin.Pages.TambahMateriScreen
@@ -38,7 +40,7 @@ fun MainAdminScreen() {
             modifier = Modifier.padding(innerPadding).fillMaxSize().background(color = Color(0xffF5F9FF))
         ) {
             composable("beranda") { HomeAdmin(navController) }
-            composable("nilai") { ProjectScreen(navController) }
+            composable("nilai") { ListNilaiScreen(navController) }
             composable("profil") { ProfileScreen(navController) }
             composable(AppScreen.Home.Admin.TambahTopik.route) { TambahTopikScreen(navController) }
             composable(AppScreen.Home.Admin.TambahPembelajaran.route) { TambahPembelajaranScreen(navController) }
