@@ -70,6 +70,14 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.6.0")
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    // library upload file pdf
+    implementation ("androidx.activity:activity-ktx:1.8.0")
+    //yt
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+
+
 
 
     testImplementation(libs.junit)

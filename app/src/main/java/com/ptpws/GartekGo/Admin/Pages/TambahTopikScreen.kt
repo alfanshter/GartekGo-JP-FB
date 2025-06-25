@@ -325,7 +325,8 @@ fun TopikListContent(semester: String) {
                 namaTopik = ""
                 idTopik = ""
 
-            })
+            }
+        )
     }
 
 }
