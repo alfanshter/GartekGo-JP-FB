@@ -11,9 +11,12 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
                 object Vidio : AppScreen(R.string.semester, R.drawable.piala, "vidio")
                 object Soal: AppScreen(R.string.semester, R.drawable.piala, "soal")
                 object Upload: AppScreen(R.string.semester, R.drawable.piala, "soal")
+                //bottombar
+                object Beranda: AppScreen(R.string.semester, R.drawable.piala, "soal")
 
 
             }
+
 
 
         }
@@ -27,6 +30,7 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
             object TambahSiswa : AppScreen(R.string.admin,R.drawable.siswa,"tambahsiswa")
             object TambahSoalProject : AppScreen(R.string.admin,R.drawable.siswa,"tambahsoalproject")
             object Penilaian : AppScreen(R.string.admin,R.drawable.siswa,"penilaian")
+            object NilaiSiswa : AppScreen(R.string.admin,R.drawable.siswa,"nilaisiswa")
 
 
         }

@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Semester
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
@@ -65,17 +69,22 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SemesterScreen(navController: NavController,onTambahClick: () -> Unit,pilihan: Int) {
+fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pilihan: Int) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Pembelajaran", "Project")
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
 
     when (pilihan) {
         1 -> {
-            SemesterListContent(navController = navController, onTambahClick = onTambahClick,pilihan)
+            SemesterListContent(
+                navController = navController,
+                onTambahClick = onTambahClick,
+                pilihan
+            )
         }
-        2-> {
+
+        2 -> {
             ProjectScreen(navController)
         }
 
@@ -83,10 +92,13 @@ fun SemesterScreen(navController: NavController,onTambahClick: () -> Unit,piliha
     }
 
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(color = Color(0xffF5F9FF))) {
-        Scaffold( modifier = Modifier, containerColor = Color(0xffF5F9FF),
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))
+    ) {
+        Scaffold(
+            modifier = Modifier, containerColor = Color(0xffF5F9FF),
             //topbar start
             topBar = {
                 Column {
@@ -102,20 +114,29 @@ fun SemesterScreen(navController: NavController,onTambahClick: () -> Unit,piliha
                         },
                         navigationIcon = {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.back),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
 
                             }
-                        }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color(0xffF5F9FF)
+                        )
                     )
 
                 }
             }
             //topbar end
         ) { innerPadding ->
-            Column(modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(Color(0xffF5F9FF))) {
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .background(Color(0xffF5F9FF))
+            ) {
                 // TAB ROW DILETAKKAN DI SINI, DI BAWAH TOPBAR
                 TabRow(
                     selectedTabIndex = pagerState.currentPage,
@@ -181,12 +202,13 @@ private fun SemesterScreenPreview() {
 }
 
 @Composable
-fun SemesterListContent(navController: NavController,onTambahClick: () -> Unit,pilihan: Int) {
+fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit, pilihan: Int) {
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 34.dp).background(color = Color(0xffF5F9FF)),
+            .padding(start = 34.dp)
+            .background(color = Color(0xffF5F9FF)),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp)
     ) {
@@ -197,7 +219,8 @@ fun SemesterListContent(navController: NavController,onTambahClick: () -> Unit,p
                 modifier = Modifier
                     .padding(end = 34.dp)
                     .fillMaxWidth()
-                    .height(129.dp).clickable{ navController.navigate(AppScreen.Home.Semester.Topik.route) }, // <== Tinggi diganti
+                    .height(129.dp)
+                    .clickable { navController.navigate(AppScreen.Home.Semester.Topik.route) }, // <== Tinggi diganti
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFC2D8FF)
@@ -308,7 +331,7 @@ fun SemesterListContent(navController: NavController,onTambahClick: () -> Unit,p
                     .height(129.dp), // <== Tinggi diganti
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xffD2D2D2)
+                    containerColor =Color(0xffD2D2D2)
                 )
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -625,5 +648,5 @@ fun SemesterListContent(navController: NavController,onTambahClick: () -> Unit,p
         }
 
     }
-    
+
 }

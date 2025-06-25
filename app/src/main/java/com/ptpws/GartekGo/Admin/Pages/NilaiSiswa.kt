@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -49,7 +50,7 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun NilaiSiswa(navController: NavController) {
+fun NilaiSiswa(navController: NavController,outerPadding: PaddingValues = PaddingValues()) {
     val chipLabelsnilaisiswa =
         listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) } // index chip yang aktif
@@ -84,11 +85,15 @@ fun NilaiSiswa(navController: NavController) {
 
                 }
             }) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
             ) {
                 Card(
                     shape = RoundedCornerShape(22.dp),
@@ -235,7 +240,9 @@ fun NilaiSiswa(navController: NavController) {
                     }
                 }
                 FlowRow(
-                    modifier = Modifier.padding(16.dp).background(color = Color(0xffF5F9FF)),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .background(color = Color(0xffF5F9FF)),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -262,250 +269,7 @@ fun NilaiSiswa(navController: NavController) {
                         }
                     }
                 }
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item {
-                        Card(
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Topik :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Nama Topik",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Soal :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = " 86",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Project:",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-
-                                    Text(
-                                        text = " 89",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-
-                            }
-                        }
-                        Spacer(Modifier.height(7.dp))
-                        Card(
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Topik :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Nama Topik",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Soal :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = " 86",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Project:",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-
-                                    Text(
-                                        text = " 89",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-
-                            }
-                        }
-                        Spacer(Modifier.height(7.dp))
-                        Card(
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Topik :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Nama Topik",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Soal :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = " 86",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Project:",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-
-                                    Text(
-                                        text = " 89",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-
-                            }
-                        }
-                        Spacer(Modifier.height(7.dp))
-                        Card(
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Topik :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Nama Topik",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Soal :",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = " 86",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-                                Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                                    Text(
-                                        text = "Project:",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-
-                                    Text(
-                                        text = " 89",
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 14.sp, color = Color.Black
-                                    )
-                                }
-
-                            }
-                        }
-
-                    }
-                }
+                NilaiSiswaComponent()
 
             }
         }
@@ -520,3 +284,254 @@ private fun NilaiSiwaPreview() {
     NilaiSiswa(navController = rememberNavController())
 
 }
+
+@Composable
+fun NilaiSiswaComponent() {
+
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Nama Topik",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = " 86",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Project:",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = " 89",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+
+                }
+            }
+            Spacer(Modifier.height(7.dp))
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Nama Topik",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = " 86",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Project:",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = " 89",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+
+                }
+            }
+            Spacer(Modifier.height(7.dp))
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Nama Topik",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = " 86",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Project:",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = " 89",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+
+                }
+            }
+            Spacer(Modifier.height(7.dp))
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Nama Topik",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = " 86",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Project:",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = " 89",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+
+                }
+            }
+
+        }
+    }
+
+}
+

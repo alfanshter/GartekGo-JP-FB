@@ -51,6 +51,8 @@ fun MainAdminScreen() {
             composable(AppScreen.Home.Admin.TambahSiswa.route) { PenilaianSiswa(navController) }
             composable(AppScreen.Home.Admin.TambahSoalProject.route) { TambahProjectScreen(navController) }
             composable(AppScreen.Home.Admin.Penilaian.route) { PenilaianScreen(navController) }
+            composable(AppScreen.Home.Admin.NilaiSiswa.route) { NilaiSiswa(navController) }
+
 
         }
 

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
@@ -112,7 +113,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                     }
                 }
             }
-            ListNilaiComponent()
+            ListNilaiComponent(navController)
 
 
         }
@@ -128,7 +129,7 @@ private fun ListNilaiScreenPreview() {
 }
 
 @Composable
-fun ListNilaiComponent() {
+fun ListNilaiComponent(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -140,7 +141,7 @@ fun ListNilaiComponent() {
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth().clickable{ navController.navigate(AppScreen.Home.Admin.NilaiSiswa.route) }
                     .padding(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
