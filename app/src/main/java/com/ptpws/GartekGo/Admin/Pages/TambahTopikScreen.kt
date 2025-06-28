@@ -1,6 +1,5 @@
 package com.ptpws.GartekGo.Admin.Pages
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,11 +56,10 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.Dialog.NamaTopikDialog
+import com.ptpws.GartekGo.Admin.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.items
-import com.ptpws.GartekGo.Admin.model.TopikModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,20 +187,23 @@ fun TopikListContent(semester: String) {
     var topicText by remember { mutableStateOf("") }
     val context = LocalContext.current
     val topikList = remember { mutableStateListOf<TopikModel>() }
+    var nomor by remember { mutableStateOf(0) }
     var namaTopik by remember { mutableStateOf("") }
     // LazyColumn berisi semua konten termasuk tombol
     LaunchedEffect(semester) {
         val db = Firebase.firestore
         val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
-        db.collection("topik").whereEqualTo("semester", semesterLabel)
+        db.collection("topik")
+            .whereEqualTo("semester", semesterLabel)
+            .orderBy("nomor")
             .get()
             .addOnSuccessListener { result ->
                 topikList.clear()
                 for (doc in result.documents) {
-                    val nama = doc.getString("nama").toString()
-                    val semester = doc.getString("semester").toString()
-                    val id = doc.id.toString()
-                    topikList.add(TopikModel(id, nama, semester))
+                    val topik = doc.toObject(TopikModel::class.java)
+                    if (topik != null) {
+                        topikList.add(topik.copy(id = doc.id)) // inject id dokumen
+                    }
                 }
             }.addOnFailureListener {
                 Toast.makeText(
@@ -229,7 +231,8 @@ fun TopikListContent(semester: String) {
                     .clickable {
                         showDialogtopik = true
                         idTopik = data.id
-                        namaTopik = data.nama // ← tambahkan ini
+                        namaTopik = data.nama!! // ← tambahkan ini
+                        nomor = data.nomor!!
                     }
                     .padding(vertical = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
@@ -237,7 +240,7 @@ fun TopikListContent(semester: String) {
             ) {
                 Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
                     Text(
-                        text = data.nama,
+                        text = "Topik ${data.nomor} - ${data.nama!!}",
                         fontWeight = FontWeight.Bold,
                         fontFamily = poppinsfamily,
                         fontSize = 12.sp,
@@ -267,7 +270,11 @@ fun TopikListContent(semester: String) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(96.dp)
-                    .clickable { showDialogtopik = true },
+                    .clickable {
+                        idTopik = ""
+                        namaTopik = ""
+                        nomor = 0
+                        showDialogtopik = true },
                 border = BorderStroke(2.dp, Color(0xFF2F80ED)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -309,7 +316,7 @@ fun TopikListContent(semester: String) {
                 if (idTopik != "") {
                     val index = topikList.indexOfFirst { it.id == topik.id }
                     if (index != -1) {
-                        topikList[index] = topik.copy(nama = topik.nama, semester = topik.semester)
+                        topikList[index] = topik.copy(nama = topik.nama, semester = topik.semester, nomor = topik.nomor)
                     }
                 } else {
                     topikList.add(topik) // <-- Tambah ke list utama
@@ -318,6 +325,7 @@ fun TopikListContent(semester: String) {
             },
             semester = semester,
             idTopik = idTopik,
+            nomor = nomor,
             updateNama = namaTopik,
             onDelete = { deleteId ->
                 topikList.removeIf { it.id == deleteId }
@@ -325,7 +333,7 @@ fun TopikListContent(semester: String) {
                 namaTopik = ""
                 idTopik = ""
 
-            })
+            }, topikList = topikList)
     }
 
 }

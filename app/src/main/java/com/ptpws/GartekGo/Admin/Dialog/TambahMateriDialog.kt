@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -77,15 +76,18 @@ fun TambahMateriDialog(
     onDismis: () -> Unit,
     semester: String,
     topikList: SnapshotStateList<TopikModel>,
-    onSave: (TopikModel) -> Unit
+    onSave: (TopikModel) -> Unit,
+    topikModel: TopikModel? = null,
+    isUpdate: Boolean,
+    idLama: String
 ) {
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) } // 0f sampai 100f
 
-    var materiText by remember { mutableStateOf("") }
-    var selectedTopik by remember { mutableStateOf("") }
+
+    var selectedTopik by remember { mutableStateOf(topikModel?.nama ?: "") }
     var selectedNameTopik by remember { mutableStateOf("") }
-    var selectedIdTopik by remember { mutableStateOf("") }
+    var selectedIdTopik by remember { mutableStateOf(topikModel?.id ?: "") }
     var expanded by remember { mutableStateOf(false) }
     var context = LocalContext.current
 
@@ -129,33 +131,8 @@ fun TambahMateriDialog(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     // Nama Materi
-                    TextField(
-                        value = materiText,
-                        onValueChange = { materiText = it },
-                        placeholder = {
-                            Text(
-                                "Nama Materi",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp
-                            )
-                        },
-                        textStyle = TextStyle(
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp,
-                            color = Color.Black
-                        ),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
+
+
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -179,11 +156,20 @@ fun TambahMateriDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
 
-                            Text(
-                                if (selectedPdfUri != null) getFileNameFromUri(
+                            val fileNameToShow = when {
+                                selectedPdfUri != null -> getFileNameFromUri(
                                     context,
                                     selectedPdfUri!!
-                                ) else "Belum ada PDF", modifier = Modifier.weight(1f)
+                                )
+
+                                topikModel?.file_materi != null -> topikModel.nama_file
+                                    ?: "Belum ada PDF"
+
+                                else -> "Belum ada PDF"
+                            }
+
+                            Text(
+                                fileNameToShow, modifier = Modifier.weight(1f)
                             )
                             IconButton(onClick = {}) {
                                 Icon(Icons.Default.Delete, contentDescription = null)
@@ -192,90 +178,91 @@ fun TambahMateriDialog(
 
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Pilih Topik
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        TextField(
-                            value = selectedTopik,
-                            onValueChange = {},
-                            readOnly = true,
-                            placeholder = {
-                                Text(
-                                    "Pilih Topik",
-                                    fontFamily = poppinsfamily,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp
-                                )
-                            },
-                            textStyle = TextStyle(
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            ),
-                            trailingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.tambahdrop), // panah kiri
-                                    contentDescription = null, tint = Color.Unspecified,
-                                    modifier = Modifier
-                                        .rotate(if (expanded) 90f else 0f) // rotasi ke bawah saat expanded
-                                )
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            )
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .background(Color.White)
-                                .fillMaxWidth()
-                        ) {
-                            topikList.forEach { topik ->
-                                val sudahAdaMateri = !topik.nama_materi.isNullOrBlank()
-                                Log.d("dinda", "${topik}")
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            if (sudahAdaMateri) "${topik.nama} - Sudah ada Materi" else topik.nama,
-                                            fontFamily = poppinsfamily,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 16.sp,
-                                            color = Color.Black
-                                        )
-                                    },
-                                    onClick = {
-                                        if (!sudahAdaMateri) {
-                                            selectedTopik = topik.nama
-                                            selectedIdTopik = topik.id
-                                            expanded = false
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Topik sudah ada materi",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        }
-                    }
+//                    Spacer(modifier = Modifier.height(12.dp))
+//
+//                    // Pilih Topik
+//                    ExposedDropdownMenuBox(
+//                        expanded = expanded,
+//                        onExpandedChange = { expanded = !expanded },
+//                        modifier = Modifier.fillMaxWidth()
+//                    ) {
+//
+//                        TextField(
+//                            value = selectedTopik,
+//                            onValueChange = {},
+//                            readOnly = true,
+//                            placeholder = {
+//                                Text(
+//                                    if (!topikModel!!.nama.isNullOrBlank()) topikModel.nama!! else "Pilih Topik",
+//                                    fontFamily = poppinsfamily,
+//                                    fontWeight = FontWeight.Medium,
+//                                    fontSize = 16.sp
+//                                )
+//                            },
+//                            textStyle = TextStyle(
+//                                fontFamily = poppinsfamily,
+//                                fontWeight = FontWeight.Medium,
+//                                fontSize = 16.sp,
+//                                color = Color.Black
+//                            ),
+//                            trailingIcon = {
+//                                Icon(
+//                                    painter = painterResource(id = R.drawable.tambahdrop), // panah kiri
+//                                    contentDescription = null, tint = Color.Unspecified,
+//                                    modifier = Modifier
+//                                        .rotate(if (expanded) 90f else 0f) // rotasi ke bawah saat expanded
+//                                )
+//                            },
+//                            shape = RoundedCornerShape(12.dp),
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .menuAnchor(),
+//                            colors = TextFieldDefaults.colors(
+//                                focusedContainerColor = Color.White,
+//                                unfocusedContainerColor = Color.White,
+//                                focusedIndicatorColor = Color.Transparent,
+//                                unfocusedIndicatorColor = Color.Transparent
+//                            )
+//                        )
+//
+//                        ExposedDropdownMenu(
+//                            expanded = expanded,
+//                            onDismissRequest = { expanded = false },
+//                            modifier = Modifier
+//                                .background(Color.White)
+//                                .fillMaxWidth()
+//                        ) {
+//                            topikList.forEach { topik ->
+//                                val sudahAdaMateri = !topik.file_materi.isNullOrBlank()
+//                                DropdownMenuItem(
+//                                    text = {
+//                                        Text(
+//                                            (if (sudahAdaMateri) "${topik.nama} - Sudah ada Materi" else topik.nama)!!,
+//                                            fontFamily = poppinsfamily,
+//                                            fontWeight = FontWeight.Medium,
+//                                            fontSize = 16.sp,
+//                                            color = Color.Black
+//                                        )
+//                                    },
+//                                    onClick = {
+//                                        // Izinkan memilih kalau belum ada materi, atau jika itu adalah topik yang sedang di-edit
+//                                        if (!sudahAdaMateri || topik.id == selectedIdTopik) {
+//                                            selectedTopik = topik.nama!!
+//                                            selectedIdTopik = topik.id
+//                                            expanded = false
+//                                        } else {
+//                                            Toast.makeText(
+//                                                context,
+//                                                "Topik sudah ada materi",
+//                                                Toast.LENGTH_SHORT
+//                                            ).show()
+//                                        }
+//                                    },
+//                                    modifier = Modifier.fillMaxWidth()
+//                                )
+//                            }
+//                        }
+//                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -284,40 +271,132 @@ fun TambahMateriDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Button(
-                            onClick = { onDismis() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.width(120.dp)
-                        ) {
-                            Text(
-                                "HAPUS", fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 18.sp, color = Color.White
-                            )
-                        }
 
                         Button(
                             onClick = {
-                                selectedPdfUri?.let { uri ->
-                                    isUploading = true
-                                    uploadPdfToFirebase(
-                                        context = context,
-                                        uri = uri,
-                                        onSuccess = { url ->
+                                //tambah data
+                                if (topikModel == null) {
+                                    // === ADD ===
+                                    if (selectedPdfUri == null) {
+                                        Toast.makeText(
+                                            context,
+                                            "Silahkan tambahkan file PDF",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        // Upload PDF baru
+                                        isUploading = true
+                                        uploadPdfToFirebase(
+                                            context = context,
+                                            uri = selectedPdfUri!!,
+                                            onSuccess = { url ->
+                                                savePdfMetadataToFirestore(
+                                                    idTopik = selectedIdTopik, // atau input dari UI
+                                                    fileUrl = url,
+                                                    namaFile = getFileNameFromUri(
+                                                        context,
+                                                        selectedPdfUri!!
+                                                    ),
+                                                    onSuccess = {
+                                                        //bikin feedback
+                                                        val newTopik = TopikModel(
+                                                            id = selectedIdTopik,
+                                                            nama = selectedTopik,
+                                                            semester = semester,
+                                                            file_materi = url,
+                                                            nama_file = getFileNameFromUri(
+                                                                context,
+                                                                selectedPdfUri!!
+                                                            )
+                                                        )
+
+                                                        isUploading = false
+                                                        onSave(newTopik)
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Upload dan simpan ke Firestore berhasil!",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        onDismis()
+                                                    },
+                                                    onFailure = {
+                                                        isUploading = false
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Gagal simpan Firestore: ${it.message}",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    },
+                                                    namaTopik = selectedTopik
+                                                )
+                                            },
+                                            onFailure = {
+                                                isUploading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Upload gagal: ${it.message}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
+                                            onProgress = { percent ->
+                                                uploadProgress = percent
+                                            }
+                                        )
+                                    }
+
+                                }
+                                //edit data
+                                else {
+                                    // === EDIT ===
+                                    if (selectedPdfUri == null) {
+                                        // Tidak pilih file baru, pakai file lama
+                                        savePdfMetadataToFirestore(
+                                            idTopik = selectedIdTopik, // atau input dari UI
+                                            fileUrl = topikModel.file_materi!!,
+                                            namaFile = topikModel.nama_file!!,
+                                            onSuccess = {
+                                                val updatedTopik = topikModel.copy(file_materi = topikModel.file_materi,)
+                                                isUploading = false
+                                                onSave(updatedTopik)
+                                                Toast.makeText(
+                                                    context,
+                                                    "Upload dan simpan ke Firestore berhasil!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                onDismis()
+                                            },
+                                            onFailure = {
+                                                isUploading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Gagal simpan Firestore: ${it.message}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
+                                            namaTopik = selectedTopik
+                                        )
+
+                                    }
+                                    else {
+                                        val selectedFileName =
+                                            getFileNameFromUri(context, selectedPdfUri!!)
+                                        if (selectedFileName == topikModel.nama_file) {
+                                            // Nama file sama, tidak perlu upload ulang PDF
                                             savePdfMetadataToFirestore(
-                                                nama = materiText,
-                                                topik = selectedTopik, // atau input dari UI
                                                 idTopik = selectedIdTopik, // atau input dari UI
-                                                fileUrl = url,
+                                                fileUrl = null,
+                                                namaFile = selectedFileName,
                                                 onSuccess = {
                                                     //bikin feedback
                                                     val newTopik = TopikModel(
                                                         id = selectedIdTopik,
                                                         nama = selectedTopik,
                                                         semester = semester,
-                                                        nama_materi = materiText,
-                                                        file_materi = url
+                                                        file_materi = topikModel.file_materi,
+                                                        nama_file = getFileNameFromUri(
+                                                            context,
+                                                            selectedPdfUri!!
+                                                        )
                                                     )
 
                                                     isUploading = false
@@ -337,30 +416,75 @@ fun TambahMateriDialog(
                                                         Toast.LENGTH_SHORT
                                                     ).show()
                                                 },
-                                                namaTopik = selectedTopik
+                                                namaTopik = selectedTopik)
+
+                                            val updatedTopik = topikModel.copy(
+                                                nama = selectedTopik,
+                                                semester = semester
                                             )
-                                        },
-                                        onFailure = {
-                                            isUploading = false
-                                            Toast.makeText(
-                                                context,
-                                                "Upload gagal: ${it.message}",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }, onProgress = { percent ->
-                                            uploadProgress = percent
+                                            onSave(updatedTopik)
+                                            onDismis()
+                                        } else {
+                                            // Nama file beda → upload PDF baru
+                                            uploadPdfToFirebase(
+                                                context = context,
+                                                uri = selectedPdfUri!!,
+                                                onSuccess = { url ->
+                                                    savePdfMetadataToFirestore(
+                                                        idTopik = selectedIdTopik, // atau input dari UI
+                                                        fileUrl = url,
+                                                        namaFile = getFileNameFromUri(
+                                                            context = context,
+                                                            selectedPdfUri!!
+                                                        ),
+                                                        onSuccess = {
+                                                            //bikin feedback
+                                                            val newTopik = TopikModel(
+                                                                id = selectedIdTopik,
+                                                                nama = selectedTopik,
+                                                                semester = semester,
+                                                                file_materi = url,
+                                                                nama_file = getFileNameFromUri(
+                                                                    context,
+                                                                    selectedPdfUri!!
+                                                                )
+                                                            )
+
+                                                            isUploading = false
+                                                            onSave(newTopik)
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Upload dan simpan ke Firestore berhasil!",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            onDismis()
+                                                        },
+                                                        onFailure = {
+                                                            isUploading = false
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Gagal simpan Firestore: ${it.message}",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        },
+                                                        namaTopik = selectedTopik
+                                                    )
+                                                },
+                                                onFailure = {
+                                                    isUploading = false
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Upload gagal: ${it.message}",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }, onProgress = { percent ->
+                                                    uploadProgress = percent
+                                                }
+                                            )
                                         }
-                                    )
+                                    }
                                 }
 
-                                if (selectedPdfUri == null) {
-                                    Toast.makeText(
-                                        context,
-                                        "Silahkan tambahkan file pdf",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                }
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(
@@ -463,28 +587,29 @@ fun uploadPdfToFirebase(
 }
 
 fun savePdfMetadataToFirestore(
-    nama: String,
-    topik: String,
     idTopik: String,
-    fileUrl: String,
+    fileUrl: String?,
     onSuccess: () -> Unit,
     onFailure: (Exception) -> Unit,
-    namaTopik : String
+    namaTopik: String,
+    namaFile: String
 ) {
     val firestore = FirebaseFirestore.getInstance()
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
+
     val data = hashMapOf(
         "nama" to namaTopik,
-        "nama_materi" to nama,
         "file_materi" to fileUrl,
+        "nama_file" to namaFile,
         "uploadedMateriBy" to userId,
         "uploadedMateriAt" to FieldValue.serverTimestamp()
     )
 
     firestore.collection("topik").document(idTopik).update(data)
         .addOnSuccessListener {
-            onSuccess() }
+            onSuccess()
+        }
         .addOnFailureListener { onFailure(it) }
 }
 
@@ -496,7 +621,10 @@ private fun TambahMateriDialogPreview() {
         onDismis = { /*TODO*/ },
         semester = "1",
         topikList = remember { mutableStateListOf() },
-        onSave = {}
+        onSave = { ""},
+        topikModel = TopikModel(),
+        isUpdate = true,
+        idLama = ""
     )
 
 }

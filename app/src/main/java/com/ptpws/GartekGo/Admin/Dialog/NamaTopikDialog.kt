@@ -1,6 +1,7 @@
 package com.ptpws.GartekGo.Admin.Dialog
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
@@ -30,19 +32,20 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -57,11 +60,20 @@ fun NamaTopikDialog(
     onDelete: (String) -> Unit,
     semester: String,
     idTopik: String,
-    updateNama: String
+    updateNama: String,
+    topikList: SnapshotStateList<TopikModel>,
+    nomor: Int
 ) {
 
 
     var topicText by remember { mutableStateOf("") }
+    var nomorBaru by remember { mutableStateOf(nomor.toString()) }
+
+    if (nomor == 0) {
+        nomorBaru = ""
+    }
+
+    var context = LocalContext.current
     // Set initial value hanya sekali saat composable pertama kali ditampilkan
     LaunchedEffect(key1 = idTopik) {
         topicText = updateNama
@@ -79,8 +91,7 @@ fun NamaTopikDialog(
             // Card utama
             Card(
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .height(300.dp),
+                    .fillMaxWidth(0.9f),
                 shape = RoundedCornerShape(40.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF2FF))
             ) {
@@ -123,6 +134,45 @@ fun NamaTopikDialog(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    //Nomor
+                    TextField(
+                        value = nomorBaru!!,
+                        onValueChange = { newText ->
+                            if (newText.all { it.isDigit() }) {
+                                nomorBaru = newText
+                            }
+                        },
+                        placeholder = {
+                            Text(
+                                "Masukan nomor topik",
+                                fontFamily = poppinsfamily,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.Gray
+                            )
+                        },
+                        shape = RoundedCornerShape(24.dp),
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // ✅ FIXED
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            cursorColor = Color.Black
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -159,13 +209,81 @@ fun NamaTopikDialog(
                                 val semesterLabel =
                                     if (semester == "1") "Semester 1" else "Semester 2"
 
+                                //update data
+                                //jika id topik tidak null/kosong
                                 if (idTopik != "") {
+                                    val isUpdate = idTopik.isNotBlank()
+
+                                    val topikSekarang = topikList.find { it.id == idTopik }
+
+                                    val nomorInput = nomorBaru?.toIntOrNull()
+                                    val namaInput = topicText.trim()
+
+                                    val namaBerubah = topikSekarang?.nama?.equals(
+                                        namaInput,
+                                        ignoreCase = true
+                                    ) == false
+                                    val nomorBerubah = topikSekarang?.nomor != nomorInput
+
+
+                                    if (namaBerubah) {
+                                        val namaSudahAda = topikList.any {
+                                            it.nama.equals(
+                                                namaInput,
+                                                ignoreCase = true
+                                            ) && it.id != idTopik
+                                        }
+                                        if (namaSudahAda) {
+                                            Toast.makeText(
+                                                context,
+                                                "Nama topik sudah digunakan oleh topik lain",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
+                                        if (nomorBaru == "0") {
+                                            Toast.makeText(
+                                                context,
+                                                "tidak boleh 0",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+
+                                        }
+                                    }
+
+                                    if (nomorBerubah) {
+                                        val nomorSudahAda = topikList.any {
+                                            it.nomor == nomorInput && it.id != idTopik
+                                        }
+                                        if (nomorSudahAda) {
+                                            Toast.makeText(
+                                                context,
+                                                "Nomor topik sudah digunakan oleh topik lain",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
+                                        if (nomorBaru == "0") {
+                                            Toast.makeText(
+                                                context,
+                                                "tidak boleh 0",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+
+                                        }
+                                    }
+
+
                                     val updateData = db.collection("topik").document(idTopik)
                                     //object untuk kirim ke db
                                     val dataTopik = mapOf(
                                         "nama" to topicText,
-                                        "semester" to semesterLabel
+                                        "semester" to semesterLabel,
+                                        "nomor" to nomorInput!!.toInt()
                                     )
+
 
                                     //update data ke firebase
                                     updateData.update(dataTopik)
@@ -174,7 +292,8 @@ fun NamaTopikDialog(
                                             val newTopik = TopikModel(
                                                 id = idTopik,
                                                 nama = topicText,
-                                                semester = semesterLabel
+                                                semester = semesterLabel,
+                                                nomor = nomorInput!!.toInt()
                                             )
 
                                             onSave(newTopik) // ← kirim model lengkap
@@ -186,13 +305,48 @@ fun NamaTopikDialog(
                                                 "Gagal menambahkan topik: ${it.message}"
                                             )
                                         }
-                                } else {
+                                }
+                                //tambah data
+                                else {
+                                    val nomorSudahAda = topikList.any {
+                                        it.nomor == nomorBaru.toInt()
+                                    }
+
+                                    val namaSudahAda = topikList.any {
+                                        it.nama == topicText
+                                    }
+
+                                    if (nomorSudahAda) {
+                                        Toast.makeText(
+                                            context,
+                                            "Nomor sudah ada",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
+                                    }
+
+                                    if (namaSudahAda) {
+                                        Toast.makeText(
+                                            context,
+                                            "Nama sudah ada",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
+                                    }
+
+                                    if (nomorBaru == "0") {
+                                        Toast.makeText(context, "tidak boleh 0", Toast.LENGTH_SHORT)
+                                            .show()
+                                        return@Button
+
+                                    }
                                     val sendData = db.collection("topik").document()
                                     //object untuk kirim ke db
                                     val dataTopik = hashMapOf(
                                         "nama" to topicText,
                                         "semester" to semesterLabel,
-                                        "id" to sendData.id
+                                        "id" to sendData.id,
+                                        "nomor" to nomorBaru.toInt()
                                     )
 
                                     sendData.set(dataTopik)
@@ -201,7 +355,8 @@ fun NamaTopikDialog(
                                             val newTopik = TopikModel(
                                                 id = sendData.id,
                                                 nama = topicText,
-                                                semester = semesterLabel
+                                                semester = semesterLabel,
+                                                nomor = nomorBaru.toInt()
                                             )
 
                                             onSave(newTopik) // ← kirim model lengkap
@@ -256,6 +411,8 @@ fun NamaTopikDialog(
         }
     }
 }
+
+
 
 
 @Preview(showBackground = true)

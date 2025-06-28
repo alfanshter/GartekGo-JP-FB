@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -200,12 +202,17 @@ fun MateriListContent(
     val topikList = remember { mutableStateListOf<TopikModel>() }
     val context = LocalContext.current
     var idTopik by remember { mutableStateOf("") }
+    var topikModel by remember { mutableStateOf(TopikModel()) }
+    var isUpdate by remember { mutableStateOf(false) }
+    var idLama by remember { mutableStateOf("") }
 
 
     LaunchedEffect(semester) {
         val db = Firebase.firestore
         val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
-        db.collection("topik").whereEqualTo("semester", semesterLabel)
+        db.collection("topik")
+            .whereEqualTo("semester", semesterLabel)
+            .orderBy("nomor")
             .get()
             .addOnSuccessListener { result ->
                 for (doc in result.documents) {
@@ -234,127 +241,103 @@ fun MateriListContent(
 
             val tanggalUpload = data.uploadedMateriAt?.toDate()?.let {
                 SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(it)
-            } ?: "Tanggal tidak tersedia"
+            } ?: "-"
 
-            if (data.nama_materi != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(130.dp)
-                        .padding(vertical = 6.dp)
-                        .clickable {
-                            showDialogmateri = true
-                            idTopik = data.id
-                        },
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
-                    shape = RoundedCornerShape(23.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        // Bagian atas: nama topik
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 22.dp, top = 12.dp)
-                        ) {
-                            Text(
-                                text = data.nama,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = poppinsfamily,
-                                fontSize = 12.sp,
-                                color = Color.Black,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .padding(vertical = 6.dp)
+                    .clickable {
 
+                        showDialogmateri = true
+                        topikModel = data
+                        idTopik = data.id
+                        isUpdate = true
+                        idLama = data.id
+                        Log.d("dinda", idLama)
+
+                    },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
+                shape = RoundedCornerShape(23.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Bagian atas: nama topik
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 22.dp, top = 12.dp)
+                    ) {
+                        Text(
+                            text = "Topik ${data.nomor} - ${data.nama!!}",
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 12.sp,
+                            color = Color.Black,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(end = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         // Bagian bawah kiri: tanggal upload
                         Text(
-                            text = "dibuat ${tanggalUpload}",
+                            text = "${tanggalUpload}",
                             fontSize = 12.sp,
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
                             color = Color.Black,
                             modifier = Modifier
-                                .align(Alignment.BottomStart)
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
+
+                        Text(
+                            text = if (data.file_materi!=null) "Materi ada" else "Materi tidak ada",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
                                 .padding(start = 22.dp, bottom = 12.dp)
                         )
                     }
+
                 }
             }
 
         }
 
-        // Tombol Tambah Topik
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        showDialogmateri = true
-
-                    }
-                    .height(96.dp),
-                border = BorderStroke(2.dp, Color(0xFF2F80ED)),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-
-                ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.tamabahtopik),
-                        contentDescription = "Tambah",
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Tambah Materi",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = poppinsfamily,
-                        fontSize = 12.sp
-                    )
-                }
-                if (showDialogmateri == true) {
-                    TambahMateriDialog(
-                        onDismis = {
-                            showDialogmateri = false
-
-                        }, semester = semester,
-                        topikList,
-                        onSave = { topik ->
-                            if (idTopik != "") {
-                                // Jika sedang update berdasarkan ID
-                                val index = topikList.indexOfFirst { it.id == topik.id }
-                                if (index != -1) {
-                                    topikList[index] = topik.copy(nama = topik.nama, semester = topik.semester)
-                                }
-                            } else {
-                                // Jika sedang menambah data baru → cek dulu berdasarkan nama
-                                val existingIndex = topikList.indexOfFirst { it.nama.equals(topik.nama, ignoreCase = true) }
-                                if (existingIndex != -1) {
-                                    // Jika sudah ada nama yang sama, update datanya
-                                    topikList[existingIndex] = topik.copy(nama = topik.nama, semester = topik.semester)
-                                } else {
-                                    // Nama belum ada, tambah ke list
-                                    topikList.add(topik)
-                                }
-                            }
-                        }
-
-                    )
-                }
-            }
-
-
-        }
     }
+
+
+    if (showDialogmateri == true) {
+        TambahMateriDialog(
+            onDismis = {
+                showDialogmateri = false
+
+            }, semester = semester,
+            topikList,
+            onSave = { topik ->
+                Log.d("dinda", topik.toString())
+
+                if (idTopik.isNotBlank()) {
+                    val index = topikList.indexOfFirst { it.id == topik.id }
+                    if (index != -1) {
+                        val topikLama = topikList[index]
+                        // Hanya update file_materi dan nama_file, field lain tetap
+                        topikList[index] = topikLama.copy(
+                            file_materi = topik.file_materi,
+                            nama_file = topik.nama_file
+                        )
+                    }
+                }
+            },
+            topikModel = topikModel,
+            isUpdate = isUpdate,
+            idLama = idLama
+
+        )
+    }
+
 }
