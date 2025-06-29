@@ -317,7 +317,6 @@ fun MateriListContent(
                 showDialogmateri = false
 
             }, semester = semester,
-            topikList,
             onSave = { topik ->
                 Log.d("dinda", topik.toString())
 
@@ -334,8 +333,6 @@ fun MateriListContent(
                 }
             },
             topikModel = topikModel,
-            isUpdate = isUpdate,
-            idLama = idLama
 
         )
     }

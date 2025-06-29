@@ -9,5 +9,9 @@ data class TopikModel(
     var file_materi : String ? = null,
     var nomor : Int ? = null,
     var nama_file : String? = null,
-    var uploadedMateriAt : Timestamp? = null
-)
+    var uploadedMateriAt : Timestamp? = null,
+    var file_video : String ? = null,
+    var nama_video : String? = null,
+    var path_video : String? = null,
+
+    )

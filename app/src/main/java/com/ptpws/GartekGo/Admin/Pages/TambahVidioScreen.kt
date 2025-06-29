@@ -1,5 +1,7 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +36,9 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,18 +46,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialog
+import com.ptpws.GartekGo.Admin.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,96 +75,108 @@ fun TambahVidioScreen(navController: NavController, outerPadding: PaddingValues 
     val tabTitles = listOf("Semester 1", "Semester 2")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = {tabTitles.size})
     val coroutineScope = rememberCoroutineScope()
+    val isRefreshing by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
-        Scaffold(
-            //topbar start
-            topBar = {
-                Column {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = "VIDIO",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp,
-                                fontFamily = poppinsfamily,
-                                color = Color.Black
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            // Lakukan reload data dari Firestore
+            // Misalnya, panggil ulang fungsi getTopikList()
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
+            Scaffold(
+                //topbar start
+                topBar = {
+                    Column {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(
+                                    text = "VIDIO",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp,
+                                    fontFamily = poppinsfamily,
+                                    color = Color.Black
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
+
+                                }
+                            }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
+                        )
+
+                    }
+                },
+            ) { innerPadding ->
+                val combinedPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = outerPadding.calculateBottomPadding()
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(combinedPadding)
+                        .fillMaxSize().background(color = Color(0xffF5F9FF))
+                ) {
+                    // Tab Row
+                    // TAB ROW DILETAKKAN DI SINI, DI BAWAH TOPBAR
+                    TabRow(
+                        selectedTabIndex = pagerState.currentPage,
+                        containerColor = Color.Transparent,
+                        contentColor = Color.Black,
+                        divider = {}, // hilangkan garis bawah
+                        indicator = { tabPositions ->
+                            val currentTab = tabPositions[pagerState.currentPage]
+                            Box(
+                                Modifier
+                                    .wrapContentSize(Alignment.BottomStart)
+                                    .offset(x = currentTab.left + (currentTab.width - 42.dp) / 2)
+                                    .width(42.dp)
+                                    .height(3.dp)
+                                    .background(Color(0xFF3D5CFF), shape = MaterialTheme.shapes.small)
                             )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
-
+                        }
+                    ) {
+                        tabTitles.forEachIndexed { index, title ->
+                            Tab(
+                                selected = pagerState.currentPage == index,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                },
+                                selectedContentColor = Color(0xFF1E1E2D),
+                                unselectedContentColor = Color(0xFF888888)
+                            ) {
+                                Text(
+                                    text = title,
+                                    fontSize = 16.sp, fontFamily = poppinsfamily,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(vertical = 12.dp)
+                                )
                             }
-                        }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
-                    )
+                        }
+                    }
 
-                }
-            },
-        ) { innerPadding ->
-            val combinedPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
-                bottom = outerPadding.calculateBottomPadding()
-            )
-            Column(
-                modifier = Modifier
-                    .padding(combinedPadding)
-                    .fillMaxSize().background(color = Color(0xffF5F9FF))
-            ) {
-                // Tab Row
-                // TAB ROW DILETAKKAN DI SINI, DI BAWAH TOPBAR
-                TabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Black,
-                    divider = {}, // hilangkan garis bawah
-                    indicator = { tabPositions ->
-                        val currentTab = tabPositions[pagerState.currentPage]
-                        Box(
-                            Modifier
-                                .wrapContentSize(Alignment.BottomStart)
-                                .offset(x = currentTab.left + (currentTab.width - 42.dp) / 2)
-                                .width(42.dp)
-                                .height(3.dp)
-                                .background(Color(0xFF3D5CFF), shape = MaterialTheme.shapes.small)
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        VidioListContent(
+                            onTambahClick = {
+
+                            },
+                            semester = if (page == 0) "1" else "2"
+
                         )
                     }
-                ) {
-                    tabTitles.forEachIndexed { index, title ->
-                        Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
-                            },
-                            selectedContentColor = Color(0xFF1E1E2D),
-                            unselectedContentColor = Color(0xFF888888)
-                        ) {
-                            Text(
-                                text = title,
-                                fontSize = 16.sp, fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(vertical = 12.dp)
-                            )
-                        }
-                    }
+
+                    // LazyColumn berisi semua konten termasuk tombol
                 }
-
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    VidioListContent(
-                        onTambahClick = {
-
-                        }
-                    )
-                }
-
-                // LazyColumn berisi semua konten termasuk tombol
             }
         }
+
     }
 
 }
@@ -166,9 +192,38 @@ private fun TambahVidioScreenPreview() {
 
 @Composable
 fun VidioListContent(
-    onTambahClick: () -> Unit
+    onTambahClick: () -> Unit,
+    semester: String
 ) {
+
     var showDialogvidio by remember { mutableStateOf(false) }
+    val topikList = remember { mutableStateListOf<TopikModel>() }
+    val context = LocalContext.current
+    var idTopik by remember { mutableStateOf("") }
+    var topikModel by remember { mutableStateOf(TopikModel()) }
+    var isUpdate by remember { mutableStateOf(false) }
+    var idLama by remember { mutableStateOf("") }
+    LaunchedEffect(semester) {
+        val db = Firebase.firestore
+        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        db.collection("topik")
+            .whereEqualTo("semester", semesterLabel)
+            .orderBy("nomor")
+            .get()
+            .addOnSuccessListener { result ->
+                for (doc in result.documents) {
+                    val topik = doc.toObject(TopikModel::class.java)?.copy(id = doc.id)
+                    if (topik != null) topikList.add(topik)
+
+                }
+            }.addOnFailureListener {
+                Toast.makeText(
+                    context,
+                    "gagal ambil data: ${it.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -177,92 +232,104 @@ fun VidioListContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
     ) {
-        item {
-            repeat(3) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(96.dp)
-                        .padding(vertical = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
-                    shape = RoundedCornerShape(23.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
-                        Text(
-                            text = "Vidio 1",
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = poppinsfamily,
-                            fontSize = 24.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Vidio ",
-                                fontSize = 12.sp,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
-                            )
-
-
-                            Text(
-                                text = "Diupload 16/08/2025",
-                                fontSize = 12.sp,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
-                            )
-
-                        }
-
-                    }
-                }
-            }
-        }
-
-        // Tombol Tambah Topik
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+        items(topikList){data ->
+            val tanggalUpload = data.uploadedMateriAt?.toDate()?.let {
+                SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(it)
+            } ?: "-"
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().clickable{showDialogvidio = true}
-                    .height(96.dp),
-                border = BorderStroke(2.dp, Color(0xFF2F80ED)),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.tamabahtopik),
-                        contentDescription = "Tambah",
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Tambah Vidio",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = poppinsfamily,
-                        fontSize = 12.sp
-                    )
-                }
-                if (showDialogvidio== true) {
-                    TambahVidioDialog(onDismis =  {
-                        showDialogvidio= false
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .padding(vertical = 6.dp)
+                    .clickable {
 
-                    })
+                        showDialogvidio = true
+                        topikModel = data
+                        idTopik = data.id
+                        isUpdate = true
+                        idLama = data.id
+                        Log.d("dinda", idLama)
+
+                    },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
+                shape = RoundedCornerShape(23.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Bagian atas: nama topik
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 22.dp, top = 12.dp)
+                    ) {
+                        Text(
+                            text = "Topik ${data.nomor} - ${data.nama!!}",
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 12.sp,
+                            color = Color.Black,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(end = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        // Bagian bawah kiri: tanggal upload
+                        Text(
+                            text = "${tanggalUpload}",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
+
+                        Text(
+                            text = if (data.file_video!=null) "Video ada" else "Video tidak ada",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
+                    }
+
                 }
             }
-
         }
+
+
     }
+
+    if (showDialogvidio == true){
+        TambahVidioDialog(
+            onDismis = {
+                showDialogvidio = false
+
+            }, semester = semester,
+            onSave = { topik ->
+                Log.d("dinda onsave video", topik.toString())
+
+                if (idTopik.isNotBlank()) {
+                    val index = topikList.indexOfFirst { it.id == topik.id }
+                    if (index != -1) {
+                        val topikLama = topikList[index]
+                        // Hanya update file_materi dan nama_file, field lain tetap
+                        topikList[index] = topikLama.copy(
+                            file_video = topik.file_video,
+                            nama_video = topik.nama_video,
+                            path_video = topik.path_video
+                        )
+                    }
+                }
+            },
+            topikModel = topikModel,
+
+
+            )
+    }
+
 }

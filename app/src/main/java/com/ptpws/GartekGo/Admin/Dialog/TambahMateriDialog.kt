@@ -75,20 +75,15 @@ import com.ptpws.GartekGo.R
 fun TambahMateriDialog(
     onDismis: () -> Unit,
     semester: String,
-    topikList: SnapshotStateList<TopikModel>,
     onSave: (TopikModel) -> Unit,
     topikModel: TopikModel? = null,
-    isUpdate: Boolean,
-    idLama: String
 ) {
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) } // 0f sampai 100f
 
 
     var selectedTopik by remember { mutableStateOf(topikModel?.nama ?: "") }
-    var selectedNameTopik by remember { mutableStateOf("") }
     var selectedIdTopik by remember { mutableStateOf(topikModel?.id ?: "") }
-    var expanded by remember { mutableStateOf(false) }
     var context = LocalContext.current
 
     var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
@@ -178,91 +173,6 @@ fun TambahMateriDialog(
 
                     }
 
-//                    Spacer(modifier = Modifier.height(12.dp))
-//
-//                    // Pilih Topik
-//                    ExposedDropdownMenuBox(
-//                        expanded = expanded,
-//                        onExpandedChange = { expanded = !expanded },
-//                        modifier = Modifier.fillMaxWidth()
-//                    ) {
-//
-//                        TextField(
-//                            value = selectedTopik,
-//                            onValueChange = {},
-//                            readOnly = true,
-//                            placeholder = {
-//                                Text(
-//                                    if (!topikModel!!.nama.isNullOrBlank()) topikModel.nama!! else "Pilih Topik",
-//                                    fontFamily = poppinsfamily,
-//                                    fontWeight = FontWeight.Medium,
-//                                    fontSize = 16.sp
-//                                )
-//                            },
-//                            textStyle = TextStyle(
-//                                fontFamily = poppinsfamily,
-//                                fontWeight = FontWeight.Medium,
-//                                fontSize = 16.sp,
-//                                color = Color.Black
-//                            ),
-//                            trailingIcon = {
-//                                Icon(
-//                                    painter = painterResource(id = R.drawable.tambahdrop), // panah kiri
-//                                    contentDescription = null, tint = Color.Unspecified,
-//                                    modifier = Modifier
-//                                        .rotate(if (expanded) 90f else 0f) // rotasi ke bawah saat expanded
-//                                )
-//                            },
-//                            shape = RoundedCornerShape(12.dp),
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .menuAnchor(),
-//                            colors = TextFieldDefaults.colors(
-//                                focusedContainerColor = Color.White,
-//                                unfocusedContainerColor = Color.White,
-//                                focusedIndicatorColor = Color.Transparent,
-//                                unfocusedIndicatorColor = Color.Transparent
-//                            )
-//                        )
-//
-//                        ExposedDropdownMenu(
-//                            expanded = expanded,
-//                            onDismissRequest = { expanded = false },
-//                            modifier = Modifier
-//                                .background(Color.White)
-//                                .fillMaxWidth()
-//                        ) {
-//                            topikList.forEach { topik ->
-//                                val sudahAdaMateri = !topik.file_materi.isNullOrBlank()
-//                                DropdownMenuItem(
-//                                    text = {
-//                                        Text(
-//                                            (if (sudahAdaMateri) "${topik.nama} - Sudah ada Materi" else topik.nama)!!,
-//                                            fontFamily = poppinsfamily,
-//                                            fontWeight = FontWeight.Medium,
-//                                            fontSize = 16.sp,
-//                                            color = Color.Black
-//                                        )
-//                                    },
-//                                    onClick = {
-//                                        // Izinkan memilih kalau belum ada materi, atau jika itu adalah topik yang sedang di-edit
-//                                        if (!sudahAdaMateri || topik.id == selectedIdTopik) {
-//                                            selectedTopik = topik.nama!!
-//                                            selectedIdTopik = topik.id
-//                                            expanded = false
-//                                        } else {
-//                                            Toast.makeText(
-//                                                context,
-//                                                "Topik sudah ada materi",
-//                                                Toast.LENGTH_SHORT
-//                                            ).show()
-//                                        }
-//                                    },
-//                                    modifier = Modifier.fillMaxWidth()
-//                                )
-//                            }
-//                        }
-//                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -620,11 +530,8 @@ private fun TambahMateriDialogPreview() {
     TambahMateriDialog(
         onDismis = { /*TODO*/ },
         semester = "1",
-        topikList = remember { mutableStateListOf() },
         onSave = { ""},
         topikModel = TopikModel(),
-        isUpdate = true,
-        idLama = ""
     )
 
 }
