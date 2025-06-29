@@ -24,11 +24,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.mulishfamily
@@ -44,6 +52,17 @@ import com.ptpws.GartekGo.R
 
 @Composable
 fun HomeScreen(navController: NavController) {
+    var nama by remember { mutableStateOf("") }
+    var context = LocalContext.current
+    var uid = FirebaseAuth.getInstance().uid
+
+    val db = Firebase.firestore
+
+    val getdata = db.collection("users").document(uid.toString()).get()
+    getdata.addOnSuccessListener { data ->
+        nama = data.get("nama").toString()
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -76,13 +95,24 @@ fun HomeScreen(navController: NavController) {
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column {
-                    Text(
-                        text = "Hai, Alfan Nurdin ",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF202244), // Warna teks seperti di gambar
-                        fontFamily = jostfamily // Ganti jika pakai font lain
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Hai ",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF202244), // Warna teks seperti di gambar
+                            fontFamily = jostfamily // Ganti jika pakai font lain
+                        )
+
+                        Text(
+                            text = nama,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF202244), // Warna teks seperti di gambar
+                            fontFamily = jostfamily // Ganti jika pakai font lain
+                        )
+
+                    }
 
                     Text(
                         text = "Apa yang ingin Anda pelajari hari ini? Cari di bawah.",

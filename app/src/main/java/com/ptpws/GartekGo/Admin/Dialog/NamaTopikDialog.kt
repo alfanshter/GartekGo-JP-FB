@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Dialog
 
+import TopikModel
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +47,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 
 @OptIn(ExperimentalMaterial3Api::class)

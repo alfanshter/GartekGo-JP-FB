@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Semester
 
+import TopikModel
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -44,7 +47,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -74,6 +80,9 @@ fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pili
     val tabTitles = listOf("Pembelajaran", "Project")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
+
+
+
 
     when (pilihan) {
         1 -> {
@@ -203,6 +212,52 @@ private fun SemesterScreenPreview() {
 
 @Composable
 fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit, pilihan: Int) {
+    var id by remember { mutableStateOf("") }
+    var context = LocalContext.current
+    var db = Firebase.firestore
+    val listData = remember { mutableStateListOf<TopikModel>() }
+    LaunchedEffect(Unit) {
+        val getdata = db.collection("topik").get()
+        getdata.addOnSuccessListener { data ->
+            listData.clear()
+
+
+            for (datas in data.documents) {
+                val topik = datas.toObject(TopikModel::class.java)
+                if (topik != null) {
+                    listData.add(topik.copy(id = datas.id))
+                }
+
+            }
+
+            val uid = FirebaseAuth.getInstance().uid
+            val db = Firebase.firestore
+
+            db.collection("users").document(uid.toString())
+                .collection("topik")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val topikMap = snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
+
+                    val gabungan = listData.map { topik ->
+                        val userMeta = topikMap[topik.id]
+                        topik.copy(
+                            soal = userMeta?.getString("soal") ?: "0",
+                            materi = userMeta?.getString("materi") ?: "0",
+                            vidio = userMeta?.getString("vidio") ?: "0"
+                        )
+                    }
+
+                    // Sekarang gabungan adalah data lengkap
+                    listData.clear()
+                    listData.addAll(gabungan)
+
+                }
+        }
+
+
+    }
+
 
     LazyColumn(
         modifier = Modifier
@@ -212,39 +267,36 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp)
     ) {
-        item {
+        items(listData) { data->
+            Log.d("muhib",data.toString())
             //card progres start 1
-
             Card(
                 modifier = Modifier
                     .padding(end = 34.dp)
                     .fillMaxWidth()
-                    .height(129.dp)
+                    .height(190.dp)
                     .clickable { navController.navigate(AppScreen.Home.Semester.Topik.route) }, // <== Tinggi diganti
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFC2D8FF)
                 )
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(
-                                start = 16.dp,
-                                top = 12.dp,
-                                end = 56.dp,
-                                bottom = 12.dp
-                            ), // disesuaikan agar muat
-                        verticalArrangement = Arrangement.spacedBy(6.dp) // jarak antar item
-                    ) {
-                        Text(
-                            "Topik 1",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp, // sedikit dikecilkan
-                            fontFamily = poppinsfamily,
-                            color = Color.Black
-                        )
+                Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                    Text(
+                        "Topik ${data.nomor} - ${data.nama!!} ",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp, // sedikit dikecilkan
+                        fontFamily = poppinsfamily,
+                        color = Color.Black,
+                        modifier = Modifier.padding(
+                            start = 16.dp,
+                            top = 12.dp,
+                            end = 12.dp,
+                            bottom = 12.dp
+                        ).align(Alignment.TopStart)
+                    )
 
+                    Column(Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(start = 16.dp, bottom = 6.dp)) {
                         // Progress Bar
                         Box(
                             modifier = Modifier
@@ -260,37 +312,51 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                             )
                         }
 
-                        Column {
+                        Text(
+                            "Tahap",
+                            fontSize = 12.sp, // lebih kecil
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xff1F1F39)
+                        )
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "Tahap",
-                                fontSize = 12.sp, // lebih kecil
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Normal,
-                                color = Color(0xff1F1F39)
+                                "Materi ",
+                                fontWeight = FontWeight.Bold,
+                                color =  if (data.materi == "1")Color(0xff0961F5)else
+                                    Color.Black,
+                                fontSize = 14.sp,
+                                fontFamily = poppinsfamily
+                            )
+                            Text(
+                                "Video"
+                                ,color =  if (data.materi == "1")Color(0xff0961F5)else
+                                    Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                fontFamily = poppinsfamily
+                            )
+                            if (data.materi== "0"){
+                                Text(
+                                    " (Terkunci) ",
+                                    color = Color.Black,
+                                    fontSize = 10.sp,
+                                    fontFamily = poppinsfamily,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+
+                            Text(
+                                "Soal",
+                                color =  if (data.vidio == "1")Color(0xff0961F5)else
+                                    Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                fontFamily = poppinsfamily
                             )
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "Materi ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF337DFF),
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Video ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF337DFF),
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Soal",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
+                            if (data.materi== "0"){
                                 Text(
                                     " (Terkunci)",
                                     color = Color.Black,
@@ -299,14 +365,16 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
+
                         }
+
                     }
 
                     // Tombol Play tetap di pojok kanan atas
                     IconButton(
                         onClick = { /* aksi */ },
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
+                            .align(Alignment.CenterEnd)
                             .padding(top = 12.dp, end = 24.dp)
                             .size(32.dp) // lebih kecil agar proporsional
                             .background(Color(0xFF337DFF), shape = CircleShape)
@@ -324,329 +392,33 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
             Spacer(Modifier.height(12.dp))
             //card progres start 2
 
-            Card(
-                modifier = Modifier
-                    .padding(end = 34.dp)
-                    .fillMaxWidth()
-                    .height(129.dp), // <== Tinggi diganti
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor =Color(0xffD2D2D2)
-                )
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(
-                                start = 16.dp,
-                                top = 12.dp,
-                                end = 56.dp,
-                                bottom = 12.dp
-                            ), // disesuaikan agar muat
-                        verticalArrangement = Arrangement.spacedBy(6.dp) // jarak antar item
-                    ) {
-                        Text(
-                            "Topik 1",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp, // sedikit dikecilkan
-                            fontFamily = poppinsfamily,
-                            color = Color.Black
-                        )
-
-                        // Progress Bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(6.dp)
-                                .background(Color.White, RoundedCornerShape(3.dp))
-                        ) {
-                            LinearProgressIndicator(
-                                progress = { 0f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFF337DFF),
-                                trackColor = Color.Transparent
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                "Tahap",
-                                fontSize = 12.sp, // lebih kecil
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Normal,
-                                color = Color(0xff1F1F39)
-                            )
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "Materi ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Video ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Soal",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    " (Terkunci)",
-                                    color = Color.Black,
-                                    fontSize = 10.sp,
-                                    fontFamily = poppinsfamily,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                    }
-
-                    // Tombol Play tetap di pojok kanan atas
-                    IconButton(
-                        onClick = { /* aksi */ },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 12.dp, end = 24.dp)
-                            .size(32.dp) // lebih kecil agar proporsional
-                            .background(Color(0xFFCCCCCC), shape = CircleShape)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.lock),
-                            contentDescription = null,
-                            tint = Color.Unspecified
-                        )
-                    }
-                }
-            }
-
-            //card progres end 2
-            Spacer(Modifier.height(12.dp))
-            //card progres start 3
-
-            Card(
-                modifier = Modifier
-                    .padding(end = 34.dp)
-                    .fillMaxWidth()
-                    .height(129.dp), // <== Tinggi diganti
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xffD2D2D2)
-                )
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(
-                                start = 16.dp,
-                                top = 12.dp,
-                                end = 56.dp,
-                                bottom = 12.dp
-                            ), // disesuaikan agar muat
-                        verticalArrangement = Arrangement.spacedBy(6.dp) // jarak antar item
-                    ) {
-                        Text(
-                            "Topik 1",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp, // sedikit dikecilkan
-                            fontFamily = poppinsfamily,
-                            color = Color.Black
-                        )
-
-                        // Progress Bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(6.dp)
-                                .background(Color.White, RoundedCornerShape(3.dp))
-                        ) {
-                            LinearProgressIndicator(
-                                progress = { 0f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFF337DFF),
-                                trackColor = Color.Transparent
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                "Tahap",
-                                fontSize = 12.sp, // lebih kecil
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Normal,
-                                color = Color(0xff1F1F39)
-                            )
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "Materi ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Video ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Soal",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    " (Terkunci)",
-                                    color = Color.Black,
-                                    fontSize = 10.sp,
-                                    fontFamily = poppinsfamily,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                    }
-
-                    // Tombol Play tetap di pojok kanan atas
-                    IconButton(
-                        onClick = { /* aksi */ },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 12.dp, end = 24.dp)
-                            .size(32.dp) // lebih kecil agar proporsional
-                            .background(Color(0xFFCCCCCC), shape = CircleShape)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.lock),
-                            contentDescription = null,
-                            tint = Color.Unspecified
-                        )
-                    }
-                }
-            }
-
-            //card progres end 3
-            Spacer(Modifier.height(12.dp))
-            //card progres start 4
-
-            Card(
-                modifier = Modifier
-                    .padding(end = 34.dp)
-                    .fillMaxWidth()
-                    .height(129.dp), // <== Tinggi diganti
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xffD2D2D2)
-                )
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(
-                                start = 16.dp,
-                                top = 12.dp,
-                                end = 56.dp,
-                                bottom = 12.dp
-                            ), // disesuaikan agar muat
-                        verticalArrangement = Arrangement.spacedBy(6.dp) // jarak antar item
-                    ) {
-                        Text(
-                            "Topik 1",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp, // sedikit dikecilkan
-                            fontFamily = poppinsfamily,
-                            color = Color.Black
-                        )
-
-                        // Progress Bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(6.dp)
-                                .background(Color.White, RoundedCornerShape(3.dp))
-                        ) {
-                            LinearProgressIndicator(
-                                progress = { 0f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFF337DFF),
-                                trackColor = Color.Transparent
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                "Tahap",
-                                fontSize = 12.sp, // lebih kecil
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Normal,
-                                color = Color(0xff1F1F39)
-                            )
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "Materi ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Video ",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    "Soal",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 14.sp,
-                                    fontFamily = poppinsfamily
-                                )
-                                Text(
-                                    " (Terkunci)",
-                                    color = Color.Black,
-                                    fontSize = 10.sp,
-                                    fontFamily = poppinsfamily,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                    }
-
-                    // Tombol Play tetap di pojok kanan atas
-                    IconButton(
-                        onClick = { /* aksi */ },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 12.dp, end = 24.dp)
-                            .size(32.dp) // lebih kecil agar proporsional
-                            .background(Color(0xFFCCCCCC), shape = CircleShape)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.lock),
-                            contentDescription = null,
-                            tint = Color.Unspecified
-                        )
-                    }
-                }
-            }
-
             //card progres end 4
         }
 
     }
 
+}
+
+fun gabungkanDenganUserData(topikList: List<TopikModel>) {
+    val uid = FirebaseAuth.getInstance().uid
+    val db = Firebase.firestore
+
+    db.collection("users").document(uid.toString())
+        .collection("topik")
+        .get()
+        .addOnSuccessListener { snapshot ->
+            val topikMap = snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
+
+            val gabungan = topikList.map { topik ->
+                val userMeta = topikMap[topik.id]
+                topik.copy(
+                    soal = userMeta?.getString("soal") ?: "0",
+                    materi = userMeta?.getString("materi") ?: "0",
+                    vidio = userMeta?.getString("vidio") ?: "0"
+                )
+            }
+
+            // Sekarang gabungan adalah data lengkap
+
+        }
 }

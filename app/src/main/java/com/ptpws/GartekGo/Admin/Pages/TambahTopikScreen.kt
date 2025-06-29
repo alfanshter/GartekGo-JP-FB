@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import TopikModel
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -60,7 +61,6 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
-import com.ptpws.GartekGo.Admin.model.TopikModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -229,7 +229,7 @@ fun TopikListContent(semester: String) {
                     .clickable {
                         showDialogtopik = true
                         idTopik = data.id
-                        namaTopik = data.nama // ← tambahkan ini
+                        namaTopik = data.nama!! // ← tambahkan ini
                     }
                     .padding(vertical = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
@@ -237,7 +237,7 @@ fun TopikListContent(semester: String) {
             ) {
                 Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
                     Text(
-                        text = data.nama,
+                        text = data.nama!!,
                         fontWeight = FontWeight.Bold,
                         fontFamily = poppinsfamily,
                         fontSize = 12.sp,
