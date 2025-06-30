@@ -122,15 +122,19 @@ fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pili
                             )
                         },
                         navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
+                            IconButton(onClick = {
+                                if (navController.previousBackStackEntry != null) {
+                                    navController.popBackStack()
+                                }
+                            }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.back),
                                     contentDescription = null,
                                     tint = Color.Unspecified
                                 )
-
                             }
-                        },
+                        }
+                        ,
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = Color(0xffF5F9FF)
                         )

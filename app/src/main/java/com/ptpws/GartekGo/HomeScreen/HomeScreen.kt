@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,7 +27,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.ptpws.GartekGo.AppScreen
@@ -53,15 +59,51 @@ import com.ptpws.GartekGo.R
 @Composable
 fun HomeScreen(navController: NavController) {
     var nama by remember { mutableStateOf("") }
-    var context = LocalContext.current
-    var uid = FirebaseAuth.getInstance().uid
+    val context = LocalContext.current
+    val uid = FirebaseAuth.getInstance().uid
+    val listData = remember { mutableStateListOf<TopikModel>() }
 
     val db = Firebase.firestore
 
-    val getdata = db.collection("users").document(uid.toString()).get()
-    getdata.addOnSuccessListener { data ->
-        nama = data.get("nama").toString()
+    // Ambil nama user
+    db.collection("users").document(uid.toString()).get()
+        .addOnSuccessListener { data ->
+            nama = data.get("nama").toString()
+        }
+
+    LaunchedEffect(Unit) {
+        db.collection("topik").get()
+            .addOnSuccessListener { data ->
+                listData.clear()
+                for (datas in data.documents) {
+                    val topik = datas.toObject(TopikModel::class.java)
+                    if (topik != null) {
+                        listData.add(topik.copy(id = datas.id))
+                    }
+                }
+
+                db.collection("users").document(uid.toString())
+                    .collection("topik")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val topikMap = snapshot.documents.associateBy { it.id }
+
+                        val gabungan = listData.map { topik ->
+                            val userMeta = topikMap[topik.id]
+                            topik.copy(
+                                soal = userMeta?.getString("soal") ?: "0",
+                                materi = userMeta?.getString("materi") ?: "0",
+                                vidio = userMeta?.getString("vidio") ?: "0"
+                            )
+                        }
+
+                        listData.clear()
+                        listData.addAll(gabungan)
+                    }
+            }
     }
+
+    val firstData = listData.firstOrNull()
 
     LazyColumn(
         modifier = Modifier
@@ -70,177 +112,164 @@ fun HomeScreen(navController: NavController) {
             .background(color = Color(0xffF5F9FF)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item {
-            Icon(
-                painter = painterResource(id = R.drawable.logo2),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Foto profil bulat
-                Image(
-                    painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "Foto Profil",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
+        // Hanya kalau data ada
+        firstData?.let { data ->
+            item {
+                Icon(
+                    painter = painterResource(id = R.drawable.logo2),
+                    contentDescription = null,
+                    tint = Color.Unspecified
                 )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Hai ",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF202244), // Warna teks seperti di gambar
-                            fontFamily = jostfamily // Ganti jika pakai font lain
-                        )
-
-                        Text(
-                            text = nama,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF202244), // Warna teks seperti di gambar
-                            fontFamily = jostfamily // Ganti jika pakai font lain
-                        )
-
-                    }
-
-                    Text(
-                        text = "Apa yang ingin Anda pelajari hari ini? Cari di bawah.",
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        fontFamily = mulishfamily, fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(36.dp))
-            Column(modifier = Modifier.fillMaxSize().padding(start = 34.dp, end = 34.dp)) {
-                Card(
+                Row(
                     modifier = Modifier
-                        .width(360.dp)
-                        .height(89.dp)
-                        .clickable {
-                            navController.navigate(AppScreen.Home.Semester.route)
-                        }, shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Semester 1",
-                            fontFamily = mulishfamily,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 36.sp, color = Color.White
-                        )
-
-                    }
-
-                }
-                Spacer(Modifier.height(36.dp))
-                Card(
-                    modifier = Modifier
-                        .width(360.dp)
-                        .height(89.dp), shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Semester 2",
-                            fontFamily = mulishfamily,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 36.sp, color = Color.White
-                        )
-
-                    }
-
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 34.dp)
-            ) {
-                Spacer(Modifier.height(45.dp))
-                Text(
-                    "Sedang Dikerjakan",
-                    fontFamily = mulishfamily,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 13.sp,
-                    color = Color(0xff0961F5)
-                )
-                Spacer(Modifier.height(22.dp))
-                //card progres start
-
-                Card(
-                    modifier = Modifier
-                        .padding(end = 34.dp)
                         .fillMaxWidth()
-                        .height(167.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFC2D8FF) // Biru muda
-                    )
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                    Image(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "Foto Profil",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Row(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Semester 1",
+                                text = "Hai ",
+                                fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                fontFamily = poppinsfamily, color = Color.Black
+                                color = Color(0xFF202244),
+                                fontFamily = jostfamily
                             )
                             Text(
-                                "Topik 1",
+                                text = nama,
+                                fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                fontFamily = poppinsfamily, color = Color.Black
+                                color = Color(0xFF202244),
+                                fontFamily = jostfamily
                             )
+                        }
+                        Text(
+                            text = "Apa yang ingin Anda pelajari hari ini? Cari di bawah.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            fontFamily = mulishfamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(36.dp))
+                Column(modifier = Modifier.fillMaxSize().padding(start = 34.dp, end = 34.dp)) {
+                    Card(
+                        modifier = Modifier
+                            .width(360.dp)
+                            .height(89.dp)
+                            .clickable {
+                                navController.navigate(AppScreen.Home.Semester.route)
+                            },
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Semester 1",
+                                fontFamily = mulishfamily,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 36.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(36.dp))
+                    Card(
+                        modifier = Modifier
+                            .width(360.dp)
+                            .height(89.dp),
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Semester 2",
+                                fontFamily = mulishfamily,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 36.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
 
-                            // Progress Bar Material 3
-                            Box(
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 34.dp)
+                ) {
+                    Spacer(Modifier.height(45.dp))
+                    Text(
+                        "Sedang Dikerjakan",
+                        fontFamily = mulishfamily,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 13.sp,
+                        color = Color(0xff0961F5)
+                    )
+                    Spacer(Modifier.height(22.dp))
+                    Card(
+                        modifier = Modifier
+                            .padding(end = 34.dp)
+                            .fillMaxWidth()
+                            .height(190.dp)
+                            .clickable { navController.navigate(AppScreen.Home.Semester.Topik.route) },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFC2D8FF))
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Text(
+                                "Topik ${data.nomor} - ${data.nama}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                fontFamily = poppinsfamily,
+                                color = Color.Black,
                                 modifier = Modifier
-                                    .fillMaxWidth(0.5f) // Tetap 50% seperti keinginanmu
-                                    .height(6.dp)
-                                    .background(
-                                        Color.White,
-                                        RoundedCornerShape(3.dp)
-                                    ) // shape di sini
+                                    .padding(start = 16.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+                                    .align(Alignment.TopStart)
+                            )
+
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                                    .padding(start = 16.dp, bottom = 6.dp)
                             ) {
-                                LinearProgressIndicator(
-                                    progress = { 0.7f },
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize(), // penuh di dalam box
-                                    color = Color(0xFF337DFF),
-                                    trackColor = Color.Transparent // tidak bentrok background
-                                )
-                            }
+                                        .fillMaxWidth(0.5f)
+                                        .height(6.dp)
+                                        .background(Color.White, RoundedCornerShape(3.dp))
+                                ) {
+                                    LinearProgressIndicator(
+                                        progress = { 0.7f },
+                                        modifier = Modifier.fillMaxSize(),
+                                        color = Color(0xFF337DFF),
+                                        trackColor = Color.Transparent
+                                    )
+                                }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Tahap + daftar tahap
-                            Column {
                                 Text(
                                     "Tahap",
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontFamily = poppinsfamily,
                                     fontWeight = FontWeight.Normal,
                                     color = Color(0xff1F1F39)
@@ -250,62 +279,69 @@ fun HomeScreen(navController: NavController) {
                                     Text(
                                         "Materi ",
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF337DFF),
-                                        fontSize = 20.sp, fontFamily = poppinsfamily
+                                        color = if (data.materi == "1") Color(0xff0961F5) else Color.Black,
+                                        fontSize = 14.sp,
+                                        fontFamily = poppinsfamily
                                     )
-
                                     Text(
-                                        "Video ",
+                                        "Video",
+                                        color = if (data.materi == "1") Color(0xff0961F5) else Color.Black,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF337DFF),
-                                        fontSize = 20.sp, fontFamily = poppinsfamily
+                                        fontSize = 14.sp,
+                                        fontFamily = poppinsfamily
                                     )
+                                    if (data.materi == "0") {
+                                        Text(
+                                            " (Terkunci) ",
+                                            color = Color.Black,
+                                            fontSize = 10.sp,
+                                            fontFamily = poppinsfamily,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
 
                                     Text(
                                         "Soal",
+                                        color = if (data.vidio == "1") Color(0xff0961F5) else Color.Black,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.Black,
-                                        fontSize = 20.sp, fontFamily = poppinsfamily
+                                        fontSize = 14.sp,
+                                        fontFamily = poppinsfamily
                                     )
-
-                                    Text(
-                                        " (Terkunci)",
-                                        color = Color.Black,
-                                        fontSize = 12.sp,
-                                        fontFamily = poppinsfamily,
-                                        fontWeight = FontWeight.Medium
-                                    )
+                                    if (data.materi == "0") {
+                                        Text(
+                                            " (Terkunci)",
+                                            color = Color.Black,
+                                            fontSize = 10.sp,
+                                            fontFamily = poppinsfamily,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
                             }
 
+                            IconButton(
+                                onClick = { /* aksi */ },
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(top = 12.dp, end = 24.dp)
+                                    .size(32.dp)
+                                    .background(Color(0xFF337DFF), shape = CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play",
+                                    tint = Color.White
+                                )
+                            }
                         }
-                        // Play Button
-
-                        IconButton(
-                            onClick = { /* aksi */ },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(top = 12.dp, end = 24.dp)
-                                .size(36.dp)
-                                .background(Color(0xFF337DFF), shape = CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "Play",
-                                tint = Color.White
-                            )
-                        }
-
                     }
+                    Spacer(Modifier.height(12.dp))
                 }
-                //card progres end
-
             }
         }
-
     }
-
 }
+
 
 @Preview(showBackground = true)
 @Composable
