@@ -250,12 +250,7 @@ fun ProjectListContent() {
                         fontSize = 12.sp
                     )
                 }
-                if (showDialogsoal== true) {
-                    TambahSoalDialog(onDismis =  {
-                        showDialogsoal= false
 
-                    })
-                }
             }
 
         }

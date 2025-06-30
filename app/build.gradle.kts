@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -34,6 +35,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+    }
+    kotlin{
+        sourceSets {
+            all {
+                languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
+            }
+        }
     }
     buildFeatures {
         compose = true
@@ -76,6 +84,11 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.firebase.storage)
+
+    //serialization json
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.firebase.dataconnect)
+
 
 
     testImplementation(libs.junit)

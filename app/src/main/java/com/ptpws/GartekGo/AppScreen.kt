@@ -2,6 +2,11 @@ package com.ptpws.GartekGo
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.ptpws.GartekGo.Admin.model.TopikModel
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, val route: String) {
     object Home : AppScreen(R.string.home, R.drawable.home, "home" ){
@@ -27,6 +32,15 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
             object TambahSiswa : AppScreen(R.string.admin,R.drawable.siswa,"tambahsiswa")
             object TambahSoalProject : AppScreen(R.string.admin,R.drawable.siswa,"tambahsoalproject")
             object Penilaian : AppScreen(R.string.admin,R.drawable.siswa,"penilaian")
+
+            object DataSoal: AppScreen(R.string.datasoal, R.drawable.piala, "datasoal/{jsonTopik}"){
+                fun createRoute(topikModel: TopikModel): String {
+                    val json = Json.encodeToString(topikModel)
+                    val encoded = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+                    return "datasoal/$encoded"
+
+                }
+            }
 
 
         }
