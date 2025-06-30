@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -237,7 +239,9 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
     var db = Firebase.firestore
     val listData = remember { mutableStateListOf<TopikModel>() }
     LaunchedEffect(Unit) {
-        val getdata = db.collection("topik").get()
+        val getdata = db.collection("topik")
+            .orderBy("nomor")
+            .get()
         getdata.addOnSuccessListener { data ->
             listData.clear()
 
@@ -288,36 +292,40 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp)
     ) {
-        items(listData) { data ->
-            Log.d("muhib", data.toString())
-            //card progres start 1
+        itemsIndexed(listData) { index, data ->
+            val isActive = index == 0 // Topik pertama aktif, sisanya
+            val icon = if (isActive) Icons.Default.PlayArrow else Icons.Default.Lock
+            val iconTint = if (isActive) Color.White else Color.Black
+            val iconBg = if (isActive) Color(0xFF337DFF) else Color(0xffCCCCCC)
+
             Card(
                 modifier = Modifier
                     .padding(end = 34.dp)
                     .fillMaxWidth()
                     .height(190.dp)
-                    .clickable { navController.navigate(AppScreen.Home.Semester.Topik.route) }, // <== Tinggi diganti
+                    .clickable(enabled = isActive) {
+                        if (isActive) {
+                            navController.navigate(AppScreen.Home.Semester.Topik.route)
+                        }
+                    },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFC2D8FF)
+                    containerColor = if (isActive) Color(0xFFC2D8FF) else Color(0xFFE0E0E0)
                 )
             ) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                ) {
                     Text(
-                        "Topik ${data.nomor} - ${data.nama!!} ",
+                        "Topik ${data.nomor} - ${data.nama!!}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp, // sedikit dikecilkan
+                        fontSize = 12.sp,
                         fontFamily = poppinsfamily,
                         color = Color.Black,
                         modifier = Modifier
-                            .padding(
-                                start = 16.dp,
-                                top = 12.dp,
-                                end = 12.dp,
-                                bottom = 12.dp
-                            )
+                            .padding(start = 16.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
                             .align(Alignment.TopStart)
                     )
 
@@ -327,7 +335,6 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                             .align(Alignment.BottomCenter)
                             .padding(start = 16.dp, bottom = 6.dp)
                     ) {
-                        // Progress Bar
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.5f)
@@ -344,7 +351,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
                         Text(
                             "Tahap",
-                            fontSize = 12.sp, // lebih kecil
+                            fontSize = 12.sp,
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Normal,
                             color = Color(0xff1F1F39)
@@ -354,14 +361,13 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                             Text(
                                 "Materi ",
                                 fontWeight = FontWeight.Bold,
-                                color = if (data.materi == "1") Color(0xff0961F5) else
-                                    Color.Black,
+                                color = if (data.materi == "1") Color(0xff0961F5) else Color.Black,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
                             )
                             Text(
-                                "Video", color = if (data.materi == "1") Color(0xff0961F5) else
-                                    Color.Black,
+                                "Video",
+                                color = if (data.materi == "1") Color(0xff0961F5) else Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
@@ -378,8 +384,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
                             Text(
                                 "Soal",
-                                color = if (data.vidio == "1") Color(0xff0961F5) else
-                                    Color.Black,
+                                color = if (data.vidio == "1") Color(0xff0961F5) else Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
@@ -394,35 +399,33 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
-
                         }
-
                     }
 
-                    // Tombol Play tetap di pojok kanan atas
+                    // Icon di pojok kanan atas
                     IconButton(
-                        onClick = { /* aksi */ },
+                        onClick = { if (isActive) { /* aksi */ } },
+                        enabled = isActive,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .padding(top = 12.dp, end = 24.dp)
-                            .size(32.dp) // lebih kecil agar proporsional
-                            .background(Color(0xFF337DFF), shape = CircleShape)
+                            .size(32.dp)
+                            .background(iconBg,
+                                shape = CircleShape
+                            )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Play",
-                            tint = Color.White
+                            imageVector = icon,
+                            contentDescription = if (isActive) "Play" else "Lock",
+                            tint = iconTint
                         )
                     }
                 }
             }
 
-            //card progres end 1
             Spacer(Modifier.height(12.dp))
-            //card progres start 2
-
-            //card progres end 4
         }
+
 
     }
 
