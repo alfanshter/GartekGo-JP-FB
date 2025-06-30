@@ -75,7 +75,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pilihan: Int) {
+fun SemesterScreen(
+    navController: NavController,
+    onTambahClick: () -> Unit,
+    pilihan: Int,
+    outerPadding: PaddingValues = PaddingValues()
+) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Pembelajaran", "Project")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
@@ -133,8 +138,7 @@ fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pili
                                     tint = Color.Unspecified
                                 )
                             }
-                        }
-                        ,
+                        },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = Color(0xffF5F9FF)
                         )
@@ -144,9 +148,13 @@ fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pili
             }
             //topbar end
         ) { innerPadding ->
+            val combinedPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(combinedPadding)
                     .fillMaxSize()
                     .background(Color(0xffF5F9FF))
             ) {
@@ -193,11 +201,19 @@ fun SemesterScreen(navController: NavController, onTambahClick: () -> Unit, pili
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
-                    SemesterListContent(
-                        pilihan = page + 1, // Tambahkan parameter semester
-                        navController = navController,
-                        onTambahClick = { /* aksi tambah */ }
-                    )
+                    when (page) {
+                        0 -> {
+                            SemesterListContent(
+                                pilihan = 1, // Kalau mau tetap kirim pilihan
+                                navController = navController,
+                                onTambahClick = onTambahClick
+                            )
+                        }
+
+                        1 -> {
+                            ProjectScreen(navController)
+                        }
+                    }
                 }
                 // Konten LazyColumn di bawah TabRow
             }
@@ -241,7 +257,8 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                 .collection("topik")
                 .get()
                 .addOnSuccessListener { snapshot ->
-                    val topikMap = snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
+                    val topikMap =
+                        snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
 
                     val gabungan = listData.map { topik ->
                         val userMeta = topikMap[topik.id]
@@ -271,8 +288,8 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp)
     ) {
-        items(listData) { data->
-            Log.d("muhib",data.toString())
+        items(listData) { data ->
+            Log.d("muhib", data.toString())
             //card progres start 1
             Card(
                 modifier = Modifier
@@ -285,22 +302,31 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                     containerColor = Color(0xFFC2D8FF)
                 )
             ) {
-                Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()) {
                     Text(
                         "Topik ${data.nomor} - ${data.nama!!} ",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp, // sedikit dikecilkan
                         fontFamily = poppinsfamily,
                         color = Color.Black,
-                        modifier = Modifier.padding(
-                            start = 16.dp,
-                            top = 12.dp,
-                            end = 12.dp,
-                            bottom = 12.dp
-                        ).align(Alignment.TopStart)
+                        modifier = Modifier
+                            .padding(
+                                start = 16.dp,
+                                top = 12.dp,
+                                end = 12.dp,
+                                bottom = 12.dp
+                            )
+                            .align(Alignment.TopStart)
                     )
 
-                    Column(Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(start = 16.dp, bottom = 6.dp)) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(start = 16.dp, bottom = 6.dp)
+                    ) {
                         // Progress Bar
                         Box(
                             modifier = Modifier
@@ -328,20 +354,19 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                             Text(
                                 "Materi ",
                                 fontWeight = FontWeight.Bold,
-                                color =  if (data.materi == "1")Color(0xff0961F5)else
+                                color = if (data.materi == "1") Color(0xff0961F5) else
                                     Color.Black,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
                             )
                             Text(
-                                "Video"
-                                ,color =  if (data.materi == "1")Color(0xff0961F5)else
+                                "Video", color = if (data.materi == "1") Color(0xff0961F5) else
                                     Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
                             )
-                            if (data.materi== "0"){
+                            if (data.materi == "0") {
                                 Text(
                                     " (Terkunci) ",
                                     color = Color.Black,
@@ -353,14 +378,14 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
                             Text(
                                 "Soal",
-                                color =  if (data.vidio == "1")Color(0xff0961F5)else
+                                color = if (data.vidio == "1") Color(0xff0961F5) else
                                     Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 fontFamily = poppinsfamily
                             )
 
-                            if (data.materi== "0"){
+                            if (data.materi == "0") {
                                 Text(
                                     " (Terkunci)",
                                     color = Color.Black,
@@ -411,7 +436,8 @@ fun gabungkanDenganUserData(topikList: List<TopikModel>) {
         .collection("topik")
         .get()
         .addOnSuccessListener { snapshot ->
-            val topikMap = snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
+            val topikMap =
+                snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
 
             val gabungan = topikList.map { topik ->
                 val userMeta = topikMap[topik.id]

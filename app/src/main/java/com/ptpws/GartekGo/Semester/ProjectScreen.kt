@@ -36,13 +36,19 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun ProjectScreen(navController: NavController ) {
-    LazyColumn(modifier = Modifier.fillMaxSize().background(color = Color(0xffF5F9FF))) {
+fun ProjectScreen(navController: NavController) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xffF5F9FF))
+            .padding(top = 8.dp)
+    ) {
         item {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().height(129.dp).padding(start = 34.dp, end = 34.dp)
-                    ,
+                    .fillMaxWidth()
+                    .height(129.dp)
+                    .padding(start = 34.dp, end = 34.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFC2D8FF)),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -57,18 +63,24 @@ fun ProjectScreen(navController: NavController ) {
                     ) {
                         Text(
                             text = "Topik 1 – Belajar Membaca",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Status : Dikonfirmasi Guru",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                         Text(
                             text = "Nilai : 90",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                     }
@@ -92,8 +104,9 @@ fun ProjectScreen(navController: NavController ) {
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().height(129.dp).padding(start = 34.dp, end = 34.dp)
-                ,
+                    .fillMaxWidth()
+                    .height(129.dp)
+                    .padding(start = 34.dp, end = 34.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFD2D2D2)),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -108,18 +121,24 @@ fun ProjectScreen(navController: NavController ) {
                     ) {
                         Text(
                             text = "Topik 2 – Belajar Menulis",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Status : Sudah Mengumpulkan",
-                            fontFamily = poppinsfamily, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black,
                         )
                         Text(
                             text = "Nilai : -",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                     }
@@ -143,8 +162,9 @@ fun ProjectScreen(navController: NavController ) {
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().height(129.dp).padding(start = 34.dp, end = 34.dp)
-                ,
+                    .fillMaxWidth()
+                    .height(129.dp)
+                    .padding(start = 34.dp, end = 34.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFD2D2D2)),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -159,18 +179,24 @@ fun ProjectScreen(navController: NavController ) {
                     ) {
                         Text(
                             text = "Topik 3 – Belajar Menghitung",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Status : -",
-                            fontFamily = poppinsfamily, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black,
                         )
                         Text(
                             text = "Nilai : -",
-                            fontFamily = poppinsfamily, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                     }
