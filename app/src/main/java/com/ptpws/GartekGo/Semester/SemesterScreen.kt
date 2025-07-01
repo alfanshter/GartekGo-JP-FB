@@ -305,7 +305,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                     .height(190.dp)
                     .clickable(enabled = isActive) {
                         if (isActive) {
-                            navController.navigate(AppScreen.Home.Semester.Topik.route)
+                            navController.navigate("${AppScreen.Home.Semester.Topik.route}/${data.id}")
                         }
                     },
                 shape = RoundedCornerShape(16.dp),

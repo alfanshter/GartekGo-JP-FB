@@ -53,18 +53,19 @@ import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopikScreen(navController: NavController) {
+fun TopikScreen(navController: NavController,idtopik: String) {
     var materi by remember { mutableStateOf("") }
     var vidio by remember { mutableStateOf("") }
     var soal by remember { mutableStateOf("") }
 
     var uid = FirebaseAuth.getInstance().currentUser!!.uid
+    Log.d("muhib",idtopik.toString())
 
     val db = Firebase.firestore
 
     val getdata =
-        db.collection("users").document(uid).collection("topik").document("L1b3OsVNHV01boF5P0MB").get()
-    getdata.addOnSuccessListener { data ->
+        db.collection("users").document(uid).collection("topik").document(idtopik).get()
+        getdata.addOnSuccessListener { data ->
         materi = data.get("materi").toString()
         vidio = data.get("vidio").toString()
         soal = data.get("soal").toString()
@@ -109,7 +110,9 @@ fun TopikScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp).clickable{ navController.navigate(AppScreen.Home.Semester.Topik.Materi.route)},
+                        .height(129.dp).clickable {
+                            navController.navigate("${AppScreen.Home.Semester.Topik.Materi.route}/$idtopik")
+                        },
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF)),
                     shape = RoundedCornerShape(23.dp)
                 ) {
@@ -294,6 +297,6 @@ fun TopikScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 private fun TopikScreenPreview() {
-    TopikScreen(navController = rememberNavController())
+    TopikScreen(navController = rememberNavController(), idtopik = "")
 
 }

@@ -76,6 +76,9 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+    //pdf
+    // Atau versi stabil terbaru jika tersedia
+    implementation("com.squareup.okhttp3:okhttp:4.10.0") // Untuk download file
 
 
 
