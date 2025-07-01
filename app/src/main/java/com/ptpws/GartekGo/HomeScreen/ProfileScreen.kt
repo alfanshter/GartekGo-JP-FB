@@ -32,6 +32,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,9 +48,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Auth.AuthActivity
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
@@ -54,7 +62,26 @@ import com.ptpws.GartekGo.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController) {
+    var namauser by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+    var nomerabsen by remember { mutableStateOf("") }
+    var programkeahlian by remember { mutableStateOf("") }
     var context = LocalContext.current
+    var uid = FirebaseAuth.getInstance().uid
+
+
+        val db = Firebase.firestore
+
+       val getData =  db.collection("users").document(uid.toString()).get()
+        getData.addOnSuccessListener { data ->
+          email =  data.get("email").toString()
+            programkeahlian = data.get("program_keahlian").toString()
+            nomerabsen = data.get("nomor_absen").toString()
+            kelas = data.get("Kelas").toString()
+
+        }
+
 
     //panggil inisialisasi Firebase Auth
     var database = FirebaseAuth.getInstance()
@@ -68,15 +95,6 @@ fun ProfileScreen(navController: NavController) {
                         fontSize = 20.sp,
                         color = Color.Black
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.back),
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color(0xFFF5F9FF)
@@ -122,7 +140,7 @@ fun ProfileScreen(navController: NavController) {
                         .padding(start = 27.dp)
                 ) {
                     Text(
-                        text = "Email",
+                        text = email,
                         fontFamily = poppinsfamily,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -130,7 +148,7 @@ fun ProfileScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Program Keahlian",
+                        text = programkeahlian,
                         fontFamily = poppinsfamily,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -138,7 +156,7 @@ fun ProfileScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Nomor Absen",
+                        text = nomerabsen,
                         fontFamily = poppinsfamily,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -146,13 +164,14 @@ fun ProfileScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Kelas",
+                        text = kelas,
                         fontFamily = poppinsfamily,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
                     )
                 }
+                Spacer(Modifier.height(7.dp))
                 Button(
                     onClick = {
 

@@ -26,4 +26,8 @@ data class TopikModel(
 
     val jumlahSoal: Int = 0,
     val status_soal: Int = 0,
+
+    var soal:String? = null,
+    var materi:String? = null,
+    var vidio:String? = null,
     )

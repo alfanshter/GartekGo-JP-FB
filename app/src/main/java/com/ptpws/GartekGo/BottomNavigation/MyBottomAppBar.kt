@@ -30,9 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
 import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
@@ -174,8 +176,21 @@ fun MyBottomAppBar(navController: NavController) {
             ) {
                 composable(AppScreen.Home.route) { HomeScreen(navigationController) }
                 composable(AppScreen.Home.Semester.route) { SemesterScreen(navigationController, onTambahClick = {}, pilihan = 0) }
-                composable(AppScreen.Home.Semester.Topik.route) { TopikScreen(navigationController) }
-                composable(AppScreen.Home.Semester.Topik.Materi.route) { MateriScreen(navigationController) }
+//                composable(AppScreen.Home.Semester.Topik.route) { TopikScreen(navigationController) }
+                composable(
+                    route = "${AppScreen.Home.Semester.Topik.route}/{idTopik}",
+                    arguments = listOf(navArgument("idTopik") { type = NavType.StringType })
+                ) {
+                    val idTopik = it.arguments?.getString("idTopik")
+                    TopikScreen(navigationController,idTopik.toString())
+                }
+                composable(
+                    route = "${AppScreen.Home.Semester.Topik.Materi.route}/{idTopik}",
+                    arguments = listOf(navArgument("idTopik") { type = NavType.StringType })
+                ) {
+                    val idTopik = it.arguments?.getString("idTopik")
+                    MateriScreen(navigationController, idtopik = idTopik ?: "")
+                }
                 composable(AppScreen.Home.Semester.Topik.Vidio.route) { VidioScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Soal.route) { SoalScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Upload.route) { UploadScreen(navigationController) }

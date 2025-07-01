@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,13 +44,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopikScreen(navController: NavController) {
+fun TopikScreen(navController: NavController,idtopik: String) {
+    var materi by remember { mutableStateOf("") }
+    var vidio by remember { mutableStateOf("") }
+    var soal by remember { mutableStateOf("") }
+
+    var uid = FirebaseAuth.getInstance().currentUser!!.uid
+    Log.d("muhib",idtopik.toString())
+
+    val db = Firebase.firestore
+
+    val getdata =
+        db.collection("users").document(uid).collection("topik").document(idtopik).get()
+        getdata.addOnSuccessListener { data ->
+        materi = data.get("materi").toString()
+        vidio = data.get("vidio").toString()
+        soal = data.get("soal").toString()
+
+        Log.d("muhib",materi.toString())
+    }
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             title = {
@@ -84,7 +110,9 @@ fun TopikScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp).clickable{ navController.navigate(AppScreen.Home.Semester.Topik.Materi.route)},
+                        .height(129.dp).clickable {
+                            navController.navigate("${AppScreen.Home.Semester.Topik.Materi.route}/$idtopik")
+                        },
                     colors = CardDefaults.cardColors(containerColor = Color(0xffC2D8FF)),
                     shape = RoundedCornerShape(23.dp)
                 ) {
@@ -124,7 +152,9 @@ fun TopikScreen(navController: NavController) {
                         .width(359.dp)
                         .height(129.dp),
                     shape = RoundedCornerShape(23.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDCDCDC)) // Abu-abu terang
+                    colors = CardDefaults.cardColors(containerColor
+                    = if (materi == "1")Color(0xffC2D8FF)else
+                        Color(0xFFDCDCDC)) // Abu-abu terang
                 ) {
                     Box(
                         modifier = Modifier
@@ -163,11 +193,38 @@ fun TopikScreen(navController: NavController) {
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Terkunci",
-                                tint = Color.Black
-                            )
+                            if (materi == "1") {
+                                IconButton(
+                                    onClick = { /* aksi */ },
+                                    modifier = Modifier
+                                        .size(32.dp) // lebih kecil agar proporsional
+                                        .background(Color(0xFF337DFF), shape = CircleShape)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "Play",
+                                        tint = Color.White
+                                    )
+                                }
+                            }else{
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .size(44.dp)
+                                        .background(
+                                            color = Color(0xFFE0E0E0), // Lingkaran abu-abu
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Terkunci",
+                                        tint = Color.Black
+                                    )
+                                }
+
+                            }
                         }
                     }
                 }
@@ -240,6 +297,6 @@ fun TopikScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 private fun TopikScreenPreview() {
-    TopikScreen(navController = rememberNavController())
+    TopikScreen(navController = rememberNavController(), idtopik = "")
 
 }
