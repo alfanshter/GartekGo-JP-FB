@@ -1,5 +1,7 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +36,9 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,18 +46,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
+import com.ptpws.GartekGo.Admin.Dialog.TambahProjectDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahSoalDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialog
+import com.ptpws.GartekGo.Admin.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,7 +158,9 @@ fun TambahProjectScreen(navController: NavController, outerPadding: PaddingValue
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
-                    ProjectListContent()
+                    ProjectListContent(
+                        semester = if (page == 0) "1" else "2"
+                    )
                 }
 
                 // LazyColumn berisi semua konten termasuk tombol
@@ -162,8 +178,39 @@ private fun TambahProjectPreview() {
 }
 
 @Composable
-fun ProjectListContent() {
+fun ProjectListContent(semester: String) {
     var showDialogsoal by remember { mutableStateOf(false) }
+
+    var showDialogProject by remember { mutableStateOf(false) }
+    val topikList = remember { mutableStateListOf<TopikModel>() }
+    val context = LocalContext.current
+    var idTopik by remember { mutableStateOf("") }
+    var topikModel by remember { mutableStateOf(TopikModel()) }
+    var isUpdate by remember { mutableStateOf(false) }
+    var idLama by remember { mutableStateOf("") }
+
+
+    LaunchedEffect(semester) {
+        val db = Firebase.firestore
+        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        db.collection("topik")
+            .whereEqualTo("semester", semesterLabel)
+            .orderBy("nomor")
+            .get()
+            .addOnSuccessListener { result ->
+                for (doc in result.documents) {
+                    val topik = doc.toObject(TopikModel::class.java)?.copy(id = doc.id)
+                    if (topik != null) topikList.add(topik)
+
+                }
+            }.addOnFailureListener {
+                Toast.makeText(
+                    context,
+                    "gagal ambil data: ${it.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -172,89 +219,102 @@ fun ProjectListContent() {
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
     ) {
-        item {
-            repeat(3) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(96.dp)
-                        .padding(vertical = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
-                    shape = RoundedCornerShape(23.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column(modifier = Modifier.padding(start = 22.dp, top = 12.dp)) {
-                        Text(
-                            text = "Nama Project",
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = poppinsfamily,
-                            fontSize = 24.sp,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Nama Topik  ",
-                                fontSize = 12.sp,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
-                            )
+        items(topikList) { data ->
 
-
-                            Text(
-                                text = "Dibuat 16/08/2025",
-                                fontSize = 12.sp,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
-                            )
-
-                        }
-                    }
-                }
-            }
-        }
-
-        // Tombol Tambah Topik
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+            val tanggalUpload = data.uploadedMateriAt?.toDate()?.let {
+                SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(it)
+            } ?: "-"
 
             Card(
                 modifier = Modifier
-                    .fillMaxWidth().clickable{showDialogsoal = true}
-                    .height(96.dp),
-                border = BorderStroke(2.dp, Color(0xFF2F80ED)),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .padding(vertical = 6.dp)
+                    .clickable {
+                        showDialogProject = true
+                        topikModel = data
+                        idTopik = data.id
+                        isUpdate = true
+                        idLama = data.id
+                    },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFDDECFF)),
+                shape = RoundedCornerShape(23.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.tamabahtopik),
-                        contentDescription = "Tambah",
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Tambah Soal Project",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = poppinsfamily,
-                        fontSize = 12.sp
-                    )
-                }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Bagian atas: nama topik
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 22.dp, top = 12.dp)
+                    ) {
+                        Text(
+                            text = "Topik ${data.nomor} - ${data.nama!!}",
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = poppinsfamily,
+                            fontSize = 12.sp,
+                            color = Color.Black,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
+                    Row(modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(end = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        // Bagian bawah kiri: tanggal upload
+                        Text(
+                            text = "${tanggalUpload}",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
+
+                        Text(
+                            text = if (data.soal_project!=null) "Soal ada" else "Soal tidak ada",
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(start = 22.dp, bottom = 12.dp)
+                        )
+                    }
+
+                }
             }
 
         }
+
     }
-    
+
+    if (showDialogProject == true) {
+        TambahProjectDialog(
+            onDismis = {
+                showDialogProject = false
+
+            }, semester = semester,
+            onSave = { topik ->
+                Log.d("dinda", topik.toString())
+
+                if (idTopik.isNotBlank()) {
+                    val index = topikList.indexOfFirst { it.id == topik.id }
+                    if (index != -1) {
+                        val topikLama = topikList[index]
+                        // Hanya update file_materi dan nama_file, field lain tetap
+                        topikList[index] = topikLama.copy(
+                            soal_project = topik.soal_project,
+                            gambar_project = topik.gambar_project
+                        )
+                    }
+                }
+            },
+            topikModel = topikModel,
+
+            )
+    }
+
+
 }
 

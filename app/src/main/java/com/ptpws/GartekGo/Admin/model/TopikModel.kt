@@ -18,6 +18,12 @@ data class TopikModel(
     var nama_video : String? = null,
     var path_video : String? = null,
 
+    @Serializable(with = TimestampSerializer::class)
+    var uploadedGambarProjectAt : Timestamp? = null,
+    var soal_project : String? = null,
+    var gambar_project : String? = null,
+    var nama_file_project : String? = null,
+
     val jumlahSoal: Int = 0,
     val status_soal: Int = 0,
     )

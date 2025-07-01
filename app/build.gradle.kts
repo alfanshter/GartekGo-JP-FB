@@ -62,7 +62,9 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     // Accompanist permissions
-    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    implementation (libs.accompanist.permissions)
+
     // Activity Compose
     implementation("androidx.activity:activity-compose:1.7.2")
     // Coil untuk load gambar dari URI
@@ -89,6 +91,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.firebase.dataconnect)
 
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
 
 
     testImplementation(libs.junit)
