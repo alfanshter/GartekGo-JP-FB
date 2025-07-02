@@ -100,6 +100,10 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.3.1")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
 
+    implementation ("com.google.accompanist:accompanist-pager:0.28.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0")
+
+    implementation("io.github.afreakyelf:Pdf-Viewer:2.3.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
