@@ -8,7 +8,7 @@ data class UsersModel(
     val nama: String = "",
     val kelas: String = "",
     val nomor_absen: Int ? = null,
-    val uid: String = "",
+    val uid: String ? = null,
     val program_keahlian: String = "",
     val role: String = "user",
     val createdAt: com.google.firebase.Timestamp? = null

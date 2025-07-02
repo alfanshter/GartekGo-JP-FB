@@ -360,7 +360,8 @@ fun DataSoalContent(
                 soalList.add(soal) // <-- Tambah ke list utama
 
             }
-        }, topikModel, soalModel = soalModel, onDelete = { idSoal ->
+        }, topikModel, soalModel = soalModel,
+            onDelete = { idSoal ->
             soalList.removeIf { it.id_soal == idSoal }
             Toast.makeText(
                 context,

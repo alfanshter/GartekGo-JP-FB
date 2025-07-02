@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -294,13 +295,12 @@ fun TambahSiswaScreen(navController: NavController) {
 
             },
             onSave = { user ->
-
-                if (userModel.uid.isNotBlank()) {
+                Log.d("dinda", "TambahSiswaScreen: $user")
+                if (userModel.uid != null) {
+                    Toast.makeText(context, "update siswa berhasil", Toast.LENGTH_SHORT).show()
                     val index = userList.indexOfFirst { it.uid == user.uid }
                     if (index != -1) {
-                        val userLama = userList[index]
-                        // Hanya update file_materi dan nama_file, field lain tetap
-                        userList[index] = userLama.copy(
+                        userList[index] = user.copy(
                             nama = user.nama,
                             email = user.email,
                             nomor_absen = user.nomor_absen,
@@ -308,16 +308,31 @@ fun TambahSiswaScreen(navController: NavController) {
                             program_keahlian = user.program_keahlian,
                         )
                     }
+                } else {
+                    Toast.makeText(context, "Registrasi siswa berhasil", Toast.LENGTH_SHORT).show()
+                    userList.add(user) // <-- Tambah ke list utama
+
                 }
+
             },
             usersModel = userModel,
+            onDelete = { uid ->
+                Toast.makeText(
+                    context,
+                    "User berhasil di hapus",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            )
+                userList.removeIf { it.uid == uid }
+
+            }
+        )
 
     }
 
 
 }
+
 
 @Preview(showBackground = true)
 @Composable
