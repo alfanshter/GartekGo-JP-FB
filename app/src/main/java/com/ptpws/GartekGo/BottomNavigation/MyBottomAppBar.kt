@@ -191,7 +191,13 @@ fun MyBottomAppBar(navController: NavController) {
                     val idTopik = it.arguments?.getString("idTopik")
                     MateriScreen(navigationController, idtopik = idTopik ?: "")
                 }
-                composable(AppScreen.Home.Semester.Topik.Vidio.route) { VidioScreen(navigationController) }
+                composable(
+                    "${AppScreen.Home.Semester.Topik.Vidio.route}/{idtopik}",
+                    arguments = listOf(navArgument("idtopik") { type = NavType.StringType })
+                ) {
+                    val idtopik = it.arguments?.getString("idtopik") ?: ""
+                    VidioScreen(navigationController, idtopik)
+                }
                 composable(AppScreen.Home.Semester.Topik.Soal.route) { SoalScreen(navigationController) }
                 composable(AppScreen.Home.Semester.Topik.Upload.route) { UploadScreen(navigationController) }
 

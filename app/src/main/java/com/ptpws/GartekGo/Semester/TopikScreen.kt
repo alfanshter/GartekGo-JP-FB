@@ -152,7 +152,13 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp),
+                        .height(129.dp).then( if (materi == "1") {
+                            Modifier.clickable {
+                                navController.navigate("${AppScreen.Home.Semester.Topik.Vidio.route}/$idtopik")
+                            }
+                        } else {
+                            Modifier // Tidak clickable
+                        }),
                     shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor
                     = if (materi == "1")Color(0xffC2D8FF)else
@@ -197,7 +203,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                         ) {
                             if (materi == "1") {
                                 IconButton(
-                                    onClick = { /* aksi */ },
+                                    onClick = { },
                                     modifier = Modifier
                                         .size(32.dp) // lebih kecil agar proporsional
                                         .background(Color(0xFF337DFF), shape = CircleShape)

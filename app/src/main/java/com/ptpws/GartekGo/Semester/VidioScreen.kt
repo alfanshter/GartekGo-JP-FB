@@ -11,6 +11,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,6 +65,7 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
@@ -73,33 +75,55 @@ import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VidioScreen(navController: NavController) {
+fun VidioScreen(navController: NavController, idtopik: String) {
+    var videoUrl by remember { mutableStateOf<String?>(null) }
     var videoFinished by remember { mutableStateOf(false) }
-    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
-        CenterAlignedTopAppBar(
-            title = {
-                Text(
-                    text = "Topik 1 : VIDIO",
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = poppinsfamily,
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
-            }, navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = null,
-                        tint = Color.Unspecified
+
+    val db = Firebase.firestore
+
+    LaunchedEffect(idtopik) {
+        try {
+            val data = db.collection("topik").document(idtopik).get().await()
+            if (data.exists()){
+                videoUrl = data.getString("path_video")
+            }
+
+        } catch (e: Exception) {
+
+        }
+
+
+    }
+
+
+    Scaffold(
+        modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
+            CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
+                title = {
+                    Text(
+                        text = "Topik 1 : VIDIO",
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = poppinsfamily,
+                        fontSize = 24.sp,
+                        color = Color.Black
                     )
+                }, navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
 
-                }
-            }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color(0xffF5F9FF) // TopAppBar background
+                    }
+                }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xffF5F9FF) // TopAppBar background
+                )
             )
-        )
 
-    }) { innerPadding ->
+        }, contentWindowInsets = WindowInsets(0)
+    ) { innerPadding ->
         Spacer(Modifier.height(40.dp))
         LazyColumn(
             contentPadding = innerPadding,
@@ -108,10 +132,13 @@ fun VidioScreen(navController: NavController) {
                 .background(Color(0xffF5F9FF))
         ) {
             item {
-                ExoPlayerWithFullscreenYouTubeStyle(
-                    storagePath = "public/vidioku.mp4",
-                    onVideoEnded = { videoFinished = true}
-                )
+                if (videoUrl != null) {
+                    ExoPlayerWithFullscreenYouTubeStyle(storagePath = videoUrl!!) {
+                        videoFinished = true
+                    }
+                } else {
+                    CircularProgressIndicator()
+                }
 
 
             }
@@ -159,7 +186,7 @@ fun VidioScreen(navController: NavController) {
                         ) {
                             Card(
                                 shape = CircleShape,
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = if (videoFinished) Color.White else Color.LightGray),
                                 elevation = CardDefaults.cardElevation(0.dp),
                                 modifier = Modifier.fillMaxSize()
                             ) {
@@ -170,7 +197,7 @@ fun VidioScreen(navController: NavController) {
                                     Icon(
                                         imageVector = Icons.Default.ArrowForward,
                                         contentDescription = "Next",
-                                        tint = Color(0xFF0057FF),
+                                        tint = if (videoFinished) Color(0xFF0057FF) else Color.Gray,
                                         modifier = Modifier.size(25.dp)
                                     )
                                 }
@@ -189,7 +216,7 @@ fun VidioScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 private fun VidioScreenPreview() {
-    VidioScreen(navController = rememberNavController())
+    VidioScreen(navController = rememberNavController(), idtopik = "")
 
 }
 
@@ -373,8 +400,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
         }
     }
 }
-
-
 
 
 fun Context.findActivity(): Activity? = when (this) {

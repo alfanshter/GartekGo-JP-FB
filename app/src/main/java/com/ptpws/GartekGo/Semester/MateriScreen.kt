@@ -224,7 +224,7 @@ fun MateriScreen(navController: NavController, idtopik: String) {
 
             if (showButton) {
                 Button(
-                    onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Vidio.route) },
+                    onClick = { navController.navigate("${AppScreen.Home.Semester.Topik.Vidio.route}/$idtopik") },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF005DFF), contentColor = Color.White

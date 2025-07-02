@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -68,6 +69,7 @@ fun SoalScreen(navController: NavController) {
 
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
+            windowInsets = WindowInsets(0),
             title = {
                 Text(
                     text = "Topik 1 : SOAL",
@@ -90,7 +92,7 @@ fun SoalScreen(navController: NavController) {
             )
         )
 
-    }
+    }, contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Spacer(Modifier.height(40.dp))
         ConstraintLayout(
