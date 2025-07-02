@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -119,6 +120,7 @@ fun SemesterScreen(
             topBar = {
                 Column {
                     CenterAlignedTopAppBar(
+                        windowInsets = WindowInsets(0),
                         title = {
                             Text(
                                 text = "Semester 1",
@@ -147,7 +149,7 @@ fun SemesterScreen(
                     )
 
                 }
-            }
+            }, contentWindowInsets = WindowInsets(0)
             //topbar end
         ) { innerPadding ->
             val combinedPadding = PaddingValues(
@@ -290,7 +292,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
             .padding(start = 34.dp)
             .background(color = Color(0xffF5F9FF)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(top = 8.dp)
+        contentPadding = PaddingValues(top = 10.dp)
     ) {
         itemsIndexed(listData) { index, data ->
             val isActive = index == 0 // Topik pertama aktif, sisanya

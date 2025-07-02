@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -74,6 +75,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
     }
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
+            windowInsets = WindowInsets(0),
             title = {
                 Text(
                     text = "Topik 1",
@@ -96,7 +98,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 containerColor = Color(0xffF5F9FF) // TopAppBar background
             )
         )
-    }
+    }, contentWindowInsets = WindowInsets(top = 40.dp)
     ) { innerPadding ->
 
         LazyColumn(
