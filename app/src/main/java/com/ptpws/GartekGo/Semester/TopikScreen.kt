@@ -242,9 +242,20 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp),
+                        .height(129.dp)
+                        .then(
+                            if (vidio == "1") {
+                                Modifier.clickable {
+                                    navController.navigate("${AppScreen.Home.Semester.Topik.Soal.route}/$idtopik")
+                                }
+                            } else {
+                                Modifier // Tidak clickable
+                            }
+                        ),
                     shape = RoundedCornerShape(23.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDCDCDC)) // Abu-abu terang
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (vidio == "1") Color(0xffC2D8FF) else Color(0xFFDCDCDC)
+                    ) // Biru kalau aktif, abu-abu kalau terkunci
                 ) {
                     Box(
                         modifier = Modifier
@@ -258,18 +269,17 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                             Text(
                                 text = "SOAL",
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E2F) // Warna gelap
-                                , fontFamily = poppinsfamily, fontSize = 36.sp
-
+                                color = Color(0xFF1E1E2F),
+                                fontFamily = poppinsfamily,
+                                fontSize = 36.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Tonton Video  Terlebih Dahulu",
+                                text = if (vidio == "1") "Ayo kerjakan soalnya" else "Tonton Video Terlebih Dahulu",
                                 fontFamily = poppinsfamily,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Color(0xFF1E1E2F)
-
                             )
                         }
 
@@ -278,19 +288,35 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                                 .align(Alignment.CenterEnd)
                                 .size(44.dp)
                                 .background(
-                                    color = Color(0xFFE0E0E0), // Lingkaran abu-abu
+                                    color = if (vidio == "1") Color(0xFF337DFF) else Color(0xFFE0E0E0),
                                     shape = CircleShape
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Terkunci",
-                                tint = Color.Black
-                            )
+                            if (vidio == "1") {
+                                IconButton(
+                                    onClick = {
+
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "Mulai",
+                                        tint = Color.White
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Terkunci",
+                                    tint = Color.Black
+                                )
+                            }
                         }
                     }
                 }
+
 
 
             }

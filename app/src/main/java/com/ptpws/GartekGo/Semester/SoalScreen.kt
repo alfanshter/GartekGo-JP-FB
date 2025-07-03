@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Semester
 
+import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,17 +58,67 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.ptpws.GartekGo.Admin.model.SoalModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SoalScreen(navController: NavController) {
+fun SoalScreen(navController: NavController, idtopik: String) {
     var selectedOption by remember { mutableStateOf("") }
+    var soalList by remember { mutableStateOf<List<SoalModel>>(emptyList()) }
+    var currentIndex by remember { mutableStateOf(0) } // Untuk melacak indeks soal
 
-    val options = listOf("Pilihan 1", "Pilihan 2", "Pilihan 3", "Pilihan 4")
+    suspend fun getSoalByTopikId(idTopik: String): List<SoalModel> {
+        val db = FirebaseFirestore.getInstance()
+        val soalList = mutableListOf<SoalModel>()
+        val topikRef: DocumentReference = db.collection("topik").document(idTopik)
+
+        val snapshot = db.collection("soal")
+            .whereEqualTo("topik", topikRef)
+            .get()
+            .await()
+
+        for (doc in snapshot.documents) {
+            val soal = doc.toObject(SoalModel::class.java)
+            if (soal != null) {
+                soalList.add(soal)
+            }
+        }
+        return soalList
+    }
+
+    LaunchedEffect(idtopik) {
+        Log.d("Muhib", "ID topik diterima: $idtopik")
+        soalList = getSoalByTopikId(idtopik)
+        Log.d("Muhib", "Jumlah soal: ${soalList.size}")
+        soalList.forEach {
+            Log.d("Muhib", "Soal: ${it.soal}, Topik ref: ${it.topik?.path}")
+        }
+    }
+
+    if (soalList.isEmpty()) {
+        // Loading UI
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return // 🚨 Supaya UI di bawah tidak dijalankan
+    }
+
+    // Kalau sudah ada soal
+    val soal: SoalModel? = if (soalList.isNotEmpty()) soalList.getOrNull(currentIndex) else null
+    val options = listOfNotNull(
+        soal?.jawaban?.get("a"),
+        soal?.jawaban?.get("b"),
+        soal?.jawaban?.get("c"),
+        soal?.jawaban?.get("d"),
+        soal?.jawaban?.get("e")
+    )
 
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
@@ -88,10 +141,9 @@ fun SoalScreen(navController: NavController) {
                     )
                 }
             }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color(0xffF5F9FF) // TopAppBar background
+                containerColor = Color(0xffF5F9FF)
             )
         )
-
     }, contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Spacer(Modifier.height(40.dp))
@@ -102,7 +154,6 @@ fun SoalScreen(navController: NavController) {
         ) {
             val (content, button) = createRefs()
 
-            // LazyColumn: isi pertanyaan dan pilihan
             LazyColumn(
                 modifier = Modifier
                     .constrainAs(content) {
@@ -112,12 +163,13 @@ fun SoalScreen(navController: NavController) {
                         bottom.linkTo(button.top)
                         height = Dimension.fillToConstraints
                     }
-                    .padding(horizontal = 24.dp).background(color = Color(0xffF5F9FF))
+                    .padding(horizontal = 24.dp)
+                    .background(color = Color(0xffF5F9FF))
             ) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "1/10",
+                        text = "${currentIndex + 1}/${soalList.size}",
                         fontSize = 16.sp,
                         fontFamily = jostfamily,
                         fontWeight = FontWeight.SemiBold,
@@ -131,7 +183,7 @@ fun SoalScreen(navController: NavController) {
 
                 item {
                     Text(
-                        text = "Soal eifjwejgtjfg nfijwheifg ndsiujgnjisedngji knrgoerngoiunergoienrokgrok",
+                        text = soal?.soal ?: "",
                         fontSize = 16.sp,
                         fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
@@ -173,17 +225,22 @@ fun SoalScreen(navController: NavController) {
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
 
-            // Tombol tetap di bawah layar
             Button(
-                onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Upload.route) },
+                onClick = {  if (currentIndex < soalList.size - 1) {
+                    currentIndex++
+                    selectedOption = "" // reset pilihan setiap soal baru
+                } else {
+                    // Kalau sudah soal terakhir, misalnya navigate ke upload
+                    navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                } },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF009A0F), // Warna biru
+                    containerColor = Color(0xFF009A0F),
                     contentColor = Color.White
                 ),
                 modifier = Modifier
                     .constrainAs(button) {
-                        bottom.linkTo(parent.bottom, margin = 24.dp) // agar tidak mentok
+                        bottom.linkTo(parent.bottom, margin = 24.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
@@ -191,10 +248,7 @@ fun SoalScreen(navController: NavController) {
                     .height(60.dp)
                     .padding(horizontal = 24.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    // Teks di tengah
+                Box(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "SELANJUTNYA",
                         color = Color.White,
@@ -203,21 +257,16 @@ fun SoalScreen(navController: NavController) {
                         fontFamily = poppinsfamily,
                         modifier = Modifier.align(Alignment.Center)
                     )
-
-                    // Card bulat isi ikon panah di kanan
                     Card(
                         shape = CircleShape,
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
-                            .padding(end = 8.dp) // jarak dari tepi kanan
+                            .padding(end = 8.dp)
                             .size(48.dp)
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
                                 contentDescription = "Masuk",
@@ -228,17 +277,17 @@ fun SoalScreen(navController: NavController) {
                     }
                 }
             }
-
         }
-
     }
 }
+
+
 
 
 @Preview(showBackground = true)
 @Composable
 private fun SoalScreenPreview() {
-    SoalScreen(navController = rememberNavController())
+    SoalScreen(navController = rememberNavController(),idtopik = "")
 
 
 }
