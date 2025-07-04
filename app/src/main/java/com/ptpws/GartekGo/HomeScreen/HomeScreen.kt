@@ -60,13 +60,11 @@ import com.ptpws.GartekGo.R
 @Composable
 fun HomeScreen(navController: NavController) {
     var nama by remember { mutableStateOf("") }
-    val context = LocalContext.current
     val uid = FirebaseAuth.getInstance().uid
     val listData = remember { mutableStateListOf<TopikModel>() }
-
     val db = Firebase.firestore
 
-    // Ambil nama user
+    // 🔥 Ambil nama user
     db.collection("users").document(uid.toString()).get()
         .addOnSuccessListener { data ->
             nama = data.get("nama").toString()
@@ -104,7 +102,19 @@ fun HomeScreen(navController: NavController) {
             }
     }
 
-    val firstData = listData.firstOrNull()
+    // 🔥 Sort by nomor
+    val sortedData = listData.sortedBy {
+        try {
+            it.nomor?.toInt() ?: Int.MAX_VALUE
+        } catch (e: Exception) {
+            Int.MAX_VALUE
+        }
+    }
+
+    // 🔥 Ambil topik pertama yang belum selesai
+    val nextTopik = sortedData.firstOrNull {
+        it.materi == "0" || it.vidio == "0" || it.soal == "0"
+    } ?: sortedData.lastOrNull()
 
     LazyColumn(
         modifier = Modifier
@@ -113,8 +123,7 @@ fun HomeScreen(navController: NavController) {
             .background(color = Color(0xffF5F9FF)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Hanya kalau data ada
-        firstData?.let { data ->
+        nextTopik?.let { data ->
             item {
                 Icon(
                     painter = painterResource(id = R.drawable.logo2),
@@ -232,7 +241,7 @@ fun HomeScreen(navController: NavController) {
                             .padding(end = 34.dp)
                             .fillMaxWidth()
                             .height(190.dp)
-                            .clickable { navController.navigate(AppScreen.Home.Semester.Topik.route) },
+                            .clickable { navController.navigate("${AppScreen.Home.Semester.Topik.route}/${data.id}") },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFC2D8FF))
                     ) {
@@ -321,7 +330,7 @@ fun HomeScreen(navController: NavController) {
                             }
 
                             IconButton(
-                                onClick = { /* aksi */ },
+                                onClick = { /* aksi play */ },
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
                                     .padding(top = 12.dp, end = 24.dp)
@@ -342,6 +351,7 @@ fun HomeScreen(navController: NavController) {
         }
     }
 }
+
 
 
 @Preview(showBackground = true)

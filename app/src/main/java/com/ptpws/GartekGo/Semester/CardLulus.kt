@@ -41,9 +41,9 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun CardLulus(modifier: Modifier = Modifier) {
+fun CardLulus(nilai: Int) {
     Card(
-        modifier = modifier
+        modifier = Modifier
             .width(360.dp)
             .height(490.dp),
         shape = RoundedCornerShape(40.dp),
@@ -155,6 +155,6 @@ fun CardLulus(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun CardLulusPreview() {
-    CardLulus()
+    CardLulus(nilai = 0)
 
 }

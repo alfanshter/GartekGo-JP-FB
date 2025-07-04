@@ -400,7 +400,16 @@ fun TambahsiswaDialog(
                         }
 
                         Button(
-                            onClick = { onDismis() },
+                            onClick = {  val newUser = UsersModel(
+                                uid = usersModel.uid,  // ← ini tetap diisi (kalau update)
+                                nama = nama,
+                                email = email,
+                                nomor_absen = absen.toIntOrNull() ?: 0,
+                                kelas = selectedkelas,
+                                program_keahlian = selectedkeahlian
+                            )
+                                onSave(newUser)  // ⬅ ini bisa untuk "tambah" atau "update"
+                                onDismis() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(
                                     0xFF00C853

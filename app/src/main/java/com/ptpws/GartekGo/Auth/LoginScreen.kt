@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -64,6 +65,7 @@ import com.ptpws.GartekGo.Admin.AdminActivity
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.mulishfamily
+import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.MainActivity
 import com.ptpws.GartekGo.R
 
@@ -127,9 +129,13 @@ fun LoginScreen(navController: NavController) {
                 TextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text("Email", color = Color.Black) }, textStyle = TextStyle(
+                        fontFamily = mulishfamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = Color.Black),
                     leadingIcon = {
-                        Icon(Icons.Default.Email, contentDescription = "Email Icon")
+                        Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color(0xff545454))
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
@@ -152,15 +158,19 @@ fun LoginScreen(navController: NavController) {
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Password", color = Color.Black) }, textStyle = TextStyle(
+                        fontFamily = mulishfamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = Color.Black),
                     leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = "Password Icon")
+                        Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color(0xff545454))
                     },
                     trailingIcon = {
                         val image =
                             if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, contentDescription = null)
+                            Icon(imageVector = image, contentDescription = null, tint = Color(0xff545454))
                         }
                     },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -89,9 +90,11 @@ fun TambahSiswaScreen(navController: NavController) {
 
     Scaffold(
         //topbar start
+
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
+                    windowInsets = WindowInsets(0),
                     title = {
                         Text(
                             text = "Siswa",
@@ -117,7 +120,7 @@ fun TambahSiswaScreen(navController: NavController) {
                 )
 
             }
-        },
+        }, contentWindowInsets = WindowInsets(0),
         //topbar start
         floatingActionButton = {
             FloatingActionButton(
@@ -293,21 +296,39 @@ fun TambahSiswaScreen(navController: NavController) {
                 showDialog = false
 
             },
-            onSave = { user ->
+            onSave =  { user ->
+                val db = Firebase.firestore
 
                 if (userModel.uid.isNotBlank()) {
+                    // ========== UPDATE USER LAMA ==========
                     val index = userList.indexOfFirst { it.uid == user.uid }
                     if (index != -1) {
-                        val userLama = userList[index]
-                        // Hanya update file_materi dan nama_file, field lain tetap
-                        userList[index] = userLama.copy(
-                            nama = user.nama,
-                            email = user.email,
-                            nomor_absen = user.nomor_absen,
-                            kelas = user.kelas,
-                            program_keahlian = user.program_keahlian,
-                        )
+                        val updatedUser = user.copy(uid = userModel.uid)
+                        // Update di list
+                        userList[index] = updatedUser
+
+                        // Update ke Firestore
+                        db.collection("users").document(userModel.uid)
+                            .set(updatedUser)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Berhasil update user", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Gagal update: ${it.message}", Toast.LENGTH_SHORT).show()
+                            }
                     }
+                } else {
+                    // ========== TAMBAH USER BARU ==========
+                    db.collection("users")
+                        .add(user)
+                        .addOnSuccessListener { docRef ->
+                            val newUser = user.copy(uid = docRef.id)
+                            userList.add(newUser)
+                            Toast.makeText(context, "Berhasil tambah user", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Gagal tambah: ${it.message}", Toast.LENGTH_SHORT).show()
+                        }
                 }
             },
             usersModel = userModel,

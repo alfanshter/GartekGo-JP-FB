@@ -246,6 +246,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                         .then(
                             if (vidio == "1") {
                                 Modifier.clickable {
+                                    Log.d("Muhib", "Clicked idtopik: $idtopik")
                                     navController.navigate("${AppScreen.Home.Semester.Topik.Soal.route}/$idtopik")
                                 }
                             } else {

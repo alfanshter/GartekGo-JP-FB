@@ -3,6 +3,7 @@ package com.ptpws.GartekGo.Semester
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +75,9 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     var selectedOption by remember { mutableStateOf("") }
     var soalList by remember { mutableStateOf<List<SoalModel>>(emptyList()) }
     var currentIndex by remember { mutableStateOf(0) } // Untuk melacak indeks soal
+    var jawabansiswa by remember { mutableStateOf(mutableListOf<String>())  } //jawaban siswa
+    var tampilkannilai  by remember { mutableStateOf(false) } //menampilkan nilai
+    var nilai by remember { mutableStateOf(0) }
 
     suspend fun getSoalByTopikId(idTopik: String): List<SoalModel> {
         val db = FirebaseFirestore.getInstance()
@@ -108,6 +113,12 @@ fun SoalScreen(navController: NavController, idtopik: String) {
             CircularProgressIndicator()
         }
         return // 🚨 Supaya UI di bawah tidak dijalankan
+    }
+
+    // Kalau tampilkannilai true, tampilkan CardLulus
+    if (tampilkannilai) {
+        CardLulus(nilai = nilai)
+        return
     }
 
     // Kalau sudah ada soal
@@ -224,14 +235,21 @@ fun SoalScreen(navController: NavController, idtopik: String) {
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
+            val context = LocalContext.current
 
             Button(
-                onClick = {  if (currentIndex < soalList.size - 1) {
-                    currentIndex++
-                    selectedOption = "" // reset pilihan setiap soal baru
+                onClick = { if (selectedOption.isEmpty()) {
+                    Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
                 } else {
-                    // Kalau sudah soal terakhir, misalnya navigate ke upload
-                    navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                    jawabansiswa.add(selectedOption)
+
+                    if (currentIndex < soalList.size - 1) {
+                        currentIndex++
+                        selectedOption = "" // reset pilihan setiap soal baru
+                    } else {
+                        // Kalau sudah soal terakhir, misalnya navigate ke upload
+                        navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                    }
                 } },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
