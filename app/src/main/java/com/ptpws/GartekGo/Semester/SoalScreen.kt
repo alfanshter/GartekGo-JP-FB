@@ -60,8 +60,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ptpws.GartekGo.Admin.model.NilaiModel
 import com.ptpws.GartekGo.Admin.model.SoalModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
@@ -69,15 +72,21 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.tasks.await
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SoalScreen(navController: NavController, idtopik: String) {
+    val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+
     var selectedOption by remember { mutableStateOf("") }
     var soalList by remember { mutableStateOf<List<SoalModel>>(emptyList()) }
-    var currentIndex by remember { mutableStateOf(0) } // Untuk melacak indeks soal
-    var jawabansiswa by remember { mutableStateOf(mutableListOf<String>())  } //jawaban siswa
-    var tampilkannilai  by remember { mutableStateOf(false) } //menampilkan nilai
+    var currentIndex by remember { mutableStateOf(0) }
+    var jawabansiswa by remember { mutableStateOf(mutableListOf<String>()) }
+    var tampilkannilai by remember { mutableStateOf(false) }
     var nilai by remember { mutableStateOf(0) }
+    val db = FirebaseFirestore.getInstance()
+    val topikRef = db.collection("topik").document(idtopik)
 
     suspend fun getSoalByTopikId(idTopik: String): List<SoalModel> {
         val db = FirebaseFirestore.getInstance()
@@ -99,30 +108,27 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     }
 
     LaunchedEffect(idtopik) {
-        Log.d("Muhib", "ID topik diterima: $idtopik")
         soalList = getSoalByTopikId(idtopik)
-        Log.d("Muhib", "Jumlah soal: ${soalList.size}")
-        soalList.forEach {
-            Log.d("Muhib", "Soal: ${it.soal}, Topik ref: ${it.topik?.path}")
-        }
     }
 
     if (soalList.isEmpty()) {
-        // Loading UI
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
-        return // 🚨 Supaya UI di bawah tidak dijalankan
-    }
-
-    // Kalau tampilkannilai true, tampilkan CardLulus
-    if (tampilkannilai) {
-        CardLulus(nilai = nilai)
         return
     }
 
-    // Kalau sudah ada soal
-    val soal: SoalModel? = if (soalList.isNotEmpty()) soalList.getOrNull(currentIndex) else null
+    // ✅ Kalau sudah selesai, tampilkan card hasil
+    if (tampilkannilai) {
+        if (nilai >= 65) {
+            CardLulus(nilai = nilai)
+        } else {
+            CardTidakLulus(nilai = nilai)
+        }
+        return
+    }
+
+    val soal = soalList.getOrNull(currentIndex)
     val options = listOfNotNull(
         soal?.jawaban?.get("a"),
         soal?.jawaban?.get("b"),
@@ -131,33 +137,34 @@ fun SoalScreen(navController: NavController, idtopik: String) {
         soal?.jawaban?.get("e")
     )
 
-    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
-        CenterAlignedTopAppBar(
-            windowInsets = WindowInsets(0),
-            title = {
-                Text(
-                    text = "Topik 1 : SOAL",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    fontFamily = poppinsfamily,
-                    color = Color.Black
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = null,
-                        tint = Color.Unspecified
+    Scaffold(
+        containerColor = Color(0xffF5F9FF),
+        topBar = {
+            CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
+                title = {
+                    Text(
+                        text = "Topik 1 : SOAL",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        fontFamily = poppinsfamily,
+                        color = Color.Black
                     )
-                }
-            }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color(0xffF5F9FF)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
             )
-        )
-    }, contentWindowInsets = WindowInsets(0)
+        },
+        contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        Spacer(Modifier.height(40.dp))
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
@@ -175,7 +182,6 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         height = Dimension.fillToConstraints
                     }
                     .padding(horizontal = 24.dp)
-                    .background(color = Color(0xffF5F9FF))
             ) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -204,27 +210,26 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 }
 
                 items(options.size) { index ->
+                    val options = soal?.jawaban?.entries?.toList() ?: emptyList()
                     val option = options[index]
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .selectable(
-                                selected = (option == selectedOption),
-                                onClick = { selectedOption = option }
+                                selected = (option.key == selectedOption),
+                                onClick = { selectedOption = option.key }
                             )
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (option == selectedOption),
-                            onClick = { selectedOption = option },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = Color(0xFF007AFF)
-                            )
+                            selected = (option.key == selectedOption),
+                            onClick = { selectedOption = option.key },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF007AFF))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = option,
+                            text = option.value,
                             fontFamily = poppinsfamily,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -233,29 +238,58 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     }
                 }
 
+
+
+
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
-            val context = LocalContext.current
 
             Button(
-                onClick = { if (selectedOption.isEmpty()) {
-                    Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
-                } else {
-                    jawabansiswa.add(selectedOption)
-
-                    if (currentIndex < soalList.size - 1) {
-                        currentIndex++
-                        selectedOption = "" // reset pilihan setiap soal baru
+                onClick = {
+                    if (selectedOption.isEmpty()) {
+                        Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
                     } else {
-                        // Kalau sudah soal terakhir, misalnya navigate ke upload
-                        navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                        jawabansiswa.add(selectedOption)
+
+                        if (currentIndex < soalList.size - 1) {
+                            currentIndex++
+                            selectedOption = ""
+                        } else {
+                            // Hitung nilai
+                            val benar = soalList.indices.count { i ->
+                                soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
+                            }
+                            val score = ((benar.toDouble() / soalList.size) * 100).toInt()
+                            nilai = score
+
+                            // Buat model nilai
+                            val nilaiModel = NilaiModel(
+                                uid = auth.currentUser?.uid ?: "unknown",
+                                semester = "semester1",
+                                topik = topikRef,
+                                nilai = score,
+                                jawaban_siswa = jawabansiswa,
+                                jawaban_benar = soalList.map { it.jawaban_benar },
+                                benar_siswa = benar,
+                                total_soal = soalList.size,
+                                status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
+                                timestamp = Timestamp.now()
+                            )
+
+                            val db = FirebaseFirestore.getInstance()
+                            db.collection("nilai")
+                                .add(nilaiModel)
+                                .addOnSuccessListener {
+                                    tampilkannilai = true
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(context, "Gagal menyimpan nilai", Toast.LENGTH_SHORT).show()
+                                }
+                        }
                     }
-                } },
+                },
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF009A0F),
-                    contentColor = Color.White
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009A0F)),
                 modifier = Modifier
                     .constrainAs(button) {
                         bottom.linkTo(parent.bottom, margin = 24.dp)
@@ -268,7 +302,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = "SELANJUTNYA",
+                        text = if (currentIndex == soalList.size - 1) "SELESAI" else "SELANJUTNYA",
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -301,11 +335,10 @@ fun SoalScreen(navController: NavController, idtopik: String) {
 
 
 
-
 @Preview(showBackground = true)
 @Composable
 private fun SoalScreenPreview() {
-    SoalScreen(navController = rememberNavController(),idtopik = "")
+    SoalScreen(navController = rememberNavController(), idtopik = "")
 
 
 }

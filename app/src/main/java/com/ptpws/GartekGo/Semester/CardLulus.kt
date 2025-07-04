@@ -42,111 +42,118 @@ import com.ptpws.GartekGo.R
 
 @Composable
 fun CardLulus(nilai: Int) {
-    Card(
+    Column(
         modifier = Modifier
-            .width(360.dp)
-            .height(490.dp),
-        shape = RoundedCornerShape(40.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+            .fillMaxSize()
+            .background(Color.White),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .width(360.dp)
+                .height(490.dp),
+            shape = RoundedCornerShape(40.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            // Gambar (silakan ganti dengan asset sendiri)
-            Icon(
-                painter = painterResource(id = R.drawable.lulus), // Ganti 'your_image' sesuai gambar kamu
-                contentDescription = "Icon", tint = Color.Unspecified,
+            Column(
                 modifier = Modifier
-                    .height(150.dp)
-                    .padding(bottom = 8.dp)
-            )
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Nilai 100",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF212121), fontFamily = jostfamily
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Selamat! Anda telah menyelesaikan kuis topik ini.\n" +
-                            "Silakan lanjutkan dengan mengerjakan Project\n" +
-                            "Gambar Manual untuk Topik 1 di menu sebelah.",
-                    textAlign = TextAlign.Center,
-                    fontSize = 14.sp,
-                    color = Color(
-                        0xff545454
-                    ), fontFamily = mulishfamily, fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "REVIEW",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF167F71), fontFamily = jostfamily,
-                    modifier = Modifier
-                        .clickable {  }
-                )
-            }
-
-            //tombol lanjut
-
-            Button(
-                onClick = { /* TODO: Aksi tombol */ },
-                shape = RoundedCornerShape(30.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00AA13), // Hijau seperti di gambar
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .width(206.dp)
-                    .height(60.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
+                // Gambar (silakan ganti dengan asset sendiri)
+                Icon(
+                    painter = painterResource(id = R.drawable.lulus), // Ganti 'your_image' sesuai gambar kamu
+                    contentDescription = "Icon", tint = Color.Unspecified,
                     modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Lanjut Gambar",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = jostfamily,
-                        color = Color.White
-                    )
-                    Spacer(Modifier.width(10.dp))
+                        .height(150.dp)
+                        .padding(bottom = 8.dp)
+                )
 
-                    Box(
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Nilai $nilai",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF212121), fontFamily = jostfamily
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Selamat! Anda telah menyelesaikan kuis topik ini.\n" +
+                                "Silakan lanjutkan dengan mengerjakan Project\n" +
+                                "Gambar Manual untuk Topik 1 di menu sebelah.",
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = Color(
+                            0xff545454
+                        ), fontFamily = mulishfamily, fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "REVIEW",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF167F71), fontFamily = jostfamily,
                         modifier = Modifier
-                            .size(50.dp)
-                            .background(Color.White, shape = CircleShape),
-                        contentAlignment = Alignment.Center
+                            .clickable { }
+                    )
+                }
+
+                //tombol lanjut
+
+                Button(
+                    onClick = { /* TODO: Aksi tombol */ },
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00AA13), // Hijau seperti di gambar
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .width(206.dp)
+                        .height(60.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Lanjut",
-                            tint = Color(0xFF00AA13),
-                            modifier = Modifier.size(20.dp)
+                        Text(
+                            text = "Lanjut Gambar",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = jostfamily,
+                            color = Color.White
                         )
+                        Spacer(Modifier.width(10.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(Color.White, shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Lanjut",
+                                tint = Color(0xFF00AA13),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
+
+
             }
-
-
-
-
         }
+
     }
 
 
