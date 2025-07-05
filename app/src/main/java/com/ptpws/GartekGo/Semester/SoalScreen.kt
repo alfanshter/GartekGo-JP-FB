@@ -85,11 +85,13 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     var jawabansiswa by remember { mutableStateOf(mutableListOf<String>()) }
     var tampilkannilai by remember { mutableStateOf(false) }
     var nilai by remember { mutableStateOf(0) }
+    var modeReview by remember { mutableStateOf(false) }
+    var sudahLulus by remember { mutableStateOf(false) }
+
     val db = FirebaseFirestore.getInstance()
     val topikRef = db.collection("topik").document(idtopik)
 
     suspend fun getSoalByTopikId(idTopik: String): List<SoalModel> {
-        val db = FirebaseFirestore.getInstance()
         val soalList = mutableListOf<SoalModel>()
         val topikRef: DocumentReference = db.collection("topik").document(idTopik)
 
@@ -109,6 +111,33 @@ fun SoalScreen(navController: NavController, idtopik: String) {
 
     LaunchedEffect(idtopik) {
         soalList = getSoalByTopikId(idtopik)
+
+        val userUid = auth.currentUser?.uid ?: ""
+        val snapshot = db.collection("nilai")
+            .whereEqualTo("uid", userUid)
+            .whereEqualTo("topik", topikRef)
+            .get()
+            .await()
+
+        if (!snapshot.isEmpty) {
+            val nilaiDoc = snapshot.documents.first()
+            val statusLulus = nilaiDoc.getString("status_lulus")
+            if (statusLulus == "LULUS") {
+                sudahLulus = true
+                modeReview = true
+                currentIndex = 0
+
+                // ✅ Tambahkan ini supaya nilai tidak 0
+                nilai = (nilaiDoc.getLong("nilai") ?: 0L).toInt()
+
+                val jawabanSiswaDb = nilaiDoc["jawaban_siswa"] as? List<String>
+                if (jawabanSiswaDb != null) {
+                    jawabansiswa.clear()
+                    jawabansiswa.addAll(jawabanSiswaDb)
+                    selectedOption = jawabanSiswaDb.getOrNull(0) ?: ""
+                }
+            }
+        }
     }
 
     if (soalList.isEmpty()) {
@@ -118,24 +147,46 @@ fun SoalScreen(navController: NavController, idtopik: String) {
         return
     }
 
-    // ✅ Kalau sudah selesai, tampilkan card hasil
     if (tampilkannilai) {
         if (nilai >= 65) {
-            CardLulus(nilai = nilai)
+            CardLulus(
+                nilai = nilai,
+                onReview = {
+                    modeReview = true
+                    tampilkannilai = false
+                    currentIndex = 0
+                    selectedOption = jawabansiswa.getOrNull(0) ?: ""
+                },
+                onLanjut = {
+                    navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                }
+            )
         } else {
-            CardTidakLulus(nilai = nilai)
+            CardTidakLulus(
+                nilai = nilai,
+                onReview = {
+                    modeReview = true
+                    tampilkannilai = false
+                    currentIndex = 0
+                    selectedOption = jawabansiswa.getOrNull(0) ?: ""
+                },
+                onCobaLagi = {
+                    jawabansiswa.clear()
+                    selectedOption = ""
+                    currentIndex = 0
+                    tampilkannilai = false
+                    nilai = 0
+                    modeReview = false
+                }
+            )
         }
         return
     }
 
     val soal = soalList.getOrNull(currentIndex)
-    val options = listOfNotNull(
-        soal?.jawaban?.get("a"),
-        soal?.jawaban?.get("b"),
-        soal?.jawaban?.get("c"),
-        soal?.jawaban?.get("d"),
-        soal?.jawaban?.get("e")
-    )
+    val optionsMap = soal?.jawaban?.entries?.toList() ?: emptyList()
+    val jawabanBenar = soal?.jawaban_benar
+    val jawabanSiswa = jawabansiswa.getOrNull(currentIndex)
 
     Scaffold(
         containerColor = Color(0xffF5F9FF),
@@ -144,7 +195,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 windowInsets = WindowInsets(0),
                 title = {
                     Text(
-                        text = "Topik 1 : SOAL",
+                        text = if (modeReview || sudahLulus) "Topik 1 : REVIEW" else "Topik 1 : SOAL",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         fontFamily = poppinsfamily,
@@ -209,82 +260,119 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                items(options.size) { index ->
-                    val options = soal?.jawaban?.entries?.toList() ?: emptyList()
-                    val option = options[index]
+                items(optionsMap.size) { index ->
+                    val option = optionsMap[index]
+                    val optionKey = option.key
+                    val optionValue = option.value
+
+                    val isSelected = if (modeReview || sudahLulus) optionKey == jawabanSiswa else optionKey == selectedOption
+                    val isBenar = optionKey == jawabanBenar
+                    val isSalahDipilih = optionKey == jawabanSiswa && optionKey != jawabanBenar
+
+                    val radioColor = when {
+                        !modeReview && !sudahLulus -> Color(0xFF007AFF)
+                        isBenar -> Color(0xFF4CAF50)
+                        isSalahDipilih -> Color(0xFFF44336)
+                        else -> Color.Gray
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .selectable(
-                                selected = (option.key == selectedOption),
-                                onClick = { selectedOption = option.key }
-                            )
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (option.key == selectedOption),
-                            onClick = { selectedOption = option.key },
-                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF007AFF))
+                            selected = isSelected,
+                            onClick = {
+                                if (!modeReview && !sudahLulus) {
+                                    selectedOption = optionKey
+                                }
+                            },
+                            enabled = !modeReview && !sudahLulus,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = radioColor,
+                                unselectedColor = if ((modeReview || sudahLulus) && isSelected) radioColor else Color.Gray
+                            )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
-                            text = option.value,
+                            text = "${optionKey.uppercase()}.",
+                            fontFamily = poppinsfamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = optionValue,
                             fontFamily = poppinsfamily,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
+                            color = if (isSalahDipilih) Color.Red else Color.Black
                         )
+
+                        if (modeReview || sudahLulus) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            when {
+                                isSalahDipilih -> Text("(Salah)", color = Color(0xFFF44336), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
+                                isBenar -> Text("(Benar)", color = Color(0xFF4CAF50), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
+                            }
+                        }
                     }
                 }
-
-
-
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
             }
 
             Button(
                 onClick = {
-                    if (selectedOption.isEmpty()) {
-                        Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
-                    } else {
-                        jawabansiswa.add(selectedOption)
-
+                    if (modeReview || sudahLulus) {
                         if (currentIndex < soalList.size - 1) {
                             currentIndex++
-                            selectedOption = ""
                         } else {
-                            // Hitung nilai
-                            val benar = soalList.indices.count { i ->
-                                soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
+                            tampilkannilai = true
+                        }
+                    } else {
+                        if (selectedOption.isEmpty()) {
+                            Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
+                        } else {
+                            jawabansiswa.add(selectedOption)
+
+                            if (currentIndex < soalList.size - 1) {
+                                currentIndex++
+                                selectedOption = ""
+                            } else {
+                                val benar = soalList.indices.count { i ->
+                                    soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
+                                }
+                                val score = ((benar.toDouble() / soalList.size) * 100).toInt()
+                                nilai = score
+
+                                val nilaiModel = NilaiModel(
+                                    uid = auth.currentUser?.uid ?: "unknown",
+                                    semester = "semester1",
+                                    topik = topikRef,
+                                    nilai = score,
+                                    jawaban_siswa = jawabansiswa,
+                                    jawaban_benar = soalList.map { it.jawaban_benar },
+                                    benar_siswa = benar,
+                                    total_soal = soalList.size,
+                                    status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
+                                    timestamp = Timestamp.now()
+                                )
+
+                                db.collection("nilai")
+                                    .add(nilaiModel)
+                                    .addOnSuccessListener {
+                                        tampilkannilai = true
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(context, "Gagal menyimpan nilai", Toast.LENGTH_SHORT).show()
+                                    }
                             }
-                            val score = ((benar.toDouble() / soalList.size) * 100).toInt()
-                            nilai = score
-
-                            // Buat model nilai
-                            val nilaiModel = NilaiModel(
-                                uid = auth.currentUser?.uid ?: "unknown",
-                                semester = "semester1",
-                                topik = topikRef,
-                                nilai = score,
-                                jawaban_siswa = jawabansiswa,
-                                jawaban_benar = soalList.map { it.jawaban_benar },
-                                benar_siswa = benar,
-                                total_soal = soalList.size,
-                                status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
-                                timestamp = Timestamp.now()
-                            )
-
-                            val db = FirebaseFirestore.getInstance()
-                            db.collection("nilai")
-                                .add(nilaiModel)
-                                .addOnSuccessListener {
-                                    tampilkannilai = true
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(context, "Gagal menyimpan nilai", Toast.LENGTH_SHORT).show()
-                                }
                         }
                     }
                 },
@@ -302,7 +390,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text(
-                        text = if (currentIndex == soalList.size - 1) "SELESAI" else "SELANJUTNYA",
+                        text = if (currentIndex == soalList.size - 1 && !modeReview && !sudahLulus) "SELESAI" else "SELANJUTNYA",
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -321,7 +409,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Masuk",
+                                contentDescription = "Next",
                                 tint = Color(0xFF009A0F),
                                 modifier = Modifier.size(25.dp)
                             )
@@ -332,6 +420,9 @@ fun SoalScreen(navController: NavController, idtopik: String) {
         }
     }
 }
+
+
+
 
 
 

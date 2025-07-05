@@ -41,7 +41,11 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun CardLulus(nilai: Int) {
+fun CardLulus(
+    nilai: Int,
+    onReview: () -> Unit,
+    onLanjut: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,10 +68,11 @@ fun CardLulus(nilai: Int) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Gambar (silakan ganti dengan asset sendiri)
+                // Gambar
                 Icon(
-                    painter = painterResource(id = R.drawable.lulus), // Ganti 'your_image' sesuai gambar kamu
-                    contentDescription = "Icon", tint = Color.Unspecified,
+                    painter = painterResource(id = R.drawable.lulus),
+                    contentDescription = "Icon",
+                    tint = Color.Unspecified,
                     modifier = Modifier
                         .height(150.dp)
                         .padding(bottom = 8.dp)
@@ -78,20 +83,20 @@ fun CardLulus(nilai: Int) {
                         text = "Nilai $nilai",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF212121), fontFamily = jostfamily
+                        color = Color(0xFF212121),
+                        fontFamily = jostfamily
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Selamat! Anda telah menyelesaikan kuis topik ini.\n" +
-                                "Silakan lanjutkan dengan mengerjakan Project\n" +
+                        text = "Selamat! Anda telah menyelesaikan kuis topik ini. Silakan lanjutkan dengan mengerjakan Project\n" +
                                 "Gambar Manual untuk Topik 1 di menu sebelah.",
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
-                        color = Color(
-                            0xff545454
-                        ), fontFamily = mulishfamily, fontWeight = FontWeight.Bold
+                        color = Color(0xff545454),
+                        fontFamily = mulishfamily,
+                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -100,19 +105,18 @@ fun CardLulus(nilai: Int) {
                         text = "REVIEW",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF167F71), fontFamily = jostfamily,
+                        color = Color(0xFF167F71),
+                        fontFamily = jostfamily,
                         modifier = Modifier
-                            .clickable { }
+                            .clickable { onReview() }
                     )
                 }
 
-                //tombol lanjut
-
                 Button(
-                    onClick = { /* TODO: Aksi tombol */ },
+                    onClick = { onLanjut() },
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF00AA13), // Hijau seperti di gambar
+                        containerColor = Color(0xFF00AA13),
                         contentColor = Color.White
                     ),
                     modifier = Modifier
@@ -149,19 +153,15 @@ fun CardLulus(nilai: Int) {
                         }
                     }
                 }
-
-
             }
         }
-
     }
-
-
 }
+
 
 @Preview(showBackground = true)
 @Composable
 private fun CardLulusPreview() {
-    CardLulus(nilai = 0)
+    CardLulus(nilai = 0, onLanjut = {}, onReview = {})
 
 }

@@ -38,12 +38,17 @@ import com.ptpws.GartekGo.Commond.mulishfamily
 import com.ptpws.GartekGo.R
 
 @Composable
-fun CardTidakLulus(nilai: Int) {
+fun CardTidakLulus(
+    nilai: Int,
+    onReview: () -> Unit,
+    onCobaLagi: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
-        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(
             modifier = Modifier
@@ -60,10 +65,11 @@ fun CardTidakLulus(nilai: Int) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Gambar (silakan ganti dengan asset sendiri)
+                // Gambar
                 Icon(
-                    painter = painterResource(id = R.drawable.nub), // Ganti 'your_image' sesuai gambar kamu
-                    contentDescription = "Icon", tint = Color.Unspecified,
+                    painter = painterResource(id = R.drawable.nub),
+                    contentDescription = "Icon",
+                    tint = Color.Unspecified,
                     modifier = Modifier
                         .height(184.dp)
                         .width(200.dp)
@@ -75,19 +81,19 @@ fun CardTidakLulus(nilai: Int) {
                         text = "Nilai $nilai",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF212121), fontFamily = jostfamily
+                        color = Color(0xFF212121),
+                        fontFamily = jostfamily
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Gagal!\n" +
-                                "Nilai anda tidak lulus,silahkan coba lagi..",
+                        text = "Gagal!\nNilai anda tidak lulus, silahkan coba lagi..",
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
-                        color = Color(
-                            0xff545454
-                        ), fontFamily = mulishfamily, fontWeight = FontWeight.Bold
+                        color = Color(0xff545454),
+                        fontFamily = mulishfamily,
+                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -96,19 +102,17 @@ fun CardTidakLulus(nilai: Int) {
                         text = "REVIEW",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF167F71), fontFamily = jostfamily,
-                        modifier = Modifier
-                            .clickable { }
+                        color = Color(0xFF167F71),
+                        fontFamily = jostfamily,
+                        modifier = Modifier.clickable { onReview() }
                     )
                 }
 
-                //tombol lanjut
-
                 Button(
-                    onClick = { /* TODO: Aksi tombol */ },
+                    onClick = { onCobaLagi() },
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF50909), // Hijau seperti di gambar
+                        containerColor = Color(0xFFF50909),
                         contentColor = Color.White
                     ),
                     modifier = Modifier
@@ -116,8 +120,7 @@ fun CardTidakLulus(nilai: Int) {
                         .height(60.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -145,19 +148,15 @@ fun CardTidakLulus(nilai: Int) {
                         }
                     }
                 }
-
-
             }
         }
-
     }
-
-
 }
+
 
 @Preview(showBackground = true)
 @Composable
 private fun CardTidakLulusPreview() {
-    CardTidakLulus(nilai = 0)
+    CardTidakLulus(nilai = 0, onCobaLagi = {}, onReview = {})
 
 }
