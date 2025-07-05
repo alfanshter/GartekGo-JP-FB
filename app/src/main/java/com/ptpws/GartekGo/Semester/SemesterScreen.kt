@@ -261,10 +261,12 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
             db.collection("users").document(uid.toString())
                 .collection("topik")
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    val topikMap =
-                        snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null || snapshot == null) {
+                        return@addSnapshotListener
+                    }
+
+                    val topikMap = snapshot.documents.associateBy { it.id }
 
                     val gabungan = listData.map { topik ->
                         val userMeta = topikMap[topik.id]
@@ -275,11 +277,11 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                         )
                     }
 
-                    // Sekarang gabungan adalah data lengkap
+                    // Update listData supaya UI langsung refresh
                     listData.clear()
                     listData.addAll(gabungan)
-
                 }
+
         }
 
 
@@ -295,7 +297,16 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
         contentPadding = PaddingValues(top = 10.dp)
     ) {
         itemsIndexed(listData) { index, data ->
-            val isActive = index == 0 // Topik pertama aktif, sisanya
+            // Logic aktif:
+            // Topik pertama selalu aktif
+            val isActive = if (index == 0) {
+                true
+            } else {
+                // Topik sebelumnya lulus jika "soal" == "1"
+                val prevTopik = listData.getOrNull(index - 1)
+                prevTopik?.soal == "1"
+            }
+
             val icon = if (isActive) Icons.Default.PlayArrow else Icons.Default.Lock
             val iconTint = if (isActive) Color.White else Color.Black
             val iconBg = if (isActive) Color(0xFF337DFF) else Color(0xffCCCCCC)
@@ -321,7 +332,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                         .fillMaxHeight()
                 ) {
                     Text(
-                        "Topik ${data.nomor} - ${data.nama!!}",
+                        "Topik ${data.nomor} - ${data.nama ?: ""}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
                         fontFamily = poppinsfamily,
@@ -368,7 +379,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                                 fontFamily = poppinsfamily
                             )
                             Text(
-                                "Video",
+                                "Video ",
                                 color = if (data.materi == "1") Color(0xff0961F5) else Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
@@ -412,9 +423,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                             .align(Alignment.CenterEnd)
                             .padding(top = 12.dp, end = 24.dp)
                             .size(32.dp)
-                            .background(iconBg,
-                                shape = CircleShape
-                            )
+                            .background(iconBg, shape = CircleShape)
                     ) {
                         Icon(
                             imageVector = icon,
@@ -427,6 +436,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
             Spacer(Modifier.height(12.dp))
         }
+
 
 
     }

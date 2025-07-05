@@ -364,14 +364,31 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                     timestamp = Timestamp.now()
                                 )
 
+                                //update nilai difirestore
+
+                                val uid = auth.currentUser?.uid ?: ""
+                                val userTopikRef = db.collection("users").document(uid).collection("topik").document(idtopik)
+
                                 db.collection("nilai")
                                     .add(nilaiModel)
                                     .addOnSuccessListener {
-                                        tampilkannilai = true
+                                        if (score >= 65) {
+                                            userTopikRef.update("soal", "1")
+                                                .addOnSuccessListener {
+                                                    tampilkannilai = true
+                                                }
+                                                .addOnFailureListener {
+                                                    Toast.makeText(context, "Gagal update progres topik", Toast.LENGTH_SHORT).show()
+                                                    tampilkannilai = true
+                                                }
+                                        } else {
+                                            tampilkannilai = true
+                                        }
                                     }
                                     .addOnFailureListener {
                                         Toast.makeText(context, "Gagal menyimpan nilai", Toast.LENGTH_SHORT).show()
                                     }
+
                             }
                         }
                     }
