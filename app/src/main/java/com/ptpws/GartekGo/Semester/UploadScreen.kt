@@ -10,8 +10,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -71,6 +75,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.ptpws.GartekGo.Admin.model.UploadModel
+import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.Dialog.SuccessDialog
 import com.ptpws.GartekGo.R
@@ -86,6 +91,9 @@ fun UploadScreen(
     var gambarsuksesdikirim by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showActionButtons by remember { mutableStateOf(false) }
+    var isUploading by remember { mutableStateOf(false) }
+    var uploadProgress by remember { mutableStateOf(0f) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -93,6 +101,7 @@ fun UploadScreen(
         bitmap?.let {
             val uri = Utils.saveBitmapToCache(context, it)
             imageUri = uri
+            showActionButtons = false
         }
     }
 
@@ -101,6 +110,7 @@ fun UploadScreen(
     ) { uri ->
         uri?.let {
             imageUri = it
+            showActionButtons = false
         }
     }
 
@@ -138,13 +148,18 @@ fun UploadScreen(
                 .padding(padding)
                 .background(Color(0xffF5F9FF))
         ) {
-            val (imageBox, iconRow, button) = createRefs()
+            val (imageBox, actionButtons, iconRow, button) = createRefs()
 
             Box(
                 modifier = Modifier
                     .size(220.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.LightGray)
+                    .clickable {
+                        if (imageUri != null) {
+                            showActionButtons = !showActionButtons
+                        }
+                    }
                     .constrainAs(imageBox) {
                         top.linkTo(parent.top, margin = 100.dp)
                         start.linkTo(parent.start)
@@ -169,43 +184,87 @@ fun UploadScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .constrainAs(iconRow) {
-                        top.linkTo(imageBox.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { cameraLauncher.launch(null) },
+            if (showActionButtons) {
+                Column(
                     modifier = Modifier
-                        .size(64.dp)
-                        .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                        .padding(top = 16.dp)
+                        .constrainAs(actionButtons) {
+                            top.linkTo(imageBox.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "Camera",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                    Button(
+                        onClick = { galleryLauncher.launch("image/*") },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A651)),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Icon(painter = painterResource(id = R.drawable.edit), contentDescription = null, tint = Color.Unspecified)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("EDIT", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                    }
 
-                IconButton(
-                    onClick = { galleryLauncher.launch("image/*") },
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            imageUri = null
+                            showActionButtons = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Icon(painter = painterResource(id = R.drawable.hapus), tint = Color.Unspecified, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("HAPUS", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                    }
+                }
+            } else {
+                Row(
                     modifier = Modifier
-                        .size(64.dp)
-                        .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                        .padding(top = 24.dp)
+                        .constrainAs(iconRow) {
+                            top.linkTo(imageBox.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoLibrary,
-                        contentDescription = "Gallery",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    IconButton(
+                        onClick = { cameraLauncher.launch(null) },
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoCamera,
+                            contentDescription = "Camera",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { galleryLauncher.launch("image/*") },
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Gallery",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
 
@@ -232,7 +291,14 @@ fun UploadScreen(
                         val fileName = "${user.uid}_${System.currentTimeMillis()}.jpg"
                         val imageRef = storageRef.child("public/project_gambar/$fileName")
 
-                        imageRef.putBytes(bytes)
+                        val uploadTask = imageRef.putBytes(bytes)
+                        isUploading = true
+
+                        uploadTask
+                            .addOnProgressListener { taskSnapshot ->
+                                val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toFloat()
+                                uploadProgress = progress
+                            }
                             .addOnSuccessListener {
                                 imageRef.downloadUrl.addOnSuccessListener { uri ->
                                     val db = FirebaseFirestore.getInstance()
@@ -245,27 +311,38 @@ fun UploadScreen(
                                     db.collection("project_uploads")
                                         .add(upload)
                                         .addOnSuccessListener {
+                                            isUploading = false
+                                            uploadProgress = 0f
                                             gambarsuksesdikirim = true
                                         }
                                         .addOnFailureListener {
+                                            isUploading = false
+                                            uploadProgress = 0f
                                             Toast.makeText(context, "Gagal simpan URL Firestore", Toast.LENGTH_SHORT).show()
                                         }
                                 }
                             }
                             .addOnFailureListener {
+                                isUploading = false
+                                uploadProgress = 0f
                                 Toast.makeText(context, "Gagal upload gambar", Toast.LENGTH_SHORT).show()
                             }
 
                     } catch (e: Exception) {
+                        isUploading = false
+                        uploadProgress = 0f
                         Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                     }
-
                 },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0961F5), contentColor = Color.White),
                 modifier = Modifier
                     .constrainAs(button) {
-                        bottom.linkTo(parent.bottom, margin = 24.dp)
+                        if (showActionButtons) {
+                            top.linkTo(actionButtons.bottom, margin = 48.dp)
+                        } else {
+                            top.linkTo(iconRow.bottom, margin = 48.dp)
+                        }
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
@@ -291,7 +368,28 @@ fun UploadScreen(
             }
         }
     }
+
+    if (isUploading) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Mengunggah Gambar...") },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    LinearProgressIndicator(progress = uploadProgress / 100f)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("${uploadProgress.toInt()}%", textAlign = TextAlign.Center)
+                }
+            },
+            confirmButton = {}
+        )
+    }
 }
+
+
+
+
+
+
 
 
 @Preview(showBackground = true)
