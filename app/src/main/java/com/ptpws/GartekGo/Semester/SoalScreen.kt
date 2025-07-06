@@ -158,7 +158,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     selectedOption = jawabansiswa.getOrNull(0) ?: ""
                 },
                 onLanjut = {
-                    navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
+                    navController.navigate("${AppScreen.Home.Semester.Topik.Upload.route}/$idtopik")
                 },
             )
         } else {

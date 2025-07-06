@@ -2,7 +2,9 @@ package com.ptpws.GartekGo.Semester
 
 import android.R.attr.button
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,16 +64,26 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.ptpws.GartekGo.Admin.model.UploadModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
+import com.ptpws.GartekGo.Dialog.SuccessDialog
 import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.Utils
+import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadScreen(navController: NavController,
-    onBackClick: () -> Unit = {},
-    onSubmitClick: () -> Unit = {}
+fun UploadScreen(
+    navController: NavController,
+    idtopik: String
 ) {
+    var gambarsuksesdikirim by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -92,16 +104,15 @@ fun UploadScreen(navController: NavController,
         }
     }
 
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Topik 1 :\nBelajar Membaca",
+                        text = "Upload Gambar",
                         fontWeight = FontWeight.Bold,
                         fontFamily = poppinsfamily,
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         color = Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -109,25 +120,26 @@ fun UploadScreen(navController: NavController,
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
-
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
                     }
-                }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xffF5F9FF) // TopAppBar background
-                )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
             )
-
         },
         containerColor = Color(0xFFF7F9FC)
     ) { padding ->
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding).background(color = Color(0xffF5F9FF))
+                .padding(padding)
+                .background(Color(0xffF5F9FF))
         ) {
-            val (imageBox, iconRow, submitButton) = createRefs()
+            val (imageBox, iconRow, button) = createRefs()
 
-            // Gambar atau placeholder
             Box(
                 modifier = Modifier
                     .size(220.dp)
@@ -157,7 +169,6 @@ fun UploadScreen(navController: NavController,
                 }
             }
 
-            // Tombol kamera dan galeri
             Row(
                 modifier = Modifier
                     .padding(top = 24.dp)
@@ -198,18 +209,63 @@ fun UploadScreen(navController: NavController,
                 }
             }
 
-            val ( button) = createRefs()
-            // Tombol tetap di bawah layar
             Button(
-                onClick = { /* TODO: aksi */ },
+                onClick = {
+                    if (imageUri == null) {
+                        Toast.makeText(context, "Pilih gambar dulu", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    val user = FirebaseAuth.getInstance().currentUser
+                    if (user == null) {
+                        Toast.makeText(context, "User belum login", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    try {
+                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                        val baos = ByteArrayOutputStream()
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                        val bytes = baos.toByteArray()
+
+                        val storageRef = FirebaseStorage.getInstance().reference
+                        val fileName = "${user.uid}_${System.currentTimeMillis()}.jpg"
+                        val imageRef = storageRef.child("public/project_gambar/$fileName")
+
+                        imageRef.putBytes(bytes)
+                            .addOnSuccessListener {
+                                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                                    val db = FirebaseFirestore.getInstance()
+                                    val upload = UploadModel(
+                                        uid = user.uid,
+                                        id_topik = idtopik,
+                                        imageUrl = uri.toString(),
+                                        timestamp = Timestamp.now()
+                                    )
+                                    db.collection("project_uploads")
+                                        .add(upload)
+                                        .addOnSuccessListener {
+                                            gambarsuksesdikirim = true
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(context, "Gagal simpan URL Firestore", Toast.LENGTH_SHORT).show()
+                                        }
+                                }
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Gagal upload gambar", Toast.LENGTH_SHORT).show()
+                            }
+
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    }
+
+                },
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0961F5), // Warna biru
-                    contentColor = Color.White
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0961F5), contentColor = Color.White),
                 modifier = Modifier
                     .constrainAs(button) {
-                        bottom.linkTo(parent.bottom, margin = 24.dp) // agar tidak mentok
+                        bottom.linkTo(parent.bottom, margin = 24.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
@@ -217,51 +273,31 @@ fun UploadScreen(navController: NavController,
                     .height(60.dp)
                     .padding(horizontal = 24.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    // Teks di tengah
-                    Text(
-                        text = "KIRIM",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = poppinsfamily,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                Text(
+                    text = "KIRIM",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = poppinsfamily,
+                )
+            }
 
-                    // Card bulat isi ikon panah di kanan
-                    Card(
-                        shape = CircleShape,
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 8.dp) // jarak dari tepi kanan
-                            .size(48.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Masuk",
-                                tint = Color(0xFF0961F5),
-                                modifier = Modifier.size(25.dp)
-                            )
-                        }
+            if (gambarsuksesdikirim) {
+                SuccessDialog(
+                    onDismiss = {
+                        gambarsuksesdikirim = false
+                        navController.popBackStack()
                     }
-                }
+                )
             }
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 private fun UploadScreenPreview() {
-    UploadScreen(navController = rememberNavController())
+    UploadScreen(navController = rememberNavController(), idtopik = "")
     
 }
 
