@@ -203,7 +203,7 @@ fun MyBottomAppBar(navController: NavController) {
                     arguments = listOf(navArgument("idtopik") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val idtopik = backStackEntry.arguments?.getString("idtopik") ?: ""
-                    SoalScreen(navController, idtopik)
+                    SoalScreen(navigationController, idtopik)
                 }
                 composable(AppScreen.Home.Semester.Topik.Upload.route) { UploadScreen(navigationController) }
 

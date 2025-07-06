@@ -108,7 +108,7 @@ fun UploadScreen(navController: NavController,
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* back */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(painter = painterResource(id = R.drawable.back),contentDescription = null, tint = Color.Unspecified)
 
                     }

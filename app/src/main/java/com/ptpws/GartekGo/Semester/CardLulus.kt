@@ -35,6 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.mulishfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
@@ -44,7 +47,8 @@ import com.ptpws.GartekGo.R
 fun CardLulus(
     nilai: Int,
     onReview: () -> Unit,
-    onLanjut: () -> Unit
+    onLanjut: () -> Unit,
+
 ) {
     Column(
         modifier = Modifier
@@ -162,6 +166,6 @@ fun CardLulus(
 @Preview(showBackground = true)
 @Composable
 private fun CardLulusPreview() {
-    CardLulus(nilai = 0, onLanjut = {}, onReview = {})
+    CardLulus(nilai = 0, onReview = {}, onLanjut = {})
 
 }

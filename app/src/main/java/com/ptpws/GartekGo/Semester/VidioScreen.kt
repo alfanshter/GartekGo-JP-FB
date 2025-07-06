@@ -200,7 +200,7 @@ fun VidioScreen(navController: NavController, idtopik: String) {
 
             if (showButton) {
                 Button(
-                    onClick = {  },
+                    onClick = { navController.navigate("${AppScreen.Home.Semester.Topik.Soal.route}/$idtopik") },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF005DFF), contentColor = Color.White

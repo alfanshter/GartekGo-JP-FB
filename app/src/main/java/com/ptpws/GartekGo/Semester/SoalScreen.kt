@@ -127,7 +127,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 modeReview = true
                 currentIndex = 0
 
-                // ✅ Tambahkan ini supaya nilai tidak 0
+                //Tambahkan ini supaya nilai tidak 0
                 nilai = (nilaiDoc.getLong("nilai") ?: 0L).toInt()
 
                 val jawabanSiswaDb = nilaiDoc["jawaban_siswa"] as? List<String>
@@ -159,7 +159,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 },
                 onLanjut = {
                     navController.navigate(AppScreen.Home.Semester.Topik.Upload.route)
-                }
+                },
             )
         } else {
             CardTidakLulus(
