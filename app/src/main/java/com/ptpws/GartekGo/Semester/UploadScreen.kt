@@ -48,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,12 +66,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
@@ -82,6 +86,7 @@ import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.Utils
 import java.io.ByteArrayOutputStream
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadScreen(
@@ -94,6 +99,7 @@ fun UploadScreen(
     var showActionButtons by remember { mutableStateOf(false) }
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) }
+    var uploadedUrl by remember { mutableStateOf<String?>(null) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -112,6 +118,36 @@ fun UploadScreen(
             imageUri = it
             showActionButtons = false
         }
+    }
+
+    // 🔥 Function ambil gambar terakhir dari Firestore
+    fun fetchLastUploadedImage() {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("project_uploads")
+            .whereEqualTo("uid", user.uid)
+            .whereEqualTo("id_topik", idtopik)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val lastDoc = documents.documents[0]
+                    val url = lastDoc.getString("imageUrl")
+                    if (url != null) {
+                        uploadedUrl = url
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e("UploadScreen", "Gagal mengambil gambar terakhir: ${it.message}")
+            }
+    }
+
+    // 🔥 Panggil saat screen pertama kali dibuka
+    LaunchedEffect(idtopik) {
+        fetchLastUploadedImage()
     }
 
     Scaffold(
@@ -174,6 +210,13 @@ fun UploadScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+                } else if (uploadedUrl != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(uploadedUrl),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Image,
@@ -182,6 +225,7 @@ fun UploadScreen(
                         modifier = Modifier.size(64.dp)
                     )
                 }
+
             }
 
             if (showActionButtons) {
@@ -314,6 +358,8 @@ fun UploadScreen(
                                             isUploading = false
                                             uploadProgress = 0f
                                             gambarsuksesdikirim = true
+
+                                            fetchLastUploadedImage() // ⬅️ Tambah: biar langsung update preview
                                         }
                                         .addOnFailureListener {
                                             isUploading = false
@@ -384,6 +430,7 @@ fun UploadScreen(
         )
     }
 }
+
 
 
 

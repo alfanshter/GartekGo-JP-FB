@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +52,7 @@ fun TopikProject(navController: NavController) {
 
     Scaffold(modifier = Modifier, containerColor = Color(0xffC2D8FF), topBar = {
         CenterAlignedTopAppBar(
+            windowInsets = WindowInsets(0),
             title = {
                 Text(
                     text = "Topik 1 : PROJECT",
@@ -69,7 +72,7 @@ fun TopikProject(navController: NavController) {
             )
         )
 
-    }
+    }, contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Spacer(Modifier.height(40.dp))
         Card(
@@ -95,7 +98,7 @@ fun TopikProject(navController: NavController) {
 
                         Text(
                             text = "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit. Curabitur ut lectus ac sem\n rhoncus lobortis at a nisl. Etiam pharetra\n vulputate tellus, non consectetur sem\n pellentesque a. Proin vestibulum\n elementum lectus et feugiat. Suspendisse\n potenti. Morbi consectetur odio a tortor\n pellentesque, at luctus erat congue. Cras\n sagittis tempus diam, eu rhoncus ipsum.\n Aenean elit risus, ullamcorper in augue\n sed, dictum dapibus leo. Sed sollicitudin\n tellus at ante commodo mattis. Lorem\n ipsum dolor sit amet, consectetur adipiscing elit.",
-                            fontSize = 12.sp, fontFamily = poppinsfamily, fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp, fontFamily = poppinsfamily, fontWeight = FontWeight.Normal, textAlign = TextAlign.Center,
                             color = Color.DarkGray,
                             modifier = Modifier.constrainAs(textContent) {
                                 top.linkTo(parent.top)

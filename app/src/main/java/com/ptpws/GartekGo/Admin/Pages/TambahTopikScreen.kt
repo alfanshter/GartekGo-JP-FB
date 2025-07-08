@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -80,6 +81,7 @@ fun TambahTopikScreen(navController: NavController, outerPadding: PaddingValues 
             topBar = {
                 Column {
                     CenterAlignedTopAppBar(
+                        windowInsets = WindowInsets(0),
                         title = {
                             Text(
                                 text = "TOPIK",
@@ -105,7 +107,7 @@ fun TambahTopikScreen(navController: NavController, outerPadding: PaddingValues 
                     )
 
                 }
-            }, modifier = Modifier.background(color = Color(0xffF5F9FF))
+            }, contentWindowInsets = WindowInsets(0), modifier = Modifier.background(color = Color(0xffF5F9FF))
         ) { innerPadding ->
             val combinedPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),

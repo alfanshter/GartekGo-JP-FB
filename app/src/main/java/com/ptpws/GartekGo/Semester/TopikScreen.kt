@@ -31,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,27 +59,40 @@ fun TopikScreen(navController: NavController,idtopik: String) {
     var materi by remember { mutableStateOf("") }
     var vidio by remember { mutableStateOf("") }
     var soal by remember { mutableStateOf("") }
+    var nomorTopik by remember { mutableStateOf(0) }
+
+
 
     var uid = FirebaseAuth.getInstance().currentUser!!.uid
+    val db = Firebase.firestore
     Log.d("muhib",idtopik.toString())
 
-    val db = Firebase.firestore
+    // Get nomor dari collection global "topik"
+    LaunchedEffect(idtopik) {
+        db.collection("topik").document(idtopik).get()
+            .addOnSuccessListener { dataTopik ->
+                nomorTopik = dataTopik.getLong("nomor")?.toInt() ?: 0
+                Log.d("muhib-nomor", "Nomor Topik: $nomorTopik")
+            }
+    }
 
-    val getdata =
+// Get progress user
+    LaunchedEffect(idtopik) {
         db.collection("users").document(uid).collection("topik").document(idtopik).get()
-        getdata.addOnSuccessListener { data ->
-        materi = data.get("materi").toString()
-        vidio = data.get("vidio").toString()
-        soal = data.get("soal").toString()
+            .addOnSuccessListener { data ->
+                materi = data.get("materi").toString()
+                vidio = data.get("vidio").toString()
+                soal = data.get("soal").toString()
 
-        Log.d("muhib",materi.toString())
+                Log.d("muhib", "Materi: $materi, Vidio: $vidio, Soal: $soal")
+            }
     }
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
             windowInsets = WindowInsets(0),
             title = {
                 Text(
-                    text = "Topik 1",
+                    text = "Topik $nomorTopik",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     fontFamily = poppinsfamily,

@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
 
 import com.ptpws.GartekGo.Semester.ProjectScreen
+import com.ptpws.GartekGo.Semester.TampilanNilaiSiswa
 
 @Composable
 fun MainHomeScreen(modifier: Modifier = Modifier) {
@@ -36,7 +38,7 @@ fun MainHomeScreen(modifier: Modifier = Modifier) {
                 .background(color = Color(0xffF5F9FF))
         ) {
             composable("beranda") { HomeScreen(navController) }
-            composable("nilai") { ProjectScreen(navController) }
+            composable("nilai") { TampilanNilaiSiswa(navController) }
             composable("profil") { ProfileScreen(navController) }
         }
 

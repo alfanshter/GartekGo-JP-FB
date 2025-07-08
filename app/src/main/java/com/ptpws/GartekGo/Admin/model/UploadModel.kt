@@ -6,5 +6,7 @@ data class UploadModel(
     val uid: String = "",
     val id_topik: String = "",
     val imageUrl: String = "",
-    val timestamp: Timestamp = Timestamp.now()
+    val timestamp: Timestamp = Timestamp.now(),
+    val status: String? = null,
+    val nilai: Int? = null
 )
