@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -100,6 +102,9 @@ fun UploadScreen(
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) }
     var uploadedUrl by remember { mutableStateOf<String?>(null) }
+    var nomorTopik by remember { mutableStateOf(0) }
+    var sudahUpload by remember { mutableStateOf(false) } //Tambah
+    var isLoadingGambar by remember { mutableStateOf(true) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -120,8 +125,8 @@ fun UploadScreen(
         }
     }
 
-    // 🔥 Function ambil gambar terakhir dari Firestore
     fun fetchLastUploadedImage() {
+        isLoadingGambar = true
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
 
@@ -137,25 +142,43 @@ fun UploadScreen(
                     val url = lastDoc.getString("imageUrl")
                     if (url != null) {
                         uploadedUrl = url
+                        sudahUpload = true
+                        imageUri = null
                     }
                 }
+                isLoadingGambar = false
             }
             .addOnFailureListener {
                 Log.e("UploadScreen", "Gagal mengambil gambar terakhir: ${it.message}")
+                isLoadingGambar = false
             }
     }
 
-    // 🔥 Panggil saat screen pertama kali dibuka
-    LaunchedEffect(idtopik) {
+
+    fun fetchTopikInfo() {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("topik").document(idtopik).get()
+            .addOnSuccessListener { dataTopik ->
+                nomorTopik = dataTopik.getLong("nomor")?.toInt() ?: 0
+                Log.d("UploadScreen", "Nomor Topik: $nomorTopik")
+            }
+            .addOnFailureListener {
+                Log.e("UploadScreen", "Gagal ambil data topik: ${it.message}")
+            }
+    }
+
+    LaunchedEffect(true) {
         fetchLastUploadedImage()
+        fetchTopikInfo()
     }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
                 title = {
                     Text(
-                        text = "Upload Gambar",
+                        text = "Topik $nomorTopik",
                         fontWeight = FontWeight.Bold,
                         fontFamily = poppinsfamily,
                         fontSize = 20.sp,
@@ -175,7 +198,7 @@ fun UploadScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
             )
-        },
+        }, contentWindowInsets = WindowInsets(0),
         containerColor = Color(0xFFF7F9FC)
     ) { padding ->
         ConstraintLayout(
@@ -184,7 +207,7 @@ fun UploadScreen(
                 .padding(padding)
                 .background(Color(0xffF5F9FF))
         ) {
-            val (imageBox, actionButtons, iconRow, button) = createRefs()
+            val (imageBox, actionButtons, iconRow, button, notifText) = createRefs()
 
             Box(
                 modifier = Modifier
@@ -192,7 +215,7 @@ fun UploadScreen(
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.LightGray)
                     .clickable {
-                        if (imageUri != null) {
+                        if (imageUri != null && !sudahUpload) {
                             showActionButtons = !showActionButtons
                         }
                     }
@@ -203,21 +226,30 @@ fun UploadScreen(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                if (imageUri != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUri),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else if (uploadedUrl != null) {
+                if (uploadedUrl != null && sudahUpload) {
+                    // Kalau sudah upload, selalu tampilkan gambar terakhir
                     Image(
                         painter = rememberAsyncImagePainter(uploadedUrl),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+                } else if (imageUri != null) {
+                    // Saat user baru pilih gambar sebelum upload
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (isLoadingGambar) {
+                    // Saat sedang loading data
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = Color.Gray
+                    )
                 } else {
+                    // Default placeholder
                     Icon(
                         imageVector = Icons.Default.Image,
                         contentDescription = "Placeholder",
@@ -226,181 +258,199 @@ fun UploadScreen(
                     )
                 }
 
+
             }
 
-            if (showActionButtons) {
-                Column(
+            if (!sudahUpload) {
+                if (showActionButtons) {
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .constrainAs(actionButtons) {
+                                top.linkTo(imageBox.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Button(
+                            onClick = { galleryLauncher.launch("image/*") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A651)),
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Icon(painter = painterResource(id = R.drawable.edit), contentDescription = null, tint = Color.Unspecified)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("EDIT", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                imageUri = null
+                                showActionButtons = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Icon(painter = painterResource(id = R.drawable.hapus), tint = Color.Unspecified, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("HAPUS", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .constrainAs(iconRow) {
+                                top.linkTo(imageBox.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(32.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { cameraLauncher.launch(null) },
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PhotoCamera,
+                                contentDescription = "Camera",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { galleryLauncher.launch("image/*") },
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PhotoLibrary,
+                                contentDescription = "Gallery",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        if (imageUri == null) {
+                            Toast.makeText(context, "Pilih gambar dulu", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        val user = FirebaseAuth.getInstance().currentUser
+                        if (user == null) {
+                            Toast.makeText(context, "User belum login", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        try {
+                            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                            val baos = ByteArrayOutputStream()
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                            val bytes = baos.toByteArray()
+
+                            val storageRef = FirebaseStorage.getInstance().reference
+                            val fileName = "${user.uid}_${System.currentTimeMillis()}.jpg"
+                            val imageRef = storageRef.child("public/project_gambar/$fileName")
+
+                            val uploadTask = imageRef.putBytes(bytes)
+                            isUploading = true
+
+                            uploadTask
+                                .addOnProgressListener { taskSnapshot ->
+                                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toFloat()
+                                    uploadProgress = progress
+                                }
+                                .addOnSuccessListener {
+                                    imageRef.downloadUrl.addOnSuccessListener { uri ->
+                                        val db = FirebaseFirestore.getInstance()
+                                        val upload = UploadModel(
+                                            uid = user.uid,
+                                            id_topik = idtopik,
+                                            imageUrl = uri.toString(),
+                                            timestamp = Timestamp.now()
+                                        )
+                                        db.collection("project_uploads")
+                                            .add(upload)
+                                            .addOnSuccessListener {
+                                                isUploading = false
+                                                uploadProgress = 0f
+                                                gambarsuksesdikirim = true
+                                                sudahUpload = true //  Set sudahUpload supaya disable
+                                                fetchLastUploadedImage()
+                                            }
+                                            .addOnFailureListener {
+                                                isUploading = false
+                                                uploadProgress = 0f
+                                                Toast.makeText(context, "Gagal simpan URL Firestore", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    isUploading = false
+                                    uploadProgress = 0f
+                                    Toast.makeText(context, "Gagal upload gambar", Toast.LENGTH_SHORT).show()
+                                }
+
+                        } catch (e: Exception) {
+                            isUploading = false
+                            uploadProgress = 0f
+                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0961F5), contentColor = Color.White),
                     modifier = Modifier
-                        .padding(top = 16.dp)
-                        .constrainAs(actionButtons) {
-                            top.linkTo(imageBox.bottom)
+                        .constrainAs(button) {
+                            if (showActionButtons) {
+                                top.linkTo(actionButtons.bottom, margin = 48.dp)
+                            } else {
+                                top.linkTo(iconRow.bottom, margin = 48.dp)
+                            }
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        }
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .padding(horizontal = 24.dp)
                 ) {
-                    Button(
-                        onClick = { galleryLauncher.launch("image/*") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A651)),
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Icon(painter = painterResource(id = R.drawable.edit), contentDescription = null, tint = Color.Unspecified)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("EDIT", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            imageUri = null
-                            showActionButtons = false
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Icon(painter = painterResource(id = R.drawable.hapus), tint = Color.Unspecified, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("HAPUS", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
-                    }
+                    Text(
+                        text = "KIRIM",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = poppinsfamily,
+                    )
                 }
             } else {
-                Row(
+                Text(
+                    text = "Anda sudah upload project gambar untuk topik ini",
+                    color = Color(0xFFE53935),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = poppinsfamily, textAlign = TextAlign.Center,
                     modifier = Modifier
                         .padding(top = 24.dp)
-                        .constrainAs(iconRow) {
+                        .constrainAs(notifText) {
                             top.linkTo(imageBox.bottom)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                        },
-                    horizontalArrangement = Arrangement.spacedBy(32.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = { cameraLauncher.launch(null) },
-                        modifier = Modifier
-                            .size(64.dp)
-                            .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PhotoCamera,
-                            contentDescription = "Camera",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { galleryLauncher.launch("image/*") },
-                        modifier = Modifier
-                            .size(64.dp)
-                            .background(Color(0xFF00C853), shape = RoundedCornerShape(12.dp))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PhotoLibrary,
-                            contentDescription = "Gallery",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-
-            Button(
-                onClick = {
-                    if (imageUri == null) {
-                        Toast.makeText(context, "Pilih gambar dulu", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    val user = FirebaseAuth.getInstance().currentUser
-                    if (user == null) {
-                        Toast.makeText(context, "User belum login", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    try {
-                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-                        val baos = ByteArrayOutputStream()
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                        val bytes = baos.toByteArray()
-
-                        val storageRef = FirebaseStorage.getInstance().reference
-                        val fileName = "${user.uid}_${System.currentTimeMillis()}.jpg"
-                        val imageRef = storageRef.child("public/project_gambar/$fileName")
-
-                        val uploadTask = imageRef.putBytes(bytes)
-                        isUploading = true
-
-                        uploadTask
-                            .addOnProgressListener { taskSnapshot ->
-                                val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toFloat()
-                                uploadProgress = progress
-                            }
-                            .addOnSuccessListener {
-                                imageRef.downloadUrl.addOnSuccessListener { uri ->
-                                    val db = FirebaseFirestore.getInstance()
-                                    val upload = UploadModel(
-                                        uid = user.uid,
-                                        id_topik = idtopik,
-                                        imageUrl = uri.toString(),
-                                        timestamp = Timestamp.now()
-                                    )
-                                    db.collection("project_uploads")
-                                        .add(upload)
-                                        .addOnSuccessListener {
-                                            isUploading = false
-                                            uploadProgress = 0f
-                                            gambarsuksesdikirim = true
-
-                                            fetchLastUploadedImage() // ⬅️ Tambah: biar langsung update preview
-                                        }
-                                        .addOnFailureListener {
-                                            isUploading = false
-                                            uploadProgress = 0f
-                                            Toast.makeText(context, "Gagal simpan URL Firestore", Toast.LENGTH_SHORT).show()
-                                        }
-                                }
-                            }
-                            .addOnFailureListener {
-                                isUploading = false
-                                uploadProgress = 0f
-                                Toast.makeText(context, "Gagal upload gambar", Toast.LENGTH_SHORT).show()
-                            }
-
-                    } catch (e: Exception) {
-                        isUploading = false
-                        uploadProgress = 0f
-                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0961F5), contentColor = Color.White),
-                modifier = Modifier
-                    .constrainAs(button) {
-                        if (showActionButtons) {
-                            top.linkTo(actionButtons.bottom, margin = 48.dp)
-                        } else {
-                            top.linkTo(iconRow.bottom, margin = 48.dp)
                         }
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .padding(horizontal = 24.dp)
-            ) {
-                Text(
-                    text = "KIRIM",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = poppinsfamily,
                 )
             }
 
@@ -430,6 +480,9 @@ fun UploadScreen(
         )
     }
 }
+
+
+
 
 
 

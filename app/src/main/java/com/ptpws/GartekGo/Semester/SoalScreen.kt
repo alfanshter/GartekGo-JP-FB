@@ -87,6 +87,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     var nilai by remember { mutableStateOf(0) }
     var modeReview by remember { mutableStateOf(false) }
     var sudahLulus by remember { mutableStateOf(false) }
+    var nomorTopik by remember { mutableStateOf(0) }
 
     val db = FirebaseFirestore.getInstance()
     val topikRef = db.collection("topik").document(idtopik)
@@ -110,6 +111,8 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     }
 
     LaunchedEffect(idtopik) {
+        val snapshotTopik = db.collection("topik").document(idtopik).get().await()
+        nomorTopik = snapshotTopik.getLong("nomor")?.toInt() ?: 0
         soalList = getSoalByTopikId(idtopik)
 
         val userUid = auth.currentUser?.uid ?: ""
@@ -195,7 +198,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 windowInsets = WindowInsets(0),
                 title = {
                     Text(
-                        text = if (modeReview || sudahLulus) "Topik 1 : REVIEW" else "Topik 1 : SOAL",
+                        text = if (modeReview || sudahLulus) "Topik $nomorTopik : REVIEW" else "Topik $nomorTopik : SOAL",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         fontFamily = poppinsfamily,
