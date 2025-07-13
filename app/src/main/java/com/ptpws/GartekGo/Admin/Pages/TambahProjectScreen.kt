@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -84,6 +85,7 @@ fun TambahProjectScreen(navController: NavController, outerPadding: PaddingValue
             topBar = {
                 Column {
                     CenterAlignedTopAppBar(
+                        windowInsets = WindowInsets(0),
                         title = {
                             Text(
                                 text = "PROJECT: SOAL",
@@ -102,7 +104,7 @@ fun TambahProjectScreen(navController: NavController, outerPadding: PaddingValue
                     )
 
                 }
-            },
+            }, contentWindowInsets = WindowInsets(0),
         ) { innerPadding ->
             val combinedPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),

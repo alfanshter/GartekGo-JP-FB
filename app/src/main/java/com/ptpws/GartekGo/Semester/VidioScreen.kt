@@ -11,6 +11,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -64,6 +67,9 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
@@ -71,68 +77,130 @@ import com.ptpws.GartekGo.R
 import kotlinx.coroutines.tasks.await
 
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VidioScreen(navController: NavController) {
+fun VidioScreen(navController: NavController, idtopik: String) {
+    val db = Firebase.firestore
+    val context = LocalContext.current
+    var videoUrl by remember { mutableStateOf<String?>(null) }
     var videoFinished by remember { mutableStateOf(false) }
-    Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
-        CenterAlignedTopAppBar(
-            title = {
-                Text(
-                    text = "Topik 1 : VIDIO",
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = poppinsfamily,
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
-            }, navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = null,
-                        tint = Color.Unspecified
+    var isLoading by remember { mutableStateOf(true) }
+    var showButton by remember { mutableStateOf(false) }
+    var showCompletionDialog by remember { mutableStateOf(false) }
+
+    val uid = FirebaseAuth.getInstance().uid
+
+    // Load video URL dan status progress
+    LaunchedEffect(idtopik) {
+        try {
+            // Get video URL
+            val topikSnapshot = db.collection("topik").document(idtopik).get().await()
+            videoUrl = topikSnapshot.getString("path_video")
+
+            // Get status progress
+            val userTopikSnapshot = db.collection("users")
+                .document(uid!!)
+                .collection("topik")
+                .document(idtopik)
+                .get().await()
+
+            val status = userTopikSnapshot.getString("vidio")
+            showButton = status == "1"
+
+            isLoading = false
+        } catch (e: Exception) {
+            Log.e("VIDIO_SCREEN", "Error: ${e.message}")
+            isLoading = false
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
+            CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
+                title = {
+                    Text(
+                        text = "Topik 1 : VIDIO",
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = poppinsfamily,
+                        fontSize = 24.sp,
+                        color = Color.Black
                     )
-
-                }
-            }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color(0xffF5F9FF) // TopAppBar background
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.back),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
+                    }
+                }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xffF5F9FF)
+                )
             )
-        )
-
-    }) { innerPadding ->
-        Spacer(Modifier.height(40.dp))
-        LazyColumn(
-            contentPadding = innerPadding,
+        }, contentWindowInsets = WindowInsets(0)
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xffF5F9FF))
+                .padding(innerPadding)
         ) {
-            item {
-                ExoPlayerWithFullscreenYouTubeStyle(
-                    storagePath = "public/vidioku.mp4",
-                    onVideoEnded = { videoFinished = true}
-                )
-
-
+            if (videoUrl != null) {
+                ExoPlayerWithFullscreenYouTubeStyle(storagePath = videoUrl!!) {
+                    if (!showButton) {
+                        isLoading = true
+                        // Update progress ke Firestore
+                        val data = hashMapOf("vidio" to "1")
+                        db.collection("users").document(uid!!)
+                            .collection("topik").document(idtopik)
+                            .set(data, SetOptions.merge())
+                            .addOnSuccessListener {
+                                isLoading = false
+                                showCompletionDialog = true
+                                showButton = true
+                            }
+                            .addOnFailureListener {
+                                isLoading = false
+                                Log.e("VIDIO_SCREEN", "Error update: ${it.message}")
+                            }
+                    }
+                }
+            } else {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
             }
 
-            item {
-                Text(
-                    text = "Tonton videonya sampai selesai untuk membuka tugas berikutnya",
-                    fontSize = 16.sp,
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp, bottom = 32.dp)
+            if (showCompletionDialog) {
+                AlertDialog(
+                    onDismissRequest = { showCompletionDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showCompletionDialog = false
+                        }) {
+                            Text("OK")
+                        }
+                    },
+                    title = {
+                        Text(text = "Video Selesai")
+                    },
+                    text = {
+                        Text("Anda telah selesai menonton video.")
+                    }
                 )
             }
 
-            item {
+            if (showButton) {
                 Button(
-                    onClick = { navController.navigate(AppScreen.Home.Semester.Topik.Soal.route) },
-                    enabled = videoFinished,
+                    onClick = { navController.navigate("${AppScreen.Home.Semester.Topik.Soal.route}/$idtopik") },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF005DFF), contentColor = Color.White
@@ -141,6 +209,7 @@ fun VidioScreen(navController: NavController) {
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .height(60.dp)
+                        .align(Alignment.BottomCenter)
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Text(
@@ -181,15 +250,14 @@ fun VidioScreen(navController: NavController) {
             }
         }
     }
-
-
 }
+
 
 
 @Preview(showBackground = true)
 @Composable
 private fun VidioScreenPreview() {
-    VidioScreen(navController = rememberNavController())
+    VidioScreen(navController = rememberNavController(), idtopik = "")
 
 }
 
@@ -205,9 +273,7 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
     var videoUrl by remember { mutableStateOf<String?>(null) }
     var isFullscreen by remember { mutableStateOf(false) }
     var hasEnded by remember { mutableStateOf(false) }
-    var lastPosition by remember { mutableStateOf(0L) }
 
-    // Ambil URL video dari Firebase Storage
     LaunchedEffect(storagePath) {
         try {
             val url = storage.reference.child(storagePath).downloadUrl.await().toString()
@@ -245,25 +311,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                     onVideoEnded()
                 }
             }
-
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                if (isPlaying) {
-                    lastPosition = exoPlayer.currentPosition
-                }
-            }
-
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int
-            ) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    val current = exoPlayer.currentPosition
-                    if (current < lastPosition - 200 || current > lastPosition + 200) {
-                        exoPlayer.seekTo(lastPosition)
-                    }
-                }
-            }
         }
 
         exoPlayer.addListener(listener)
@@ -273,7 +320,7 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
         }
     }
 
-    // Tampilan Normal (portrait)
+    // Normal mode
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -287,8 +334,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                 PlayerView(context).apply {
                     player = exoPlayer
                     useController = true
-                    setShowFastForwardButton(false)
-                    setShowRewindButton(false)
                 }
             },
             modifier = Modifier.fillMaxSize()
@@ -313,7 +358,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
         }
     }
 
-    // Fullscreen Mode (dialog)
     if (isFullscreen) {
         Dialog(
             onDismissRequest = {
@@ -340,13 +384,11 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                         PlayerView(context).apply {
                             player = exoPlayer
                             useController = true
-                            setShowFastForwardButton(false)
-                            setShowRewindButton(false)
-                            systemUiVisibility = (
-                                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                    )
+//                            systemUiVisibility = (
+//                                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+//                                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+//                                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+//                                    )
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -355,7 +397,7 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                 IconButton(
                     onClick = {
                         isFullscreen = false
-                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     },
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -373,7 +415,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
         }
     }
 }
-
 
 
 

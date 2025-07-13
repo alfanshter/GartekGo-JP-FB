@@ -78,7 +78,7 @@ fun ProfileScreen(navController: NavController) {
           email =  data.get("email").toString()
             programkeahlian = data.get("program_keahlian").toString()
             nomerabsen = data.get("nomor_absen").toString()
-            kelas = data.get("Kelas").toString()
+            kelas = data.get("kelas").toString()
 
         }
 

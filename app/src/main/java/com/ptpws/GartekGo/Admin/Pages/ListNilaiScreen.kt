@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -115,6 +116,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
+                    windowInsets = WindowInsets(0),
                     title = {
                         Text(
                             text = "Nilai",
@@ -130,7 +132,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                 )
 
             }
-        }
+        }, contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         val combinedPadding = PaddingValues(
             top = innerPadding.calculateTopPadding(),

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +54,7 @@ fun TopikEditScreen(modifier: Modifier = Modifier) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
                 title = {
                     Text(
                         text = "Topik 1 :\nBelajar Membaca",
@@ -74,7 +76,7 @@ fun TopikEditScreen(modifier: Modifier = Modifier) {
                     containerColor = Color(0xFFF5F9FF)
                 )
             )
-        },
+        }, contentWindowInsets = WindowInsets(0),
         containerColor = Color(0xFFF5F9FF)
     ) { innerPadding ->
         Box(

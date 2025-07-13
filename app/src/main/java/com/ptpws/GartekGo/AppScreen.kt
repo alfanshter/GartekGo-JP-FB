@@ -15,9 +15,9 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
                 object Materi : AppScreen(R.string.semester, R.drawable.piala, "materi")
                 object Vidio : AppScreen(R.string.semester, R.drawable.piala, "vidio")
                 object Soal: AppScreen(R.string.semester, R.drawable.piala, "soal")
-                object Upload: AppScreen(R.string.semester, R.drawable.piala, "soal")
+                object Upload: AppScreen(R.string.semester, R.drawable.piala, "upload")
+                object Nilai: AppScreen(R.string.semester, R.drawable.piala, "nilai")
                 //bottombar
-                object Beranda: AppScreen(R.string.semester, R.drawable.piala, "soal")
 
 
             }

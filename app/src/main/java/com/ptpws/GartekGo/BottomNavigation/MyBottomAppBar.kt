@@ -37,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
+import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
 import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
@@ -45,6 +46,7 @@ import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.Semester.ProjectScreen
 import com.ptpws.GartekGo.Semester.SemesterScreen
 import com.ptpws.GartekGo.Semester.SoalScreen
+import com.ptpws.GartekGo.Semester.TampilanNilaiSiswa
 import com.ptpws.GartekGo.Semester.UploadScreen
 
 @Composable
@@ -175,6 +177,7 @@ fun MyBottomAppBar(navController: NavController) {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(AppScreen.Home.route) { HomeScreen(navigationController) }
+//                composable(AppScreen.Home.Semester.Topik.Nilai.route) { NilaiSiswa(navigationController) }
                 composable(AppScreen.Home.Semester.route) { SemesterScreen(navigationController, onTambahClick = {}, pilihan = 0) }
 //                composable(AppScreen.Home.Semester.Topik.route) { TopikScreen(navigationController) }
                 composable(
@@ -191,11 +194,29 @@ fun MyBottomAppBar(navController: NavController) {
                     val idTopik = it.arguments?.getString("idTopik")
                     MateriScreen(navigationController, idtopik = idTopik ?: "")
                 }
-                composable(AppScreen.Home.Semester.Topik.Vidio.route) { VidioScreen(navigationController) }
-                composable(AppScreen.Home.Semester.Topik.Soal.route) { SoalScreen(navigationController) }
-                composable(AppScreen.Home.Semester.Topik.Upload.route) { UploadScreen(navigationController) }
+                composable(
+                    "${AppScreen.Home.Semester.Topik.Vidio.route}/{idtopik}",
+                    arguments = listOf(navArgument("idtopik") { type = NavType.StringType })
+                ) {
+                    val idtopik = it.arguments?.getString("idtopik") ?: ""
+                    VidioScreen(navigationController, idtopik)
+                }
+                composable(
+                    route = "${AppScreen.Home.Semester.Topik.Soal.route}/{idtopik}",
+                    arguments = listOf(navArgument("idtopik") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val idtopik = backStackEntry.arguments?.getString("idtopik") ?: ""
+                    SoalScreen(navigationController, idtopik)
+                }
+                composable(
+                    route = "${AppScreen.Home.Semester.Topik.Upload.route}/{idtopik}",
+                    arguments = listOf(navArgument("idtopik") { type = NavType.StringType })
+                ) {
+                    val idtopik = it.arguments?.getString("idtopik") ?: ""
+                    UploadScreen(navController = navigationController, idtopik = idtopik)
+                }
 
-                composable(AppScreen.Nilai.route) { ProjectScreen( navigationController) }
+                composable(AppScreen.Nilai.route) { TampilanNilaiSiswa( navigationController) }
                 composable(AppScreen.Profile.route) { ProfileScreen(navigationController) }
 
                 //admin

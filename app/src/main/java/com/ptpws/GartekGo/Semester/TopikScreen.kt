@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,26 +59,40 @@ fun TopikScreen(navController: NavController,idtopik: String) {
     var materi by remember { mutableStateOf("") }
     var vidio by remember { mutableStateOf("") }
     var soal by remember { mutableStateOf("") }
+    var nomorTopik by remember { mutableStateOf(0) }
+
+
 
     var uid = FirebaseAuth.getInstance().currentUser!!.uid
+    val db = Firebase.firestore
     Log.d("muhib",idtopik.toString())
 
-    val db = Firebase.firestore
+    // Get nomor dari collection global "topik"
+    LaunchedEffect(idtopik) {
+        db.collection("topik").document(idtopik).get()
+            .addOnSuccessListener { dataTopik ->
+                nomorTopik = dataTopik.getLong("nomor")?.toInt() ?: 0
+                Log.d("muhib-nomor", "Nomor Topik: $nomorTopik")
+            }
+    }
 
-    val getdata =
+// Get progress user
+    LaunchedEffect(idtopik) {
         db.collection("users").document(uid).collection("topik").document(idtopik).get()
-        getdata.addOnSuccessListener { data ->
-        materi = data.get("materi").toString()
-        vidio = data.get("vidio").toString()
-        soal = data.get("soal").toString()
+            .addOnSuccessListener { data ->
+                materi = data.get("materi").toString()
+                vidio = data.get("vidio").toString()
+                soal = data.get("soal").toString()
 
-        Log.d("muhib",materi.toString())
+                Log.d("muhib", "Materi: $materi, Vidio: $vidio, Soal: $soal")
+            }
     }
     Scaffold(modifier = Modifier, containerColor = Color(0xffF5F9FF), topBar = {
         CenterAlignedTopAppBar(
+            windowInsets = WindowInsets(0),
             title = {
                 Text(
-                    text = "Topik 1",
+                    text = "Topik $nomorTopik",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     fontFamily = poppinsfamily,
@@ -96,7 +112,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 containerColor = Color(0xffF5F9FF) // TopAppBar background
             )
         )
-    }
+    }, contentWindowInsets = WindowInsets(top = 40.dp)
     ) { innerPadding ->
 
         LazyColumn(
@@ -150,7 +166,13 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp),
+                        .height(129.dp).then( if (materi == "1") {
+                            Modifier.clickable {
+                                navController.navigate("${AppScreen.Home.Semester.Topik.Vidio.route}/$idtopik")
+                            }
+                        } else {
+                            Modifier // Tidak clickable
+                        }),
                     shape = RoundedCornerShape(23.dp),
                     colors = CardDefaults.cardColors(containerColor
                     = if (materi == "1")Color(0xffC2D8FF)else
@@ -195,7 +217,7 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                         ) {
                             if (materi == "1") {
                                 IconButton(
-                                    onClick = { /* aksi */ },
+                                    onClick = { },
                                     modifier = Modifier
                                         .size(32.dp) // lebih kecil agar proporsional
                                         .background(Color(0xFF337DFF), shape = CircleShape)
@@ -234,9 +256,21 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                 Card(
                     modifier = Modifier
                         .width(359.dp)
-                        .height(129.dp),
+                        .height(129.dp)
+                        .then(
+                            if (vidio == "1") {
+                                Modifier.clickable {
+                                    Log.d("Muhib", "Clicked idtopik: $idtopik")
+                                    navController.navigate("${AppScreen.Home.Semester.Topik.Soal.route}/$idtopik")
+                                }
+                            } else {
+                                Modifier // Tidak clickable
+                            }
+                        ),
                     shape = RoundedCornerShape(23.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDCDCDC)) // Abu-abu terang
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (vidio == "1") Color(0xffC2D8FF) else Color(0xFFDCDCDC)
+                    ) // Biru kalau aktif, abu-abu kalau terkunci
                 ) {
                     Box(
                         modifier = Modifier
@@ -250,18 +284,17 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                             Text(
                                 text = "SOAL",
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E1E2F) // Warna gelap
-                                , fontFamily = poppinsfamily, fontSize = 36.sp
-
+                                color = Color(0xFF1E1E2F),
+                                fontFamily = poppinsfamily,
+                                fontSize = 36.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Tonton Video  Terlebih Dahulu",
+                                text = if (vidio == "1") "Ayo kerjakan soalnya" else "Tonton Video Terlebih Dahulu",
                                 fontFamily = poppinsfamily,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Color(0xFF1E1E2F)
-
                             )
                         }
 
@@ -270,19 +303,35 @@ fun TopikScreen(navController: NavController,idtopik: String) {
                                 .align(Alignment.CenterEnd)
                                 .size(44.dp)
                                 .background(
-                                    color = Color(0xFFE0E0E0), // Lingkaran abu-abu
+                                    color = if (vidio == "1") Color(0xFF337DFF) else Color(0xFFE0E0E0),
                                     shape = CircleShape
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Terkunci",
-                                tint = Color.Black
-                            )
+                            if (vidio == "1") {
+                                IconButton(
+                                    onClick = {
+
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "Mulai",
+                                        tint = Color.White
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Terkunci",
+                                    tint = Color.Black
+                                )
+                            }
                         }
                     }
                 }
+
 
 
             }

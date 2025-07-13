@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,6 +60,7 @@ fun HomeAdmin(navController: NavController,  outerPadding: PaddingValues = Paddi
             topBar = {
                 Column {
                     CenterAlignedTopAppBar(
+                        windowInsets = WindowInsets(0),
                         title = {
                             Text(
                                 text = "ADMIN",
@@ -74,7 +76,7 @@ fun HomeAdmin(navController: NavController,  outerPadding: PaddingValues = Paddi
                     )
 
                 }
-            },
+            }, contentWindowInsets = WindowInsets(0),
         ) { innerPadding ->
             val combinedPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),
