@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Admin.Dialog
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -428,7 +429,8 @@ fun TambahsiswaDialog(
                                 scope.launch {
                                     isLoading = true
                                     try {
-                                        if (usersModel != null) {
+                                        Log.d("dinda", "$email, $nama, $selectedkelas, $absen, $selectedkeahlian")
+                                        if (usersModel!!.uid!=null) {
                                             val request = UpdateUserRequest(
                                                 email = email,
                                                 nama = nama,
@@ -533,7 +535,8 @@ fun TambahsiswaDialog(
                                                         message = "${response.message()}"
                                                     }
                                                 }
-                                            } else {
+                                            }
+                                            else {
                                                 when (response.code()) {
                                                     500 -> {
                                                         isLoading = false
@@ -555,6 +558,8 @@ fun TambahsiswaDialog(
 
                                     } catch (e: Exception) {
                                         message = "❌ Error: ${e.message}"
+                                        Log.d("dinda","${e.message}")
+                                        e.printStackTrace()
                                     } finally {
                                         isLoading = false
                                     }
