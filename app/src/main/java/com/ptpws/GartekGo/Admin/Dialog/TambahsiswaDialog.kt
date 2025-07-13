@@ -70,7 +70,8 @@ fun TambahsiswaDialog(
 ) {
     val initialNama = usersModel?.nama ?: ""
     val initialEmail = usersModel?.email ?: ""
-    val initialNomorAbsen = usersModel?.nomor_absen.toString() ?: ""
+    val initialNomorAbsen = usersModel?.nomor_absen?.toString() ?: ""
+
     val initialSelectedKelas = usersModel?.kelas ?: ""
     val initialSelectedKeahlian = usersModel?.program_keahlian ?: ""
 
@@ -80,10 +81,10 @@ fun TambahsiswaDialog(
     var selectedkelas by remember { mutableStateOf(initialSelectedKelas) }
     var selectedkeahlian by remember { mutableStateOf(initialSelectedKeahlian) }
 
-    val kelasList = listOf("10", "11", "12")
+    val kelasList = listOf("X", "XI", "XII")
     var expanded by remember { mutableStateOf(false) }
     var expandedkeahlian by remember { mutableStateOf(false) }
-    val keahlianList = listOf("TKJ", "TKRO", "DKV")
+    val keahlianList = listOf("TKP", "GEO", "DPIB")
 
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
@@ -395,7 +396,7 @@ fun TambahsiswaDialog(
                                     },
                                     onClick = {
                                         selectedkeahlian = Keahlian
-                                        expanded = false
+                                        expandedkeahlian = false
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
