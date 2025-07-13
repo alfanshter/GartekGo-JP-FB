@@ -1,42 +1,37 @@
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,19 +48,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.model.UsersModel
-import com.ptpws.GartekGo.AppScreen
-import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
@@ -90,6 +81,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
     var selectedKelas by remember { mutableStateOf<String?>(null) }
     var selectedProgram by remember { mutableStateOf<String?>(null) }
 
+
     val filteredList by remember(selectedKelas, selectedProgram, userList) {
         derivedStateOf {
             userList.filter { user ->
@@ -99,6 +91,9 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
             }
         }
     }
+
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
 
     // Fetch awal
     LaunchedEffect(Unit) {
@@ -153,6 +148,40 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
             }
     }
 
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            isSearching = true
+            searchUsers(
+                db = db,
+                query = searchQuery,
+                onResult = {
+                    userList.clear()
+                    userList.addAll(it)
+                    endReached = true // supaya paging tidak trigger saat search
+                },
+                onLoadingChanged = { isLoading = it }
+            )
+        } else {
+            // Reset ke paging awal
+            isSearching = false
+            userList.clear()
+            endReached = false
+            lastVisible = null
+            fetchUsersPaged(
+                db = db,
+                userList = userList,
+                limit = 10,
+                lastVisible = null,
+                selectedKelas = selectedKelas,
+                selectedProgram = selectedProgram,
+                onLastVisibleChanged = { lastVisible = it },
+                onLoadingChanged = { isLoading = it },
+                onEndReached = { endReached = it }
+            )
+        }
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -179,6 +208,29 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                 .padding(outerPadding)
         ) {
             // 🔽 Tambahan CHIP filter
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Cari nama") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                ),
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                        }
+                    }
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,7 +250,11 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                     onOptionSelected = { selectedProgram = if (it == "-") null else it }
                 )
             }
-            Text("Hasil (${filteredList.size} data)", fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+            Text(
+                "Hasil (${filteredList.size} data)",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -277,6 +333,33 @@ suspend fun fetchUsersPaged(
     onLoadingChanged(false)
 }
 
+fun searchUsers(
+    db: FirebaseFirestore,
+    query: String,
+    onResult: (List<UsersModel>) -> Unit,
+    onLoadingChanged: (Boolean) -> Unit
+) {
+    onLoadingChanged(true)
+    db.collection("users")
+        .orderBy("nama")
+        .get()
+        .addOnSuccessListener { result ->
+            val users = result.documents.mapNotNull {
+                it.toObject(UsersModel::class.java)?.copy(uid = it.id)
+            }.filter {
+                it.nama?.lowercase()?.contains(query.lowercase()) == true
+            }
+            onResult(users)
+            onLoadingChanged(false)
+        }
+        .addOnFailureListener {
+            onResult(emptyList())
+            onLoadingChanged(false)
+        }
+}
+
+
+
 
 @Composable
 fun UserCard(navController: NavController, user: UsersModel) {
@@ -324,7 +407,10 @@ fun CustomDropdownChip(
     Column {
         Surface(
             shape = RoundedCornerShape(50),
-            border = BorderStroke(2.dp, if (selectedOption != null) Color(0xFF2962FF) else Color.Gray),
+            border = BorderStroke(
+                2.dp,
+                if (selectedOption != null) Color(0xFF2962FF) else Color.Gray
+            ),
             color = Color.White,
             modifier = Modifier.clickable { expanded = !expanded }
         ) {
