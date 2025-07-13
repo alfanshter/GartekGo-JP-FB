@@ -1,17 +1,17 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,10 +34,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,16 +43,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ptpws.GartekGo.Admin.model.UsersModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun NilaiSiswa(navController: NavController,outerPadding: PaddingValues = PaddingValues()) {
+fun NilaiSiswa(
+    navController: NavController,
+    outerPadding: PaddingValues = PaddingValues(),
+    usersModel: UsersModel
+) {
+
     val chipLabelsnilaisiswa =
         listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) } // index chip yang aktif
-    val context = LocalContext.current
 
         Scaffold(
             topBar = {
@@ -96,97 +100,7 @@ fun NilaiSiswa(navController: NavController,outerPadding: PaddingValues = Paddin
                     .background(color = Color(0xffF5F9FF))
                     .padding(combinedPadding)
             ) {
-                Card(
-                    shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Nama :",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Cristiano Ronaldo",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Email :",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
 
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = " ronaldo7@goat.com",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "No. Absen :",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            Text(
-                                text = "7",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Kelas :",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "7 TKJ 1",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Program Keahlian :",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Goal Poacher",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-
-
-                    }
-                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -282,7 +196,7 @@ fun NilaiSiswa(navController: NavController,outerPadding: PaddingValues = Paddin
 @Preview(showBackground = true)
 @Composable
 private fun NilaiSiwaPreview() {
-    NilaiSiswa(navController = rememberNavController())
+    NilaiSiswa(navController = rememberNavController(), usersModel = UsersModel())
 
 }
 

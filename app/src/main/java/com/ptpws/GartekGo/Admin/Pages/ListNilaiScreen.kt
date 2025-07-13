@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -54,9 +55,9 @@ import androidx.navigation.NavController
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.AppScreen
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
@@ -186,6 +187,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                windowInsets = WindowInsets(0),
                 title = {
                     Text(
                         text = "Nilai",
@@ -198,7 +200,7 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                     containerColor = Color(0xffF5F9FF)
                 )
             )
-        }
+        }, contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -359,15 +361,16 @@ fun searchUsers(
 }
 
 
-
-
 @Composable
 fun UserCard(navController: NavController, user: UsersModel) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate("ruteNilaiSiswa") },
+            .clickable {
+                navController.navigate(AppScreen.Home.Admin.NilaiSiswa.createRoute(user))
+
+            },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ptpws.GartekGo.Admin.Pages.DataSoalScreen
 import com.ptpws.GartekGo.Admin.Pages.HomeAdmin
+import com.ptpws.GartekGo.Admin.Pages.NilaiSiswa
 import com.ptpws.GartekGo.Admin.Pages.PenilaianScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahSiswaScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahMateriScreen
@@ -26,9 +27,9 @@ import com.ptpws.GartekGo.Admin.Pages.TambahSoalScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahVidioScreen
 import com.ptpws.GartekGo.Admin.model.TopikModel
+import com.ptpws.GartekGo.Admin.model.UsersModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.HomeScreen.ProfileScreen
-import com.ptpws.GartekGo.Semester.ProjectScreen
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -68,6 +69,21 @@ fun MainAdminScreen() {
                 )
             }
             composable(AppScreen.Home.Admin.Penilaian.route) { PenilaianScreen(navController) }
+
+            composable(
+                route = AppScreen.Home.Admin.NilaiSiswa.route,
+                arguments = listOf(navArgument("jsonUser") {
+                    type = NavType.StringType
+                })
+            ) { backStackEntry ->
+                val json = backStackEntry.arguments?.getString("jsonUser") ?: ""
+                val decodedJson = URLDecoder.decode(json, StandardCharsets.UTF_8.toString())
+                val usersModel = Json.decodeFromString<UsersModel>(decodedJson)
+
+                NilaiSiswa(navController = navController, usersModel = usersModel)
+            }
+
+
             composable(
                 route = AppScreen.Home.Admin.DataSoal.route,
                 arguments = listOf(navArgument("jsonTopik") {
