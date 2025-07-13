@@ -77,8 +77,8 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
     //pager
-    implementation("androidx.compose.foundation:foundation:1.6.0")
-
+//    implementation("androidx.compose.foundation:foundation:1.6.0")
+    implementation(libs.androidx.foundation)
     //swipe refresh
     implementation (libs.accompanist.swiperefresh)
 
@@ -104,6 +104,9 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0")
 
     implementation("io.github.afreakyelf:Pdf-Viewer:2.3.7")
+
+    //shimmer
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.0.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
