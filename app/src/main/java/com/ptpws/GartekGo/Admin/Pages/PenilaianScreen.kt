@@ -1,7 +1,5 @@
 package com.ptpws.GartekGo.Admin.Pages
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,16 +12,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
@@ -37,53 +30,39 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.dropdown.TopikDropDown
 import com.ptpws.GartekGo.Admin.model.ProjectUploadsModel
-import com.ptpws.GartekGo.Admin.model.TopikModel
-import com.ptpws.GartekGo.Admin.model.UsersModel
-import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
-import com.ptpws.GartekGo.R
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,13 +82,15 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
     // Tambahan: filter
     var selectedKelas by remember { mutableStateOf<String?>(null) }
     var selectedProgram by remember { mutableStateOf<String?>(null) }
+    var selectedStatus by remember { mutableStateOf<Boolean?>(null) }
 
 
-    val filteredList by remember(selectedKelas, selectedProgram, userList) {
+    val filteredList by remember(selectedKelas, selectedProgram, selectedStatus, userList) {
         derivedStateOf {
             userList.filter { user ->
                 val matchKelas = selectedKelas?.let { user.kelas == it } ?: true
                 val matchProgram = selectedProgram?.let { user.program_keahlian == it } ?: true
+                val matchStatus = selectedStatus?.let { user.status == it } ?: true
                 matchKelas && matchProgram
             }
         }
@@ -127,12 +108,13 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
             lastVisible = null,
             onLastVisibleChanged = { lastVisible = it },
             onLoadingChanged = { isLoading = it },
-            onEndReached = { endReached = it }
+            onEndReached = { endReached = it },
+            selectedStatus = selectedStatus
         )
     }
 
 
-    LaunchedEffect(selectedKelas, selectedProgram) {
+    LaunchedEffect(selectedKelas, selectedProgram, selectedStatus) {
         userList.clear()
         endReached = false
         lastVisible = null
@@ -144,6 +126,7 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
             lastVisible = null,
             selectedKelas = selectedKelas,
             selectedProgram = selectedProgram,
+            selectedStatus = selectedStatus,
             onLastVisibleChanged = { lastVisible = it },
             onLoadingChanged = { isLoading = it },
             onEndReached = { endReached = it }
@@ -166,7 +149,8 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                         selectedProgram = selectedProgram,
                         onLastVisibleChanged = { lastVisible = it },
                         onLoadingChanged = { isLoadingMore = it },
-                        onEndReached = { endReached = it }
+                        onEndReached = { endReached = it },
+                        selectedStatus = selectedStatus
                     )
                 }
             }
@@ -183,7 +167,7 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                     userList.addAll(it)
                     endReached = true // supaya paging tidak trigger saat search
                 },
-                onLoadingChanged = { isLoading = it }
+                onLoadingChanged = { isLoading = it },
             )
         } else {
             // Reset ke paging awal
@@ -200,7 +184,8 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                 selectedProgram = selectedProgram,
                 onLastVisibleChanged = { lastVisible = it },
                 onLoadingChanged = { isLoading = it },
-                onEndReached = { endReached = it }
+                onEndReached = { endReached = it },
+                selectedStatus = selectedStatus
             )
         }
     }
@@ -211,7 +196,7 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                 windowInsets = WindowInsets(0),
                 title = {
                     Text(
-                        text = "Nilai",
+                        text = "Penilaian Project",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         color = Color.Black
@@ -260,6 +245,25 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 CustomDropdownChip(
+                    label = "Status",
+                    options = listOf("-", "Sudah dinilai", "Belum dinilai"),
+                    selectedOption = when (selectedStatus) {
+                        null -> "Status"
+                        true -> "Sudah dinilai"
+                        false -> "Belum dinilai"
+                    },
+                    onOptionSelected = {
+                        selectedStatus = when (it) {
+                            "Status" -> null
+                            "Sudah dinilai" -> true
+                            "Belum dinilai" -> false
+                            else -> null
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+                CustomDropdownChip(
                     label = "Kelas",
                     options = listOf("-", "X", "XI", "XII"),
                     selectedOption = selectedKelas,
@@ -272,6 +276,7 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                     selectedOption = selectedProgram,
                     onOptionSelected = { selectedProgram = if (it == "-") null else it }
                 )
+
             }
 //            Text(
 //                "Hasil (${filteredList.size} data)",
@@ -316,18 +321,21 @@ suspend fun fetchUsersPaged(
     selectedProgram: String? = null,
     onLastVisibleChanged: (DocumentSnapshot?) -> Unit,
     onLoadingChanged: (Boolean) -> Unit,
-    onEndReached: (Boolean) -> Unit
+    onEndReached: (Boolean) -> Unit,
+    selectedStatus: Boolean? = null
 ) {
 
     onLoadingChanged(true)
     try {
         var query = db.collection("project_uploads")
-            .whereEqualTo("status",true)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .orderBy("uid")
             .limit(limit)
 
 
+        if (selectedStatus != null) {
+            query = query.whereEqualTo("status", selectedStatus)
+        }
 
         if (selectedKelas != null) {
             query = query.whereEqualTo("kelas", selectedKelas)
@@ -335,6 +343,7 @@ suspend fun fetchUsersPaged(
         if (selectedProgram != null) {
             query = query.whereEqualTo("program_keahlian", selectedProgram)
         }
+
 
         if (lastVisible != null) {
             query = query.startAfter(lastVisible)
@@ -368,7 +377,6 @@ suspend fun searchUsers(
 ) {
     onLoadingChanged(true)
     db.collection("project_uploads")
-        .whereEqualTo("status",true)
         .orderBy("nama")
         .get()
         .addOnSuccessListener { result ->
@@ -387,7 +395,6 @@ suspend fun searchUsers(
 }
 
 
-
 @Composable
 fun UserCard(navController: NavController, data: ProjectUploadsModel) {
     Card(
@@ -402,7 +409,12 @@ fun UserCard(navController: NavController, data: ProjectUploadsModel) {
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Topik ${data.nomor_topik} - ${data.nama_topik}", fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(
+                "Topik ${data.nomor_topik} - ${data.nama_topik}",
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
             Text("Nama: ${data.nama}")
             Text("Kelas: ${data.kelas} - ${data.program_keahlian}")
             Text("Nilai: ${data.nilai ?: "-"}")
