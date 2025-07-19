@@ -30,4 +30,6 @@ data class TopikModel(
     var soal:String? = null,
     var materi:String? = null,
     var vidio:String? = null,
+
+    var uploadedMateriBy:String? = null,
     )

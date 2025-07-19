@@ -36,7 +36,7 @@
         <activity
             android:name=".SplashScreen.SplashActivity"
             android:exported="true"
-            android:label="@string/title_activity_splash"
+            android:label="@string/app_name"
             android:theme="@style/Theme.GartekGo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -58,6 +58,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.model.UsersModel
 import com.ptpws.GartekGo.AppScreen
+import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
@@ -397,7 +398,6 @@ fun ShimmerUserCard() {
     )
 }
 
-
 @Composable
 fun CustomDropdownChip(
     label: String,
@@ -407,43 +407,47 @@ fun CustomDropdownChip(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column {
-        Surface(
-            shape = RoundedCornerShape(50),
-            border = BorderStroke(
-                2.dp,
-                if (selectedOption != null) Color(0xFF2962FF) else Color.Gray
-            ),
-            color = Color.White,
-            modifier = Modifier.clickable { expanded = !expanded }
-        ) {
-            Text(
-                text = if (selectedOption != null) "$selectedOption" else label,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                color = if (selectedOption != null) Color(0xFF2962FF) else Color.Gray,
-                fontWeight = if (selectedOption != null) FontWeight.Bold else FontWeight.Normal
-            )
-        }
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (selectedOption != null) Color(0xFF2962FF) else Color.Gray
+        ),
+        color = Color.Transparent,
+        modifier = Modifier
+            .height(30.dp)
+            .clickable { expanded = !expanded }
+    ) {
+        Text(
+            text = selectedOption ?: label,
+            fontWeight = if (selectedOption != null) FontWeight.Bold else FontWeight.Normal,
+            fontFamily = poppinsfamily,
+            fontSize = 11.sp,
+            color = if (selectedOption != null) Color(0xFF2962FF) else Color.Gray,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+    }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { item ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = item,
-                            fontWeight = if (item == selectedOption) FontWeight.Bold else FontWeight.Normal
-                        )
-                    },
-                    onClick = {
-                        onOptionSelected(if (item == "-") null else item)
-                        expanded = false
-                    }
-                )
-            }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
+    ) {
+        options.forEach { item ->
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = item,
+                        fontWeight = if (item == selectedOption) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = poppinsfamily
+                    )
+                },
+                onClick = {
+                    onOptionSelected(if (item == "-") null else item)
+                    expanded = false
+                }
+            )
         }
     }
 }
+
 
