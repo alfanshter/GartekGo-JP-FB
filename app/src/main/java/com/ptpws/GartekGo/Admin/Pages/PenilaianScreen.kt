@@ -1,8 +1,15 @@
 package com.ptpws.GartekGo.Admin.Pages
 
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,21 +25,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,15 +57,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -278,11 +302,6 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
                 )
 
             }
-//            Text(
-//                "Hasil (${filteredList.size} data)",
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.padding(16.dp)
-//            )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -397,6 +416,9 @@ suspend fun searchUsers(
 
 @Composable
 fun UserCard(navController: NavController, data: ProjectUploadsModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -418,8 +440,42 @@ fun UserCard(navController: NavController, data: ProjectUploadsModel) {
             Text("Nama: ${data.nama}")
             Text("Kelas: ${data.kelas} - ${data.program_keahlian}")
             Text("Nilai: ${data.nilai ?: "-"}")
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = "Lihat Gambar",
+                    color = Color(0xFF167F71),
+                    fontFamily = poppinsfamily,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        showDialog = true
+                    }
+                )
+
+            }
         }
     }
+
+    if (showDialog){
+        ImagePopupDialog(
+            imageUrl = data.imageUrl!!,
+            onDismiss = {
+                showDialog = false
+            },
+            onSubmit = {nilai, keterangan ->
+                // 🔥 Aksi kirim ke Firebase di sini
+                println("Nilai: $nilai, Keterangan: $keterangan")
+                showDialog = false
+            }, context = context
+        )
+    }
+
 }
 
 @Composable
@@ -487,3 +543,153 @@ fun CustomDropdownChip(
         }
     }
 }
+
+@Composable
+fun ImagePopupDialog(
+    imageUrl: String,
+    onDismiss: () -> Unit,
+    onSubmit: (Int, String) -> Unit,
+    context: Context
+) {
+    var nilai by remember { mutableStateOf("") }
+    var keterangan by remember { mutableStateOf("") }
+    var showFullImage by remember { mutableStateOf(false) }
+
+    // Shared painter untuk loading state
+    val painter = rememberAsyncImagePainter(model = imageUrl)
+    val state = painter.state
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
+            Button(onClick = {
+                val nilaiInt = nilai.toIntOrNull() ?: 0
+                onSubmit(nilaiInt, keterangan)
+            }) {
+                Text("Submit")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text("Tutup")
+            }
+        },
+        title = { Text("Detail Gambar") },
+        text = {
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clickable { showFullImage = true }
+                ) {
+                    Image(
+                        painter = painter,
+                        contentDescription = "Gambar",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+
+
+                    if (state is AsyncImagePainter.State.Loading) {
+                        // 🛠️ Tampilkan loading hanya saat loading
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f))
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                }
+
+
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val request = DownloadManager.Request(Uri.parse(imageUrl))
+                            .setTitle("Download Gambar")
+                            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "gambar_${System.currentTimeMillis()}.jpg")
+                        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                        dm.enqueue(request)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Download Gambar")
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = nilai,
+                    onValueChange = { nilai = it },
+                    label = { Text("Nilai (0-100)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = keterangan,
+                    onValueChange = { keterangan = it },
+                    label = { Text("Keterangan") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    )
+
+    if (showFullImage) {
+
+        Dialog(onDismissRequest = { showFullImage = false }) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                var scale by remember { mutableStateOf(1f) }
+                var offset by remember { mutableStateOf(Offset.Zero) }
+
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Full Image",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                scale *= zoom
+                                offset += pan
+                            }
+                        }
+                        .graphicsLayer(
+                            scaleX = scale,
+                            scaleY = scale,
+                            translationX = offset.x,
+                            translationY = offset.y
+                        )
+                )
+
+
+                IconButton(
+                    onClick = { showFullImage = false },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+    }
+
+}
+
+
+

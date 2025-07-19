@@ -68,7 +68,9 @@ dependencies {
     // Activity Compose
     implementation("androidx.activity:activity-compose:1.7.2")
     // Coil untuk load gambar dari URI
-    implementation("io.coil-kt:coil-compose:2.2.2")
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     // Navigasi
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation(libs.androidx.navigation.compose.android)
@@ -107,6 +109,8 @@ dependencies {
 
     //shimmer
     implementation("com.valentinilk.shimmer:compose-shimmer:1.0.3")
+    //image zoom
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
