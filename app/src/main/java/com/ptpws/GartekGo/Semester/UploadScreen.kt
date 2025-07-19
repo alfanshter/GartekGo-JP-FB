@@ -427,13 +427,28 @@ fun UploadScreen(
 
                                                             db.collection("project_uploads")
                                                                 .add(upload)
-                                                                .addOnSuccessListener {
-                                                                    isUploading = false
-                                                                    uploadProgress = 0f
-                                                                    gambarsuksesdikirim = true
-                                                                    sudahUpload =
-                                                                        true //  Set sudahUpload supaya disable
-                                                                    fetchLastUploadedImage()
+                                                                .addOnSuccessListener { documentRef ->
+                                                                    val idProject = documentRef.id // Ambil ID dokumen
+
+                                                                    // Update field id_project di dokumen yang barusan dibuat
+                                                                    db.collection("project_uploads").document(idProject)
+                                                                        .update("id_project", idProject)
+                                                                        .addOnSuccessListener {
+                                                                            isUploading = false
+                                                                            uploadProgress = 0f
+                                                                            gambarsuksesdikirim = true
+                                                                            sudahUpload = true //Untuk disable tombol
+                                                                            fetchLastUploadedImage()
+                                                                        }
+                                                                        .addOnFailureListener {
+                                                                            isUploading = false
+                                                                            uploadProgress = 0f
+                                                                            Toast.makeText(
+                                                                                context,
+                                                                                "Gagal update id_project",
+                                                                                Toast.LENGTH_SHORT
+                                                                            ).show()
+                                                                        }
                                                                 }
                                                                 .addOnFailureListener {
                                                                     isUploading = false
@@ -444,6 +459,7 @@ fun UploadScreen(
                                                                         Toast.LENGTH_SHORT
                                                                     ).show()
                                                                 }
+
                                                         }
                                                     }
                                             }
