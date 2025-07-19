@@ -19,4 +19,5 @@ data class ProjectUploadsModel(
     val program_keahlian : String? = null,
     val nama_topik : String? = null,
     val nomor_topik : Int? = null,
+    val keterangan : String? = null,
 )

@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -467,12 +468,10 @@ fun UserCard(navController: NavController, data: ProjectUploadsModel) {
             imageUrl = data.imageUrl!!,
             onDismiss = {
                 showDialog = false
-            },
-            onSubmit = {nilai, keterangan ->
-                // 🔥 Aksi kirim ke Firebase di sini
-                println("Nilai: $nilai, Keterangan: $keterangan")
-                showDialog = false
-            }, context = context
+            }, context = context,
+            docId = data.id_project,
+            nilaiInitial = data.nilai,
+            keteranganInitial = data.keterangan
         )
     }
 
@@ -547,24 +546,53 @@ fun CustomDropdownChip(
 @Composable
 fun ImagePopupDialog(
     imageUrl: String,
+    nilaiInitial: Int?, // dikirim dari luar
+    keteranganInitial: String?, // dikirim dari luar
     onDismiss: () -> Unit,
-    onSubmit: (Int, String) -> Unit,
-    context: Context
+    context: Context,
+    docId: String?
 ) {
     var nilai by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
+
+    // Inisialisasi nilai dan keterangan hanya sekali
+    LaunchedEffect(Unit) {
+        nilai = nilaiInitial?.toString() ?: ""
+        keterangan = keteranganInitial ?: ""
+    }
+
     var showFullImage by remember { mutableStateOf(false) }
 
     // Shared painter untuk loading state
     val painter = rememberAsyncImagePainter(model = imageUrl)
     val state = painter.state
 
+    var isSubmitting by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
             Button(onClick = {
-                val nilaiInt = nilai.toIntOrNull() ?: 0
-                onSubmit(nilaiInt, keterangan)
+                val nilaiInt = nilai.toIntOrNull()
+                if (nilaiInt != null && nilaiInt in 0..100) {
+                    isSubmitting = true
+                    updateProjectUploadData(
+                        docId = docId!!,
+                        nilai = nilaiInt,
+                        keterangan = keterangan,
+                        onSuccess = {
+                            isSubmitting = false
+                            Toast.makeText(context, "✅ Nilai berhasil disimpan", Toast.LENGTH_SHORT).show()
+                            onDismiss()
+                        },
+                        onError = {
+                            isSubmitting = false
+                            Toast.makeText(context, "❌ Gagal: ${it.message}", Toast.LENGTH_LONG).show()
+                        }
+                    )
+                } else {
+                    Toast.makeText(context, "⚠️ Nilai harus antara 0 - 100", Toast.LENGTH_SHORT).show()
+                }
             }) {
                 Text("Submit")
             }
@@ -690,6 +718,28 @@ fun ImagePopupDialog(
     }
 
 }
+
+fun updateProjectUploadData(
+    docId: String,
+    nilai: Int,
+    keterangan: String,
+    onSuccess: () -> Unit,
+    onError: (Exception) -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val data = mapOf(
+        "nilai" to nilai,
+        "keterangan" to keterangan,
+        "status" to true
+    )
+
+    db.collection("project_uploads")
+        .document(docId)
+        .update(data)
+        .addOnSuccessListener { onSuccess() }
+        .addOnFailureListener { onError(it) }
+}
+
 
 
 
