@@ -380,28 +380,91 @@ fun UploadScreen(
                                 .addOnSuccessListener {
                                     imageRef.downloadUrl.addOnSuccessListener { uri ->
                                         val db = FirebaseFirestore.getInstance()
-                                        val upload = UploadModel(
-                                            uid = user.uid,
-                                            id_topik = idtopik,
-                                            imageUrl = uri.toString(),
-                                            timestamp = Timestamp.now()
-                                        )
-                                        db.collection("project_uploads")
-                                            .add(upload)
-                                            .addOnSuccessListener {
-                                                isUploading = false
-                                                uploadProgress = 0f
-                                                gambarsuksesdikirim = true
-                                                sudahUpload = true //  Set sudahUpload supaya disable
-                                                fetchLastUploadedImage()
+                                        val uid = user.uid
+
+                                        //ambil data users
+                                        db.collection("users").document(uid).get()
+                                            .addOnSuccessListener { document ->
+                                                val nama = document.getString("nama") ?: ""
+                                                val kelas = document.getString("kelas") ?: ""
+                                                val program_keahlian =
+                                                    document.getString("program_keahlian") ?: ""
+
+
+                                                val upload = UploadModel(
+                                                    uid = user.uid,
+                                                    kelas = kelas,
+                                                    nama = nama,
+                                                    program_keahlian = program_keahlian,
+                                                    id_topik = idtopik,
+                                                    imageUrl = uri.toString(),
+                                                    timestamp = Timestamp.now()
+                                                )
+
+                                                // Ambil data topik dari ID
+                                                db.collection("topik").document(idtopik).get()
+                                                    .addOnSuccessListener { topikDoc ->
+                                                        if (topikDoc != null && topikDoc.exists()) {
+                                                            val namaTopik =
+                                                                topikDoc.getString("nama") ?: ""
+                                                            val nomorTopik =
+                                                                topikDoc.getLong("nomor") ?: 0L
+
+                                                            // Buat UploadModel dengan nama topik & nomor
+                                                            val upload = UploadModel(
+                                                                uid = uid,
+                                                                nama = nama,
+                                                                kelas = kelas,
+                                                                program_keahlian = program_keahlian,
+                                                                id_topik = idtopik,
+                                                                nama_topik = namaTopik, // tambahkan di model
+                                                                nomor_topik = nomorTopik.toInt(), // tambahkan di model
+                                                                imageUrl = uri.toString(),
+                                                                timestamp = Timestamp.now(),
+                                                                status = false
+                                                            )
+
+
+                                                            db.collection("project_uploads")
+                                                                .add(upload)
+                                                                .addOnSuccessListener { documentRef ->
+                                                                    val idProject = documentRef.id // Ambil ID dokumen
+
+                                                                    // Update field id_project di dokumen yang barusan dibuat
+                                                                    db.collection("project_uploads").document(idProject)
+                                                                        .update("id_project", idProject)
+                                                                        .addOnSuccessListener {
+                                                                            isUploading = false
+                                                                            uploadProgress = 0f
+                                                                            gambarsuksesdikirim = true
+                                                                            sudahUpload = true //Untuk disable tombol
+                                                                            fetchLastUploadedImage()
+                                                                        }
+                                                                        .addOnFailureListener {
+                                                                            isUploading = false
+                                                                            uploadProgress = 0f
+                                                                            Toast.makeText(
+                                                                                context,
+                                                                                "Gagal update id_project",
+                                                                                Toast.LENGTH_SHORT
+                                                                            ).show()
+                                                                        }
+                                                                }
+                                                                .addOnFailureListener {
+                                                                    isUploading = false
+                                                                    uploadProgress = 0f
+                                                                    Toast.makeText(
+                                                                        context,
+                                                                        "Gagal simpan URL Firestore",
+                                                                        Toast.LENGTH_SHORT
+                                                                    ).show()
+                                                                }
+
+                                                        }
+                                                    }
                                             }
-                                            .addOnFailureListener {
-                                                isUploading = false
-                                                uploadProgress = 0f
-                                                Toast.makeText(context, "Gagal simpan URL Firestore", Toast.LENGTH_SHORT).show()
-                                            }
+                                        }
                                     }
-                                }
                                 .addOnFailureListener {
                                     isUploading = false
                                     uploadProgress = 0f
