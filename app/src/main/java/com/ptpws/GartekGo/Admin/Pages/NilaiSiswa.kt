@@ -1,7 +1,6 @@
 package com.ptpws.GartekGo.Admin.Pages
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,6 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
+import com.ptpws.GartekGo.Admin.model.NilaiModel
 import com.ptpws.GartekGo.Admin.model.UsersModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
@@ -64,13 +67,28 @@ fun NilaiSiswa(
 ) {
 
     val chipLabelsnilaisiswa =
-        listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
+        listOf("Semester 1", "Semester 2")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) } // index chip yang aktif
 
 
     var isLoading by remember { mutableStateOf(false) }
 
+    val userList = remember { mutableStateListOf<NilaiModel>() }
+    var lastVisible by remember { mutableStateOf<DocumentSnapshot?>(null) }
+    var endReached by remember { mutableStateOf(false) }
 
+
+    LaunchedEffect(Unit) {
+        fetchUsers(
+            usersModel = usersModel,
+            userList = userList,
+            limit = 10,
+            lastVisible = null,
+            onLastVisibleChanged = { lastVisible = it },
+            onLoadingChanged = { isLoading = it },
+            onEndReached = { endReached = it }
+        )
+    }
 
 
     Scaffold(
@@ -211,7 +229,7 @@ fun NilaiSiswa(
                     }
                 }
             }
-            TopikCard(navController)
+            TopikCard(navController, userList)
 
         }
     }
@@ -222,96 +240,160 @@ fun NilaiSiswa(
 @Preview(showBackground = true)
 @Composable
 private fun NilaiSiwaPreview() {
-    NilaiSiswa(rememberNavController(), outerPadding = PaddingValues(), usersModel = UsersModel())
+    val dummyUser = UsersModel(
+        email = "dummy@example.com",
+        nama = "Budi Santoso",
+        kelas = "XII",
+        nomor_absen = 12,
+        uid = "uid_dummy",
+        program_keahlian = "TKP",
+        role = "user",
+        createdAt = com.google.firebase.Timestamp.now()
+    )
 
+    NilaiSiswa(
+        navController = rememberNavController(),
+        outerPadding = PaddingValues(16.dp),
+        usersModel = dummyUser
+    )
 }
+
 
 
 @Composable
-fun TopikCard(navController: NavController) {
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable {
-//                            navController.navigate(AppScreen.Home.Admin.NilaiSiswa.createRoute(data))
-            }
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                Text(
-                    text = "Topik :",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp, color = Color.Black
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp, color = Color.Black
-                )
-            }
-            Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                Text(
-                    text = "Soal :",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp, color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp, color = Color.Black
-                )
-            }
-            Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                Text(
-                    text = "Project :",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp, color = Color.Black
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-
-                Text(
-                    text = "",
-                    fontFamily = poppinsfamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp, color = Color.Black
-                )
-            }
-
-            Row(
+fun TopikCard(navController: NavController, nilaiList: SnapshotStateList<NilaiModel>) {
+    LazyColumn {
+        items(nilaiList){data ->
+            Card(
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable {
+//                            navController.navigate(AppScreen.Home.Admin.NilaiSiswa.createRoute(data))
+                    }
             ) {
-                Text(
-                    text = "Lihat Gambar",
-                    color = Color(0xFF167F71),
-                    fontFamily = poppinsfamily,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Nilai Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Nilai Project :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = "",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp, color = Color.Black
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = "Lihat Gambar",
+                            color = Color(0xFF167F71),
+                            fontFamily = poppinsfamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier.clickable {
+
+                            }
+                        )
 
                     }
-                )
 
+
+                }
             }
-
-
         }
     }
+
 }
 
+
+
+
+suspend fun fetchUsers(
+    usersModel: UsersModel,
+    userList: SnapshotStateList<NilaiModel>,
+    limit: Long,
+    lastVisible: DocumentSnapshot?,
+    onLastVisibleChanged: (DocumentSnapshot?) -> Unit,
+    onLoadingChanged: (Boolean) -> Unit,
+    onEndReached: (Boolean) -> Unit,
+) {
+
+    val db = Firebase.firestore
+
+    onLoadingChanged(true)
+    try {
+        var query = db.collection("nilai")
+            .whereEqualTo("uid", usersModel.uid)
+            .limit(limit)
+
+        if (lastVisible != null) {
+            query = query.startAfter(lastVisible)
+        }
+
+        val snapshot = query.get().await()
+        println("📦 Data fetched: ${snapshot.documents.size}")
+
+        if (!snapshot.isEmpty) {
+            val newUsers = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NilaiModel::class.java)?.copy(uid = doc.id)
+            }
+            userList.addAll(newUsers)
+            println("📈 userList.size = ${userList.size}")
+            onLastVisibleChanged(snapshot.documents.last())
+        } else {
+            onEndReached(true)
+        }
+    } catch (e: Exception) {
+        onEndReached(true)
+        e.printStackTrace()
+    }
+    onLoadingChanged(false)
+}
 
 
