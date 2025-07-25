@@ -1,6 +1,7 @@
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import androidx.media3.common.MediaItem
 
@@ -74,6 +75,7 @@ import com.google.firebase.storage.storage
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
+import com.ptpws.GartekGo.Semester.FullScreenVideoActivity
 import kotlinx.coroutines.tasks.await
 
 
@@ -334,6 +336,11 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                 PlayerView(context).apply {
                     player = exoPlayer
                     useController = true
+                    systemUiVisibility = (
+                            View.SYSTEM_UI_FLAG_FULLSCREEN or
+                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            )
                 }
             },
             modifier = Modifier.fillMaxSize()
@@ -341,8 +348,10 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
 
         IconButton(
             onClick = {
-                isFullscreen = true
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                val intent = Intent(context, FullScreenVideoActivity::class.java)
+                intent.putExtra("videoUrl", videoUrl)
+                context.startActivity(intent)
+
             },
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -363,6 +372,7 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
             onDismissRequest = {
                 isFullscreen = false
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
             },
             properties = DialogProperties(
                 usePlatformDefaultWidth = false,
@@ -372,8 +382,10 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
             BackHandler {
                 isFullscreen = false
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
             }
 
+            // Fullscreen Layout
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -384,20 +396,24 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                         PlayerView(context).apply {
                             player = exoPlayer
                             useController = true
-//                            systemUiVisibility = (
-//                                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-//                                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-//                                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-//                                    )
+
+                            // Hide system UI: status bar, nav bar
+                            systemUiVisibility = (
+                                    View.SYSTEM_UI_FLAG_FULLSCREEN
+                                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                    )
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // Tombol keluar fullscreen
                 IconButton(
                     onClick = {
                         isFullscreen = false
-                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
                     },
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -414,6 +430,7 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
             }
         }
     }
+
 }
 
 
