@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.model.TopikModel
+import com.ptpws.GartekGo.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 
@@ -54,7 +55,7 @@ fun ProjectScreen(navController: NavController) {
     val userUid = FirebaseAuth.getInstance().uid
 
     // Map: idTopik -> Pair(status, nilai)
-    val projectUploadMap = remember { mutableStateMapOf<String, Pair<String?, Int?>>() }
+    val projectUploadMap = remember { mutableStateMapOf<String, Pair<Boolean?, Int?>>() }
 
     LaunchedEffect(Unit) {
         val getdata = db.collection("topik").orderBy("nomor").get()
@@ -74,7 +75,7 @@ fun ProjectScreen(navController: NavController) {
                 for (projDoc in snapshot.documents) {
                     val idTopik = projDoc.getString("id_topik")
                     val nilai = projDoc.getLong("nilai")?.toInt()
-                    val status = projDoc.getString("status")
+                    val status = projDoc.getBoolean("status")
 
                     if (idTopik != null) {
                         projectUploadMap[idTopik] = Pair(status, nilai)
@@ -95,31 +96,31 @@ fun ProjectScreen(navController: NavController) {
             val statusProject = projectPair?.first
             val nilaiProject = projectPair?.second
 
-            val cardColor = if (statusProject == "Dikonfirmasi Guru") {
+            val cardColor = if (statusProject == true) {
                 Color(0xFFC2D8FF)
-            } else if (statusProject == "Sudah Mengumpulkan") {
+            } else if (statusProject == false) {
                 Color(0xFFE0E0E0)
             } else {
                 Color(0xFFD2D2D2)
             }
 
-            val iconVector = if (statusProject == "Dikonfirmasi Guru") {
+            val iconVector = if (statusProject == true) {
                 Icons.Default.PlayArrow
-            } else if (statusProject == "Sudah Mengumpulkan") {
+            } else if (statusProject == false) {
                 Icons.Default.Refresh
             } else {
                 Icons.Default.Lock
             }
 
-            val iconBgColor = if (statusProject == "Dikonfirmasi Guru") {
+            val iconBgColor = if (statusProject == true) {
                 Color(0xFF3366FF)
-            } else if (statusProject == "Sudah Mengumpulkan") {
+            } else if (statusProject == false) {
                 Color(0xFF00AA00)
             } else {
                 Color(0xFFCCCCCC)
             }
 
-            val iconTint = if (statusProject == "Dikonfirmasi Guru" || statusProject == "Sudah Mengumpulkan") {
+            val iconTint = if (statusProject == true || statusProject == false) {
                 Color.White
             } else {
                 Color.Black
@@ -147,11 +148,13 @@ fun ProjectScreen(navController: NavController) {
                             fontFamily = poppinsfamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 3,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Status : ${statusProject ?: "-"}",
+                            text = if (statusProject ==true) "Sudah dinilai" else "Belum dinilai",
                             fontFamily = poppinsfamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -168,7 +171,7 @@ fun ProjectScreen(navController: NavController) {
 
                     IconButton(
                         onClick = { /* TODO: Aksi Play */ },
-                        enabled = statusProject == "Dikonfirmasi Guru",
+                        enabled = statusProject == true,
                         modifier = Modifier
                             .size(40.dp)
                             .background(color = iconBgColor, shape = CircleShape)
@@ -196,117 +199,3 @@ private fun ProjectScreenPreview() {
 
 }
 
-
-//  Card(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(129.dp)
-//                    .padding(start = 34.dp, end = 34.dp),
-//                colors = CardDefaults.cardColors(containerColor = Color(0xFFD2D2D2)),
-//                shape = RoundedCornerShape(16.dp),
-//                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//            ) {
-//                Row(
-//                    modifier = Modifier.padding(16.dp),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Column(
-//                        modifier = Modifier.weight(1f)
-//                    ) {
-//                        Text(
-//                            text = "Topik 2 – Belajar Menulis",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 16.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black
-//                        )
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        Text(
-//                            text = "Status : Sudah Mengumpulkan",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 15.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black,
-//                        )
-//                        Text(
-//                            text = "Nilai : -",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 16.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black
-//                        )
-//                    }
-//
-//                    IconButton(
-//                        onClick = { /* TODO: Aksi Play */ },
-//                        modifier = Modifier
-//                            .size(40.dp)
-//                            .background(color = Color(0xFF009A0F), shape = CircleShape)
-//                    ) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.loading),
-//                            contentDescription = "Play",
-//                            tint = Color.White
-//                        )
-//                    }
-//                }
-//            }
-//
-//            Spacer(Modifier.height(12.dp))
-//
-//            Card(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(129.dp)
-//                    .padding(start = 34.dp, end = 34.dp),
-//                colors = CardDefaults.cardColors(containerColor = Color(0xFFD2D2D2)),
-//                shape = RoundedCornerShape(16.dp),
-//                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//            ) {
-//                Row(
-//                    modifier = Modifier.padding(16.dp),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Column(
-//                        modifier = Modifier.weight(1f)
-//                    ) {
-//                        Text(
-//                            text = "Topik 3 – Belajar Menghitung",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 16.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black
-//                        )
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        Text(
-//                            text = "Status : -",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 15.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black,
-//                        )
-//                        Text(
-//                            text = "Nilai : -",
-//                            fontFamily = poppinsfamily,
-//                            fontSize = 16.sp,
-//                            fontWeight = FontWeight.Bold,
-//                            color = Color.Black
-//                        )
-//                    }
-//
-//                    IconButton(
-//                        onClick = { /* TODO: Aksi Play */ },
-//                        modifier = Modifier
-//                            .size(40.dp)
-//                            .background(color = Color(0xFFCCCCCC), shape = CircleShape)
-//                    ) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.lock),
-//                            contentDescription = "Play",
-//                            tint = Color.Unspecified
-//                        )
-//                    }
-//                }
-//            }

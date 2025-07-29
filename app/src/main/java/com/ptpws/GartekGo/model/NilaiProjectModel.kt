@@ -1,4 +1,4 @@
-package com.ptpws.GartekGo.Admin.model
+package com.ptpws.GartekGo.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference

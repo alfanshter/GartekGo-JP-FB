@@ -64,8 +64,8 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ptpws.GartekGo.Admin.model.NilaiModel
-import com.ptpws.GartekGo.Admin.model.SoalModel
+import com.ptpws.GartekGo.model.NilaiModel
+import com.ptpws.GartekGo.model.SoalModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily

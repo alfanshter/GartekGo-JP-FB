@@ -1,4 +1,4 @@
-package com.ptpws.GartekGo.Admin.model
+package com.ptpws.GartekGo.model
 
 data class UpdateUserRequest(
     val email: String,

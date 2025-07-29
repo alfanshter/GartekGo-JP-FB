@@ -9,6 +9,8 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +45,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -98,7 +101,7 @@ fun VidioScreen(navController: NavController, idtopik: String) {
         try {
             // Get video URL
             val topikSnapshot = db.collection("topik").document(idtopik).get().await()
-            videoUrl = topikSnapshot.getString("path_video")
+            videoUrl = topikSnapshot.getString("file_video")
 
             // Get status progress
             val userTopikSnapshot = db.collection("users")
@@ -149,26 +152,55 @@ fun VidioScreen(navController: NavController, idtopik: String) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (videoUrl != null) {
-                ExoPlayerWithFullscreenYouTubeStyle(storagePath = videoUrl!!) {
-                    if (!showButton) {
-                        isLoading = true
-                        // Update progress ke Firestore
-                        val data = hashMapOf("vidio" to "1")
-                        db.collection("users").document(uid!!)
-                            .collection("topik").document(idtopik)
-                            .set(data, SetOptions.merge())
-                            .addOnSuccessListener {
-                                isLoading = false
-                                showCompletionDialog = true
-                                showButton = true
-                            }
-                            .addOnFailureListener {
-                                isLoading = false
-                                Log.e("VIDIO_SCREEN", "Error update: ${it.message}")
-                            }
-                    }
+            val exoPlayerRef = remember { mutableStateOf<ExoPlayer?>(null) }
+            val currentPosition = remember { mutableStateOf(0L) }
+
+            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val lastPosition = result.data?.getLongExtra("lastPosition", 0L) ?: 0L
+                    currentPosition.value = lastPosition
+                    exoPlayerRef.value?.seekTo(lastPosition)
+                    exoPlayerRef.value?.playWhenReady = true
                 }
+            }
+
+            println("data video " +videoUrl)
+
+
+            if (videoUrl != null) {
+                ExoPlayerWithFullscreenYouTubeStyle(
+                    storagePath = videoUrl!!,
+                    exoPlayerRef = exoPlayerRef,
+                    startPosition = currentPosition.value,
+                    onVideoEnded = {
+                        if (!showButton) {
+                            isLoading = true
+                            val data = hashMapOf("vidio" to "1")
+                            db.collection("users").document(uid!!)
+                                .collection("topik").document(idtopik)
+                                .set(data, SetOptions.merge())
+                                .addOnSuccessListener {
+                                    isLoading = false
+                                    showCompletionDialog = true
+                                    showButton = true
+                                }
+                                .addOnFailureListener {
+                                    isLoading = false
+                                    Log.e("VIDIO_SCREEN", "Error update: ${it.message}")
+                                }
+                        }
+                    },
+                    onFullscreenClick = {
+                        val intent = Intent(context, FullScreenVideoActivity::class.java)
+                        val position = exoPlayerRef.value?.currentPosition ?: 0L
+                        intent.putExtra("videoUrl", videoUrl)
+                        intent.putExtra("startPosition", position)
+
+                        currentPosition.value = position
+                        exoPlayerRef.value?.playWhenReady = false
+                        launcher.launch(intent)
+                    }
+                )
             } else {
                 if (isLoading) {
                     Box(
@@ -263,71 +295,46 @@ private fun VidioScreenPreview() {
 
 }
 
-@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun ExoPlayerWithFullscreenYouTubeStyle(
     storagePath: String,
-    onVideoEnded: () -> Unit
+    exoPlayerRef: MutableState<ExoPlayer?>,
+    startPosition: Long,
+    onVideoEnded: () -> Unit,
+    onFullscreenClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val activity = context.findActivity()
-    val storage = Firebase.storage
-    var videoUrl by remember { mutableStateOf<String?>(null) }
-    var isFullscreen by remember { mutableStateOf(false) }
-    var hasEnded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(storagePath) {
-        try {
-            val url = storage.reference.child(storagePath).downloadUrl.await().toString()
-            videoUrl = url
-        } catch (e: Exception) {
-            Log.e("VideoPlayer", "Gagal ambil URL: ${e.message}")
-        }
-    }
-
-    if (videoUrl == null) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    val exoPlayer = remember(videoUrl) {
+    val exoPlayer = remember(storagePath) {
         ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(videoUrl!!))
+            setMediaItem(MediaItem.fromUri(storagePath))
             prepare()
+            seekTo(startPosition)
             playWhenReady = true
         }
     }
 
+    exoPlayerRef.value = exoPlayer
+
     DisposableEffect(Unit) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED && !hasEnded) {
-                    hasEnded = true
+                if (state == Player.STATE_ENDED) {
+                    // ✅ Video selesai
                     onVideoEnded()
                 }
             }
         }
-
         exoPlayer.addListener(listener)
+
         onDispose {
-            exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
     }
 
-    // Normal mode
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9f)
-            .padding(16.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Black)
     ) {
@@ -336,23 +343,13 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
                 PlayerView(context).apply {
                     player = exoPlayer
                     useController = true
-                    systemUiVisibility = (
-                            View.SYSTEM_UI_FLAG_FULLSCREEN or
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            )
                 }
             },
             modifier = Modifier.fillMaxSize()
         )
 
         IconButton(
-            onClick = {
-                val intent = Intent(context, FullScreenVideoActivity::class.java)
-                intent.putExtra("videoUrl", videoUrl)
-                context.startActivity(intent)
-
-            },
+            onClick = { onFullscreenClick() },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
@@ -366,71 +363,6 @@ fun ExoPlayerWithFullscreenYouTubeStyle(
             )
         }
     }
-
-    if (isFullscreen) {
-        Dialog(
-            onDismissRequest = {
-                isFullscreen = false
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-            },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
-        ) {
-            BackHandler {
-                isFullscreen = false
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-            }
-
-            // Fullscreen Layout
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
-                AndroidView(
-                    factory = {
-                        PlayerView(context).apply {
-                            player = exoPlayer
-                            useController = true
-
-                            // Hide system UI: status bar, nav bar
-                            systemUiVisibility = (
-                                    View.SYSTEM_UI_FLAG_FULLSCREEN
-                                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                    )
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                // Tombol keluar fullscreen
-                IconButton(
-                    onClick = {
-                        isFullscreen = false
-                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                        activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(16.dp)
-                        .size(40.dp)
-                        .background(Color(0x66000000), shape = CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Exit Fullscreen",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-    }
-
 }
 
 

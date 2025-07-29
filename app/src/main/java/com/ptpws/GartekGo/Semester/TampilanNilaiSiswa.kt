@@ -1,5 +1,6 @@
 package com.ptpws.GartekGo.Semester
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,17 +43,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
+import com.ptpws.GartekGo.model.NilaiGabungan
 import kotlinx.coroutines.tasks.await
-import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +68,7 @@ fun TampilanNilaiSiswa(
     var dataLoaded by remember { mutableStateOf(false) }
 
     val chipLabelsnilaisiswa =
-        listOf("Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter", "Chip Filter")
+        listOf("Semester")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) }
 
     // ✅ HANYA ambil nilai berdasarkan UID tanpa filter semester
@@ -247,114 +248,154 @@ fun TampilanNilaiSiswa(
 }
 
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun TampilanNilaiSiswaComponent() {
     val db = FirebaseFirestore.getInstance()
     val uid = FirebaseAuth.getInstance().uid ?: ""
 
-    var listData by remember { mutableStateOf<List<Pair<String, Int>>>(emptyList()) }
+    var listData by mutableStateOf<List<NilaiGabungan>>(emptyList())
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         try {
-            // 1️⃣ Ambil semua nilai untuk user ini
+            val nilaiMap = mutableMapOf<String, NilaiGabungan>()
+
+            // 🔹 Ambil data dari "nilai"
             val nilaiSnapshot = db.collection("nilai")
                 .whereEqualTo("uid", uid)
                 .get()
                 .await()
 
-            val combined = mutableListOf<Pair<String, Int>>()
-
-            // 2️⃣ Iterasi nilai
             for (doc in nilaiSnapshot.documents) {
                 val topikRef = doc.getDocumentReference("topik")
-                val nilaiSoal = doc.getLong("nilai")?.toInt() ?: 0
+                val nilaiSoal = doc.getLong("nilai")?.toInt() ?: continue
 
                 if (topikRef != null) {
-                    // 3️⃣ Ambil data topik
                     val topikSnapshot = topikRef.get().await()
-                    val namaTopik = topikSnapshot.getString("nama") ?: "Topik"
+                    if (!topikSnapshot.exists()) continue
 
-                    combined.add(Pair(namaTopik, nilaiSoal))
+                    val namaTopik = topikSnapshot.getString("nama") ?: "-"
+                    val nomorTopik = topikSnapshot.get("nomor").toString().toIntOrNull() ?: continue
+                    val idTopik = topikRef.id
+
+                    // Masukkan nilai ke map
+                    nilaiMap[idTopik] = NilaiGabungan(
+                        namaTopik = namaTopik,
+                        nomorTopik = nomorTopik,
+                        nilaiSoal = nilaiSoal,
+                        nilaiProject = null
+                    )
                 }
             }
 
-            listData = combined
+            // 🔹 Ambil data dari "project_uploads"
+            val projectSnapshot = db.collection("project_uploads")
+                .whereEqualTo("uid", uid)
+                .get()
+                .await()
+
+            for (doc in projectSnapshot.documents) {
+                val idTopik = doc.getString("id_topik") ?: continue
+                val nilaiProject = doc.getLong("nilai")?.toInt()
+
+                // Kalau topik ini sudah ada dari nilai, update project-nya
+                val existing = nilaiMap[idTopik]
+                if (existing != null) {
+                    nilaiMap[idTopik] = existing.copy(nilaiProject = nilaiProject)
+                } else {
+                    // Kalau belum ada dari nilai, ambil manual data topiknya
+                    val topikSnapshot = db.collection("topik").document(idTopik).get().await()
+                    if (!topikSnapshot.exists()) continue
+
+                    val namaTopik = topikSnapshot.getString("nama") ?: "-"
+                    val nomorTopik = topikSnapshot.get("nomor").toString().toIntOrNull() ?: continue
+
+                    nilaiMap[idTopik] = NilaiGabungan(
+                        namaTopik = namaTopik,
+                        nomorTopik = nomorTopik,
+                        nilaiSoal = null,
+                        nilaiProject = nilaiProject
+                    )
+                }
+            }
+
+            listData = nilaiMap.values.toList()
+            println("✅ Data gabungan: $listData")
             isLoading = false
+
         } catch (e: Exception) {
             e.printStackTrace()
             isLoading = false
         }
     }
 
-    if (isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(listData) { item ->
-                val (namaTopik, nilaiSoal) = item
 
-                Card(
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Topik:",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = namaTopik,
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Soal:",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = nilaiSoal.toString(),
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
-                        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                            Text(
-                                text = "Project:",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "-",
-                                fontFamily = poppinsfamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp, color = Color.Black
-                            )
-                        }
+
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(listData) { item ->
+            val (namaTopik, nomorTopik, nilaiSoal, nilaiProject) = item
+            println(listData)
+            Card(
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Topik $nomorTopik -",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = namaTopik,
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Soal :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = nilaiSoal.toString(),
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "Project :",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$nilaiProject",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp, color = Color.Black
+                        )
                     }
                 }
-                Spacer(Modifier.height(7.dp))
             }
-
+            Spacer(Modifier.height(7.dp))
         }
+
     }
 }

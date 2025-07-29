@@ -62,7 +62,7 @@ import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahProjectDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahSoalDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialog
-import com.ptpws.GartekGo.Admin.model.TopikModel
+import com.ptpws.GartekGo.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch

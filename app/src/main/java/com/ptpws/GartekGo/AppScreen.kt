@@ -2,8 +2,8 @@ package com.ptpws.GartekGo
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import com.ptpws.GartekGo.Admin.model.TopikModel
-import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.model.TopikModel
+import com.ptpws.GartekGo.model.UsersModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder

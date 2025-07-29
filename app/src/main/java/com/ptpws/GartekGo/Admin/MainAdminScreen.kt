@@ -26,8 +26,8 @@ import com.ptpws.GartekGo.Admin.Pages.TambahProjectScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahSoalScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahTopikScreen
 import com.ptpws.GartekGo.Admin.Pages.TambahVidioScreen
-import com.ptpws.GartekGo.Admin.model.TopikModel
-import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.model.TopikModel
+import com.ptpws.GartekGo.model.UsersModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.HomeScreen.ProfileScreen
 import kotlinx.serialization.json.Json

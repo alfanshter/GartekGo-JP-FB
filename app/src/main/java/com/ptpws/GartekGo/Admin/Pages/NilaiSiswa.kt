@@ -48,11 +48,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.model.NilaiModel
-import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.model.NilaiModel
+import com.ptpws.GartekGo.model.UsersModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.tasks.await
@@ -248,7 +249,7 @@ private fun NilaiSiwaPreview() {
         uid = "uid_dummy",
         program_keahlian = "TKP",
         role = "user",
-        createdAt = com.google.firebase.Timestamp.now()
+        createdAt = Timestamp.now()
     )
 
     NilaiSiswa(

@@ -52,9 +52,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
-import com.ptpws.GartekGo.Admin.model.RegisterUserRequest
-import com.ptpws.GartekGo.Admin.model.UpdateUserRequest
-import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.model.RegisterUserRequest
+import com.ptpws.GartekGo.model.UpdateUserRequest
+import com.ptpws.GartekGo.model.UsersModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.network.ApiClient

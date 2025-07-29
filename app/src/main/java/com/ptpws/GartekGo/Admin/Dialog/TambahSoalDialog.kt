@@ -52,8 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ptpws.GartekGo.Admin.model.SoalModel
-import com.ptpws.GartekGo.Admin.model.TopikModel
+import com.ptpws.GartekGo.model.SoalModel
+import com.ptpws.GartekGo.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 
 @SuppressLint("SuspiciousIndentation")

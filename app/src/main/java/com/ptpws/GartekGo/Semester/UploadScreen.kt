@@ -80,7 +80,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import com.ptpws.GartekGo.Admin.model.UploadModel
+import com.ptpws.GartekGo.model.UploadModel
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.Dialog.SuccessDialog

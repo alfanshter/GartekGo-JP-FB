@@ -1,8 +1,8 @@
 package com.ptpws.GartekGo.network
 
-import com.ptpws.GartekGo.Admin.model.RegisterUserRequest
-import com.ptpws.GartekGo.Admin.model.RegisterUserResponse
-import com.ptpws.GartekGo.Admin.model.UpdateUserRequest
+import com.ptpws.GartekGo.model.RegisterUserRequest
+import com.ptpws.GartekGo.model.RegisterUserResponse
+import com.ptpws.GartekGo.model.UpdateUserRequest
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body

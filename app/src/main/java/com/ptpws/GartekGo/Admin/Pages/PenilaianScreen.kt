@@ -83,7 +83,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.model.ProjectUploadsModel
+import com.ptpws.GartekGo.model.ProjectUploadsModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer

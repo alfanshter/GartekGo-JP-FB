@@ -56,7 +56,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.ptpws.GartekGo.Admin.model.UsersModel
+import com.ptpws.GartekGo.model.UsersModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.valentinilk.shimmer.ShimmerBounds
