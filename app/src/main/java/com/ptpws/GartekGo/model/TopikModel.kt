@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class TopikModel(
     var id: String = "",
     var nama: String ? = null,
-    var semester : String = "",
+    var semester : Int = 0,
     var file_materi : String ? = null,
     var nomor : Int ? = null,
     var nama_file : String? = null,

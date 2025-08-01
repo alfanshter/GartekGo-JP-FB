@@ -65,16 +65,23 @@ fun TampilanNilaiSiswa(
     val uid = FirebaseAuth.getInstance().currentUser?.uid
 
     var nilaiSoal by remember { mutableStateOf(0) }
+    var nilaiProject by remember { mutableStateOf(0) }
+    var nilaiKeseluruhan by remember { mutableStateOf(0) }
     var dataLoaded by remember { mutableStateOf(false) }
 
     val chipLabelsnilaisiswa =
         listOf("Semester")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) }
+    var avgSoal by remember { mutableStateOf(0) }
+    var avgProject by remember { mutableStateOf(0) }
+    var avgTotal by remember { mutableStateOf(0) }
+
 
     // ✅ HANYA ambil nilai berdasarkan UID tanpa filter semester
     LaunchedEffect(Unit) {
         firestore.collection("nilai")
             .whereEqualTo("uid", uid)
+            .whereEqualTo("semester", 1)
             .get()
             .addOnSuccessListener { result ->
                 var total = 0
@@ -92,6 +99,25 @@ fun TampilanNilaiSiswa(
             .addOnFailureListener {
                 dataLoaded = true
             }
+
+        firestore.collection("project_uploads")
+            .whereEqualTo("uid", uid)
+            .whereEqualTo("semester", 1)
+            .get()
+            .addOnSuccessListener { result ->
+                var total = 0
+                var count = 0
+
+                for (document in result) {
+                    val nilai = document.getLong("nilai")?.toInt() ?: 0
+                    total += nilai
+                    count++
+                }
+
+                nilaiProject = if (count > 0) total / count else 0
+            }
+
+
     }
 
     Scaffold(
@@ -145,6 +171,8 @@ fun TampilanNilaiSiswa(
                         .padding(start = 30.dp, end = 30.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    nilaiKeseluruhan = (nilaiSoal + nilaiProject) / 2
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             "Rata Nilai Semester 1",
@@ -162,14 +190,14 @@ fun TampilanNilaiSiswa(
                             fontSize = 14.sp
                         )
                         Text(
-                            "Project    : 90",
+                            "Project    : $nilaiProject",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
                             color = Color.Black,
                             fontSize = 14.sp
                         )
                         Text(
-                            "Keseluruhan   : 90",
+                            "Keseluruhan   : $nilaiKeseluruhan",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
                             color = Color.Black,
@@ -255,6 +283,7 @@ fun TampilanNilaiSiswaComponent() {
     val uid = FirebaseAuth.getInstance().uid ?: ""
 
     var listData by mutableStateOf<List<NilaiGabungan>>(emptyList())
+
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -386,7 +415,7 @@ fun TampilanNilaiSiswaComponent() {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "$nilaiProject",
+                            text = "${nilaiProject ?: ""}",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp, color = Color.Black

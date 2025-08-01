@@ -14,5 +14,6 @@ data class UploadModel(
     val timestamp: Timestamp = Timestamp.now(),
     val status: Boolean = false,
     val id_project: String = "",
-    val nilai: Int? = null
+    val nilai: Int? = null,
+    val semester: Int? = null
 )

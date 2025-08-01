@@ -58,7 +58,7 @@ fun NamaTopikDialog(
     onDismis: () -> Unit,
     onSave: (TopikModel) -> Unit,
     onDelete: (String) -> Unit,
-    semester: String,
+    semester: Int,
     idTopik: String,
     updateNama: String,
     topikList: SnapshotStateList<TopikModel>,
@@ -207,7 +207,7 @@ fun NamaTopikDialog(
                             onClick = {
                                 val db = Firebase.firestore
                                 val semesterLabel =
-                                    if (semester == "1") "Semester 1" else "Semester 2"
+                                    if (semester == 1) 1 else 2
 
                                 //update data
                                 //jika id topik tidak null/kosong

@@ -74,7 +74,7 @@ import com.ptpws.GartekGo.R
 @Composable
 fun TambahMateriDialog(
     onDismis: () -> Unit,
-    semester: String,
+    semester: Int,
     onSave: (TopikModel) -> Unit,
     topikModel: TopikModel? = null,
 ) {
@@ -529,7 +529,7 @@ fun savePdfMetadataToFirestore(
 private fun TambahMateriDialogPreview() {
     TambahMateriDialog(
         onDismis = { /*TODO*/ },
-        semester = "1",
+        semester = 1,
         onSave = { ""},
         topikModel = TopikModel(),
     )

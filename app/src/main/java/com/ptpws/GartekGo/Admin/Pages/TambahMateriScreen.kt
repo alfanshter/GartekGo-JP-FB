@@ -176,7 +176,7 @@ fun TambahMateriScreen(
                         onTambahClick = {
 
                         },
-                        semester = if (page == 0) "1" else "2"
+                        semester = if (page == 0) 1 else 2
 
                     )
                 }
@@ -198,7 +198,7 @@ private fun TambahMateriScreenPreview() {
 @Composable
 fun MateriListContent(
     onTambahClick: () -> Unit,
-    semester: String
+    semester: Int
 ) {
     var showDialogmateri by remember { mutableStateOf(false) }
     val topikList = remember { mutableStateListOf<TopikModel>() }
@@ -211,7 +211,7 @@ fun MateriListContent(
 
     LaunchedEffect(semester) {
         val db = Firebase.firestore
-        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        val semesterLabel = if (semester == 1) 1 else 2
         db.collection("topik")
             .whereEqualTo("semester", semesterLabel)
             .orderBy("nomor")

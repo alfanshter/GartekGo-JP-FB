@@ -64,7 +64,7 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 @Composable
 fun TambahVidioDialog(
     onDismis: () -> Unit,
-    semester: String,
+    semester: Int,
     onSave: (TopikModel) -> Unit,
     topikModel: TopikModel? = null,
 ) {
@@ -459,7 +459,7 @@ fun savePdfMetadataToFirestoreVideo(
 private fun TambahVidioDialogPreview() {
     TambahVidioDialog(
         onDismis = { /*TODO*/ },
-        semester = "1",
+        semester = 1,
         onSave = { ""},
         topikModel = TopikModel(),
     )

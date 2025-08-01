@@ -165,7 +165,7 @@ fun TambahTopikScreen(navController: NavController, outerPadding: PaddingValues 
                 ) { page ->
                     val semester = if (page == 0) "1" else "2" // ← sesuai tab
                     TopikListContent(
-                        semester = if (page == 0) "1" else "2"
+                        semester = if (page == 0) 1 else 2
 
                     )
                 }
@@ -183,7 +183,7 @@ private fun TambahTopikScreenPreview() {
 }
 
 @Composable
-fun TopikListContent(semester: String) {
+fun TopikListContent(semester: Int) {
     var showDialogtopik by remember { mutableStateOf(false) }
     var idTopik by remember { mutableStateOf("") }
     var topicText by remember { mutableStateOf("") }
@@ -194,7 +194,7 @@ fun TopikListContent(semester: String) {
     // LazyColumn berisi semua konten termasuk tombol
     LaunchedEffect(semester) {
         val db = Firebase.firestore
-        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        val semesterLabel = if (semester == 1) 1 else  2
         db.collection("topik")
             .whereEqualTo("semester", semesterLabel)
             .orderBy("nomor")

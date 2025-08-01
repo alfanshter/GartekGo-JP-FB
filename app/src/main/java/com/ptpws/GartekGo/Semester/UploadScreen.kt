@@ -409,6 +409,8 @@ fun UploadScreen(
                                                                 topikDoc.getString("nama") ?: ""
                                                             val nomorTopik =
                                                                 topikDoc.getLong("nomor") ?: 0L
+                                                            val semester =
+                                                                topikDoc.getLong("semester") ?: 0L
 
                                                             // Buat UploadModel dengan nama topik & nomor
                                                             val upload = UploadModel(
@@ -421,7 +423,8 @@ fun UploadScreen(
                                                                 nomor_topik = nomorTopik.toInt(), // tambahkan di model
                                                                 imageUrl = uri.toString(),
                                                                 timestamp = Timestamp.now(),
-                                                                status = false
+                                                                status = false,
+                                                                semester = semester.toInt(),
                                                             )
 
 
