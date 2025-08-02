@@ -318,7 +318,6 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                 modifier = Modifier
                     .padding(end = 34.dp)
                     .fillMaxWidth()
-                    .height(190.dp)
                     .clickable(enabled = isActive) {
                         if (isActive) {
                             navController.navigate("${AppScreen.Home.Semester.Topik.route}/${data.id}")
@@ -329,26 +328,44 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                     containerColor = if (isActive) Color(0xFFC2D8FF) else Color(0xFFE0E0E0)
                 )
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
                 ) {
-                    Text(
-                        "Topik ${data.nomor} - ${data.nama ?: ""}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        fontFamily = poppinsfamily,
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
-                            .align(Alignment.TopStart)
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+
+                        Text(
+                            "Topik ${data.nomor} - ${data.nama ?: ""}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            fontFamily = poppinsfamily,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(start = 16.dp, top = 12.dp, end = 12.dp, bottom = 12.dp).weight(1f)
+                        )
+
+                        // Icon di pojok kanan atas
+                        IconButton(
+                            onClick = { if (isActive) { /* aksi */ } },
+                            enabled = isActive,
+                            modifier = Modifier
+                                .padding(top = 20.dp, end = 24.dp)
+                                .size(32.dp)
+                                .background(iconBg, shape = CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = if (isActive) "Play" else "Lock",
+                                tint = iconTint
+                            )
+                        }
+                    }
+
 
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
                             .padding(start = 16.dp, bottom = 6.dp)
                     ) {
                         Box(
@@ -418,22 +435,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
                         }
                     }
 
-                    // Icon di pojok kanan atas
-                    IconButton(
-                        onClick = { if (isActive) { /* aksi */ } },
-                        enabled = isActive,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(top = 12.dp, end = 24.dp)
-                            .size(32.dp)
-                            .background(iconBg, shape = CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = if (isActive) "Play" else "Lock",
-                            tint = iconTint
-                        )
-                    }
+
                 }
             }
 

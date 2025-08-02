@@ -337,13 +337,6 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         )
 
 
-//                        if (modeReview || sudahLulus) {
-//                            Spacer(modifier = Modifier.width(8.dp))
-//                            when {
-//                                isSalahDipilih -> Text("(Salah)", color = Color(0xFFF44336), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
-//                                isBenar -> Text("(Benar)", color = Color(0xFF4CAF50), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
-//                            }
-//                        }
                     }
                 }
 

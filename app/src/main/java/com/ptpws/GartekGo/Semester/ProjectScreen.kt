@@ -129,7 +129,6 @@ fun ProjectScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(190.dp)
                     .padding(start = 34.dp, end = 34.dp),
                 colors = CardDefaults.cardColors(containerColor = cardColor),
                 shape = RoundedCornerShape(16.dp),
@@ -143,18 +142,41 @@ fun ProjectScreen(navController: NavController) {
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = "Topik ${data.nomor} - ${data.nama ?: ""}",
-                            fontFamily = poppinsfamily,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 3,
-                            color = Color.Black
-                        )
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Topik ${data.nomor} - ${data.nama ?: ""}",
+                                fontFamily = poppinsfamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 3,
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(
+                                        end = 12.dp,
+                                    )
+                                    .weight(1f)
+
+                            )
+
+                            IconButton(
+                                onClick = { /* TODO: Aksi Play */ },
+                                enabled = statusProject == true,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(color = iconBgColor, shape = CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = iconVector,
+                                    contentDescription = "Icon",
+                                    tint = iconTint
+                                )
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = if (statusProject ==true) "Sudah dinilai" else "Belum dinilai",
+                            text = if (statusProject == true) "Sudah dinilai" else "Belum dinilai",
                             fontFamily = poppinsfamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -169,27 +191,13 @@ fun ProjectScreen(navController: NavController) {
                         )
                     }
 
-                    IconButton(
-                        onClick = { /* TODO: Aksi Play */ },
-                        enabled = statusProject == true,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(color = iconBgColor, shape = CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = iconVector,
-                            contentDescription = "Icon",
-                            tint = iconTint
-                        )
-                    }
+
                 }
             }
             Spacer(Modifier.height(12.dp))
         }
     }
 }
-
-
 
 
 @Preview(showBackground = true)
