@@ -177,9 +177,16 @@ fun MyBottomAppBar(navController: NavController) {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(AppScreen.Home.route) { HomeScreen(navigationController) }
-//                composable(AppScreen.Home.Semester.Topik.Nilai.route) { NilaiSiswa(navigationController) }
-                composable(AppScreen.Home.Semester.route) { SemesterScreen(navigationController, onTambahClick = {}, pilihan = 0) }
-//                composable(AppScreen.Home.Semester.Topik.route) { TopikScreen(navigationController) }
+                composable(
+                    route = AppScreen.Home.Semester.route,
+                    arguments = listOf(navArgument("semester") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val semester = backStackEntry.arguments?.getInt("semester") ?: 1
+
+                    SemesterScreen(
+                        navigationController, onTambahClick = {}, semester = semester
+                    )
+                }
                 composable(
                     route = "${AppScreen.Home.Semester.Topik.route}/{idTopik}",
                     arguments = listOf(navArgument("idTopik") { type = NavType.StringType })

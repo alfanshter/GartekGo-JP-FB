@@ -62,6 +62,7 @@ import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
@@ -171,7 +172,7 @@ fun TambahSoalScreen(navController: NavController, outerPadding: PaddingValues =
                         onTambahClick = {
 
                         },
-                        semester = if (page == 0) "1" else "2",
+                        semester = if (page == 0) 1 else 2,
                         navController
 
                     )
@@ -195,7 +196,7 @@ private fun TambahSoalScreenPreview() {
 }
 
 @Composable
-fun ListSoalContent(onTambahClick: () -> Unit, semester: String, navController: NavController) {
+fun ListSoalContent(onTambahClick: () -> Unit, semester: Int, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     val topikList = remember { mutableStateListOf<TopikModel>() }
     val context = LocalContext.current
@@ -205,38 +206,39 @@ fun ListSoalContent(onTambahClick: () -> Unit, semester: String, navController: 
     var idLama by remember { mutableStateOf("") }
     LaunchedEffect(semester) {
         val db = Firebase.firestore
-        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
-        db.collection("topik")
-            .whereEqualTo("semester", semesterLabel)
-            .orderBy("nomor")
-            .get()
-            .addOnSuccessListener { result ->
-                for (doc in result.documents) {
-                    val topikRef = doc.reference
-                    val topikData = doc.toObject(TopikModel::class.java)?.copy(id = doc.id)
+        val semesterLabel = if (semester == 1) "Semester 1" else "Semester 2"
+        try {
+            topikList.clear() // bersihkan data lama
 
-                    if (topikData != null) {
-                        // Hitung jumlah soal yang berelasi dengan topik ini
-                        db.collection("soal")
-                            .whereEqualTo(
-                                "topik",
-                                topikRef
-                            )  // asumsi field 'topik' di soal adalah DocumentReference
-                            .get()
-                            .addOnSuccessListener { soalSnapshot ->
-                                val jumlah = soalSnapshot.size()
-                                val updatedTopik = topikData.copy(jumlahSoal = jumlah)
-                                topikList.add(updatedTopik)
-                            }
-                    }
-                }
-            }.addOnFailureListener {
-                Toast.makeText(
-                    context,
-                    "gagal ambil data: ${it.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+            val topikSnapshot = db.collection("topik")
+                .whereEqualTo("semester", semester)
+                .orderBy("nomor")
+                .get()
+                .await()  // gunakan kotlinx-coroutines-play-services
+
+            val tempList = mutableListOf<TopikModel>()
+
+
+            for (doc in topikSnapshot.documents) {
+                val topikRef = doc.reference
+                val topikData = doc.toObject(TopikModel::class.java)?.copy(id = doc.id) ?: continue
+
+                val soalSnapshot = db.collection("soal")
+                    .whereEqualTo("topik", topikRef)
+                    .get()
+                    .await()
+
+                val jumlah = soalSnapshot.size()
+                val updatedTopik = topikData.copy(jumlahSoal = jumlah)
+                tempList.add(updatedTopik)
             }
+
+            topikList.addAll(tempList) // Tambahkan semua setelah selesai
+
+        }catch (e: Exception) {
+            Toast.makeText(context, "Gagal ambil data: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     LazyColumn(

@@ -11,7 +11,9 @@ import java.nio.charset.StandardCharsets
 
 sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, val route: String) {
     object Home : AppScreen(R.string.home, R.drawable.home, "home") {
-        object Semester : AppScreen(R.string.semester, R.drawable.piala, "semester") {
+        object Semester : AppScreen(R.string.semester, R.drawable.piala, "semester/{semester}") {
+            fun createRoute(semester: Int): String = "semester/$semester"
+
             object Topik : AppScreen(R.string.semester, R.drawable.piala, "topik") {
                 object Materi : AppScreen(R.string.semester, R.drawable.piala, "materi")
                 object Vidio : AppScreen(R.string.semester, R.drawable.piala, "vidio")
@@ -19,12 +21,9 @@ sealed class AppScreen(@StringRes val title: Int, @DrawableRes val icon: Int, va
                 object Upload : AppScreen(R.string.semester, R.drawable.piala, "upload")
                 object Nilai : AppScreen(R.string.semester, R.drawable.piala, "nilai")
                 //bottombar
-
-
             }
-
-
         }
+
 
         object Admin : AppScreen(R.string.admin, R.drawable.home, "admin") {
             object TambahTopik : AppScreen(R.string.admin, R.drawable.topik, "tambahtopik")

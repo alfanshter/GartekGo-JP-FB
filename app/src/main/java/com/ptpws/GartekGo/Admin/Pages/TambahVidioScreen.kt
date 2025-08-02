@@ -209,7 +209,7 @@ fun VidioListContent(
         val db = Firebase.firestore
         val semesterLabel = if (semester == 1) "Semester 1" else "Semester 2"
         db.collection("topik")
-            .whereEqualTo("semester", semesterLabel)
+            .whereEqualTo("semester", semester)
             .orderBy("nomor")
             .get()
             .addOnSuccessListener { result ->

@@ -179,7 +179,7 @@ fun HomeScreen(navController: NavController) {
                             .width(360.dp)
                             .height(89.dp)
                             .clickable {
-                                navController.navigate(AppScreen.Home.Semester.route)
+                                navController.navigate(AppScreen.Home.Semester.createRoute(semester = 1))
                             },
                         shape = RoundedCornerShape(22.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
@@ -202,7 +202,10 @@ fun HomeScreen(navController: NavController) {
                     Card(
                         modifier = Modifier
                             .width(360.dp)
-                            .height(89.dp),
+                            .height(89.dp)
+                            .clickable {
+                                navController.navigate(AppScreen.Home.Semester.createRoute(semester = 2))
+                            },
                         shape = RoundedCornerShape(22.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xff0961F5))
                     ) {

@@ -100,6 +100,7 @@ fun VidioScreen(navController: NavController, idtopik: String) {
     LaunchedEffect(idtopik) {
         try {
             // Get video URL
+
             val topikSnapshot = db.collection("topik").document(idtopik).get().await()
             videoUrl = topikSnapshot.getString("file_video")
 
@@ -164,7 +165,7 @@ fun VidioScreen(navController: NavController, idtopik: String) {
                 }
             }
 
-            println("data video " +videoUrl)
+            println("data videos " +videoUrl)
 
 
             if (videoUrl != null) {

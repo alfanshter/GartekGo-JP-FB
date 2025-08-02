@@ -87,7 +87,7 @@ import java.io.FileOutputStream
 @Composable
 fun TambahProjectDialog(
     onDismis: () -> Unit,
-    semester: String,
+    semester: Int,
     onSave: (TopikModel) -> Unit,
     topikModel: TopikModel? = null,
 ) {
@@ -583,7 +583,7 @@ suspend fun compressImage(context: Context, uri: Uri): Uri? {
 private fun TambahProjectDialogPreview() {
     TambahProjectDialog(
         onDismis = { /*TODO*/ },
-        semester = "1",
+        semester = 1,
         onSave = { ""},
         topikModel = TopikModel(),
     )

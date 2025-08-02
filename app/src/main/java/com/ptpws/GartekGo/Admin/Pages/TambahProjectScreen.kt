@@ -161,7 +161,7 @@ fun TambahProjectScreen(navController: NavController, outerPadding: PaddingValue
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     ProjectListContent(
-                        semester = if (page == 0) "1" else "2"
+                        semester = if (page == 0) 1 else 2
                     )
                 }
 
@@ -180,7 +180,7 @@ private fun TambahProjectPreview() {
 }
 
 @Composable
-fun ProjectListContent(semester: String) {
+fun ProjectListContent(semester: Int) {
     var showDialogsoal by remember { mutableStateOf(false) }
 
     var showDialogProject by remember { mutableStateOf(false) }
@@ -194,7 +194,7 @@ fun ProjectListContent(semester: String) {
 
     LaunchedEffect(semester) {
         val db = Firebase.firestore
-        val semesterLabel = if (semester == "1") "Semester 1" else "Semester 2"
+        val semesterLabel = if (semester == 1) 1 else 2
         db.collection("topik")
             .whereEqualTo("semester", semesterLabel)
             .orderBy("nomor")

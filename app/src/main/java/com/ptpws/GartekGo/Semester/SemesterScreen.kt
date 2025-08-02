@@ -81,13 +81,15 @@ import kotlinx.coroutines.launch
 fun SemesterScreen(
     navController: NavController,
     onTambahClick: () -> Unit,
-    pilihan: Int,
+    semester: Int,
     outerPadding: PaddingValues = PaddingValues()
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
+    var pilihan by remember { mutableStateOf(0) }
     val tabTitles = listOf("Pembelajaran", "Project")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
+
 
 
 
@@ -97,7 +99,7 @@ fun SemesterScreen(
             SemesterListContent(
                 navController = navController,
                 onTambahClick = onTambahClick,
-                pilihan
+                semester
             )
         }
 
@@ -123,7 +125,7 @@ fun SemesterScreen(
                         windowInsets = WindowInsets(0),
                         title = {
                             Text(
-                                text = "Semester 1",
+                                text = "Semester $semester",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
                                 fontFamily = poppinsfamily,
@@ -208,7 +210,7 @@ fun SemesterScreen(
                     when (page) {
                         0 -> {
                             SemesterListContent(
-                                pilihan = 1, // Kalau mau tetap kirim pilihan
+                                pilihan = semester, // Kalau mau tetap kirim pilihan
                                 navController = navController,
                                 onTambahClick = onTambahClick
                             )
@@ -230,7 +232,7 @@ fun SemesterScreen(
 @Preview(showBackground = true)
 @Composable
 private fun SemesterScreenPreview() {
-    SemesterScreen(navController = rememberNavController(), onTambahClick = {}, pilihan = 0)
+    SemesterScreen(navController = rememberNavController(), onTambahClick = {}, semester = 1)
 
 }
 
@@ -242,6 +244,7 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
     val listData = remember { mutableStateListOf<TopikModel>() }
     LaunchedEffect(Unit) {
         val getdata = db.collection("topik")
+            .whereEqualTo("semester", pilihan)
             .orderBy("nomor")
             .get()
         getdata.addOnSuccessListener { data ->
@@ -443,27 +446,3 @@ fun SemesterListContent(navController: NavController, onTambahClick: () -> Unit,
 
 }
 
-fun gabungkanDenganUserData(topikList: List<TopikModel>) {
-    val uid = FirebaseAuth.getInstance().uid
-    val db = Firebase.firestore
-
-    db.collection("users").document(uid.toString())
-        .collection("topik")
-        .get()
-        .addOnSuccessListener { snapshot ->
-            val topikMap =
-                snapshot.documents.associateBy { it.id }  // id sama dengan ID topik utama
-
-            val gabungan = topikList.map { topik ->
-                val userMeta = topikMap[topik.id]
-                topik.copy(
-                    soal = userMeta?.getString("soal") ?: "0",
-                    materi = userMeta?.getString("materi") ?: "0",
-                    vidio = userMeta?.getString("vidio") ?: "0"
-                )
-            }
-
-            // Sekarang gabungan adalah data lengkap
-
-        }
-}
