@@ -1,12 +1,7 @@
 package com.ptpws.GartekGo.Semester
 
-import android.util.Log
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -17,11 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,7 +25,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -48,14 +40,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
@@ -64,12 +57,12 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ptpws.GartekGo.model.NilaiModel
-import com.ptpws.GartekGo.model.SoalModel
 import com.ptpws.GartekGo.AppScreen
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
+import com.ptpws.GartekGo.model.NilaiModel
+import com.ptpws.GartekGo.model.SoalModel
 import kotlinx.coroutines.tasks.await
 
 
@@ -214,7 +207,11 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(
+                        0xffF5F9FF
+                    )
+                )
             )
         },
         contentWindowInsets = WindowInsets(0)
@@ -268,7 +265,8 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     val optionKey = option.key
                     val optionValue = option.value
 
-                    val isSelected = if (modeReview || sudahLulus) optionKey == jawabanSiswa else optionKey == selectedOption
+                    val isSelected =
+                        if (modeReview || sudahLulus) optionKey == jawabanSiswa else optionKey == selectedOption
                     val isBenar = optionKey == jawabanBenar
                     val isSalahDipilih = optionKey == jawabanSiswa && optionKey != jawabanBenar
 
@@ -310,20 +308,42 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = optionValue,
+                            text = buildAnnotatedString {
+                                append(optionValue) // Teks utama
+
+                                if (modeReview || sudahLulus) {
+                                    when {
+                                        isSalahDipilih -> {
+                                            append(" (")
+                                            withStyle(style = SpanStyle(color = Color.Red)) {
+                                                append("Salah")
+                                            }
+                                            append(")")
+                                        }
+
+                                        isBenar -> {
+                                            append(" (")
+                                            withStyle(style = SpanStyle(color = Color(0xFF388E3C))) { // hijau
+                                                append("Benar")
+                                            }
+                                            append(")")
+                                        }
+                                    }
+                                }
+                            },
                             fontFamily = poppinsfamily,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (isSalahDipilih) Color.Red else Color.Black
+                            fontWeight = FontWeight.SemiBold
                         )
 
-                        if (modeReview || sudahLulus) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            when {
-                                isSalahDipilih -> Text("(Salah)", color = Color(0xFFF44336), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
-                                isBenar -> Text("(Benar)", color = Color(0xFF4CAF50), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
-                            }
-                        }
+
+//                        if (modeReview || sudahLulus) {
+//                            Spacer(modifier = Modifier.width(8.dp))
+//                            when {
+//                                isSalahDipilih -> Text("(Salah)", color = Color(0xFFF44336), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
+//                                isBenar -> Text("(Benar)", color = Color(0xFF4CAF50), fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFamily = poppinsfamily)
+//                            }
+//                        }
                     }
                 }
 
@@ -340,7 +360,11 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         }
                     } else {
                         if (selectedOption.isEmpty()) {
-                            Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Masukkan dulu jawaban Anda",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else {
                             jawabansiswa.add(selectedOption)
 
@@ -348,6 +372,8 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                 currentIndex++
                                 selectedOption = ""
                             } else {
+
+
                                 val benar = soalList.indices.count { i ->
                                     soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
                                 }
@@ -370,27 +396,62 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                 //update nilai difirestore
 
                                 val uid = auth.currentUser?.uid ?: ""
-                                val userTopikRef = db.collection("users").document(uid).collection("topik").document(idtopik)
-
+                                val userTopikRef =
+                                    db.collection("users").document(uid).collection("topik")
+                                        .document(idtopik)
+                                val nilaiRef = db.collection("nilai")
                                 db.collection("nilai")
-                                    .add(nilaiModel)
-                                    .addOnSuccessListener {
-                                        if (score >= 65) {
-                                            userTopikRef.update("soal", "1")
+                                    .whereEqualTo("uid", uid)
+                                    .whereEqualTo("topik", topikRef)
+                                    .get()
+                                    .addOnSuccessListener { result ->
+                                        if (!result.isEmpty) {
+                                            // 🔁 Dokumen sudah ada, update (pakai ID dokumen lama)
+                                            val existingDocId = result.documents[0].id
+                                            nilaiRef.document(existingDocId)
+                                                .set(nilaiModel)
                                                 .addOnSuccessListener {
                                                     tampilkannilai = true
                                                 }
                                                 .addOnFailureListener {
-                                                    Toast.makeText(context, "Gagal update progres topik", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Gagal update progres topik",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                     tampilkannilai = true
                                                 }
                                         } else {
-                                            tampilkannilai = true
+                                            db.collection("nilai")
+                                                .add(nilaiModel)
+                                                .addOnSuccessListener {
+                                                    if (score >= 65) {
+                                                        userTopikRef.update("soal", "1")
+                                                            .addOnSuccessListener {
+                                                                tampilkannilai = true
+                                                            }
+                                                            .addOnFailureListener {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "Gagal update progres topik",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                                tampilkannilai = true
+                                                            }
+                                                    } else {
+                                                        tampilkannilai = true
+                                                    }
+                                                }
+                                                .addOnFailureListener {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Gagal menyimpan nilai",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                         }
                                     }
-                                    .addOnFailureListener {
-                                        Toast.makeText(context, "Gagal menyimpan nilai", Toast.LENGTH_SHORT).show()
-                                    }
+
 
                             }
                         }
@@ -426,7 +487,10 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                             .padding(end = 8.dp)
                             .size(48.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
                                 contentDescription = "Next",
@@ -440,10 +504,6 @@ fun SoalScreen(navController: NavController, idtopik: String) {
         }
     }
 }
-
-
-
-
 
 
 @Preview(showBackground = true)

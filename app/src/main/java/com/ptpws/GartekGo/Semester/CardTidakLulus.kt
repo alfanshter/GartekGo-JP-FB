@@ -98,14 +98,7 @@ fun CardTidakLulus(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "REVIEW",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF167F71),
-                        fontFamily = jostfamily,
-                        modifier = Modifier.clickable { onReview() }
-                    )
+
                 }
 
                 Button(
