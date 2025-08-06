@@ -63,6 +63,7 @@ import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.model.NilaiModel
 import com.ptpws.GartekGo.model.SoalModel
+import com.ptpws.GartekGo.model.UploadModel
 import kotlinx.coroutines.tasks.await
 
 
@@ -81,6 +82,8 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     var modeReview by remember { mutableStateOf(false) }
     var sudahLulus by remember { mutableStateOf(false) }
     var nomorTopik by remember { mutableStateOf(0) }
+    var semester by remember { mutableStateOf(0) }
+    var namaTopik by remember { mutableStateOf("") }
 
     val db = FirebaseFirestore.getInstance()
     val topikRef = db.collection("topik").document(idtopik)
@@ -106,6 +109,8 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     LaunchedEffect(idtopik) {
         val snapshotTopik = db.collection("topik").document(idtopik).get().await()
         nomorTopik = snapshotTopik.getLong("nomor")?.toInt() ?: 0
+        semester = snapshotTopik.getLong("semester")?.toInt() ?: 0
+        namaTopik = snapshotTopik.getString("nama") ?: "-"
         soalList = getSoalByTopikId(idtopik)
 
         val userUid = auth.currentUser?.uid ?: ""
@@ -372,10 +377,12 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                 }
                                 val score = ((benar.toDouble() / soalList.size) * 100).toInt()
                                 nilai = score
+                                //update nilai difirestore
+                                val uid = auth.currentUser?.uid ?: ""
 
                                 val nilaiModel = NilaiModel(
                                     uid = auth.currentUser?.uid ?: "unknown",
-                                    semester = "semester1",
+                                    semester = semester,
                                     topik = topikRef,
                                     nilai = score,
                                     jawaban_siswa = jawabansiswa,
@@ -386,9 +393,17 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                     timestamp = Timestamp.now()
                                 )
 
-                                //update nilai difirestore
+                                // Buat UploadModel dengan nama topik & nomor
+                                val upload = UploadModel(
+                                    uid = uid,
+                                    nama = auth.currentUser!!.displayName!!,
+                                    id_topik = idtopik,
+                                    nama_topik = namaTopik, // tambahkan di model
+                                    nomor_topik = nomorTopik.toInt(), // tambahkan di model
+                                    status = false,
+                                    semester = semester.toInt(),
+                                )
 
-                                val uid = auth.currentUser?.uid ?: ""
                                 val userTopikRef =
                                     db.collection("users").document(uid).collection("topik")
                                         .document(idtopik)
@@ -404,14 +419,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                             nilaiRef.document(existingDocId)
                                                 .set(nilaiModel)
                                                 .addOnSuccessListener {
-                                                    tampilkannilai = true
-                                                }
-                                                .addOnFailureListener {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Gagal update progres topik",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
+                                                    //upload project model untuk sementara
                                                     tampilkannilai = true
                                                 }
                                         } else {
@@ -421,8 +429,36 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                                     if (score >= 65) {
                                                         userTopikRef.update("soal", "1")
                                                             .addOnSuccessListener {
-                                                                tampilkannilai = true
-                                                            }
+                                                                db.collection("project_uploads")
+                                                                    .add(upload)
+                                                                    .addOnSuccessListener { documentRef ->
+                                                                        val idProject =
+                                                                            documentRef.id // Ambil ID dokumen
+                                                                        // Update field id_project di dokumen yang barusan dibuat
+                                                                        db.collection("project_uploads")
+                                                                            .document(idProject)
+                                                                            .update("id_project", idProject)
+                                                                            .addOnSuccessListener {
+                                                                                tampilkannilai = true
+                                                                            }
+                                                                    }.addOnFailureListener {
+                                                                        Toast.makeText(
+                                                                            context,
+                                                                            "Gagal upload project",
+                                                                            Toast.LENGTH_SHORT
+                                                                        ).show()
+                                                                        tampilkannilai = true
+
+                                                                    }
+                                                                    .addOnFailureListener {
+                                                                        Toast.makeText(
+                                                                            context,
+                                                                            "Gagal update progres topik",
+                                                                            Toast.LENGTH_SHORT
+                                                                        ).show()
+                                                                        tampilkannilai = true
+                                                                    }
+                                                             }
                                                             .addOnFailureListener {
                                                                 Toast.makeText(
                                                                     context,

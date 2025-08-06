@@ -78,6 +78,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -215,121 +217,132 @@ fun PenilaianScreen(navController: NavController, outerPadding: PaddingValues = 
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                windowInsets = WindowInsets(0),
-                title = {
-                    Text(
-                        text = "Penilaian Project",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                        color = Color.Black
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xffF5F9FF)
-                )
-            )
-        }, contentWindowInsets = WindowInsets(0)
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xffF5F9FF))
-                .padding(innerPadding)
-                .padding(outerPadding)
-        ) {
-            // 🔽 Tambahan CHIP filter
-            androidx.compose.material.OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("Cari nama") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                ),
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear")
-                        }
-                    }
-                }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+    val isRefreshing by remember { mutableStateOf(false) }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                CustomDropdownChip(
-                    label = "Status",
-                    options = listOf("-", "Sudah dinilai", "Belum dinilai"),
-                    selectedOption = when (selectedStatus) {
-                        null -> "Status"
-                        true -> "Sudah dinilai"
-                        false -> "Belum dinilai"
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            // Lakukan reload data dari Firestore
+            // Misalnya, panggil ulang fungsi getTopikList()
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    windowInsets = WindowInsets(0),
+                    title = {
+                        Text(
+                            text = "Penilaian Project",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            color = Color.Black
+                        )
                     },
-                    onOptionSelected = {
-                        selectedStatus = when (it) {
-                            "Status" -> null
-                            "Sudah dinilai" -> true
-                            "Belum dinilai" -> false
-                            else -> null
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color(0xffF5F9FF)
+                    )
+                )
+            }, contentWindowInsets = WindowInsets(0)
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xffF5F9FF))
+                    .padding(innerPadding)
+                    .padding(outerPadding)
+            ) {
+                // 🔽 Tambahan CHIP filter
+                androidx.compose.material.OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Cari nama") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    singleLine = true,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    ),
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear")
+                            }
                         }
                     }
                 )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.width(12.dp))
-                CustomDropdownChip(
-                    label = "Kelas",
-                    options = listOf("-", "X", "XI", "XII"),
-                    selectedOption = selectedKelas,
-                    onOptionSelected = { selectedKelas = if (it == "-") null else it }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                CustomDropdownChip(
-                    label = "Program Keahlian",
-                    options = listOf("-", "TKP", "GEO", "DPIB"),
-                    selectedOption = selectedProgram,
-                    onOptionSelected = { selectedProgram = if (it == "-") null else it }
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    CustomDropdownChip(
+                        label = "Status",
+                        options = listOf("-", "Sudah dinilai", "Belum dinilai"),
+                        selectedOption = when (selectedStatus) {
+                            null -> "Status"
+                            true -> "Sudah dinilai"
+                            false -> "Belum dinilai"
+                        },
+                        onOptionSelected = {
+                            selectedStatus = when (it) {
+                                "Status" -> null
+                                "Sudah dinilai" -> true
+                                "Belum dinilai" -> false
+                                else -> null
+                            }
+                        }
+                    )
 
-            }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    CustomDropdownChip(
+                        label = "Kelas",
+                        options = listOf("-", "X", "XI", "XII"),
+                        selectedOption = selectedKelas,
+                        onOptionSelected = { selectedKelas = if (it == "-") null else it }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    CustomDropdownChip(
+                        label = "Program Keahlian",
+                        options = listOf("-", "TKP", "GEO", "DPIB"),
+                        selectedOption = selectedProgram,
+                        onOptionSelected = { selectedProgram = if (it == "-") null else it }
+                    )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                if (isLoading) {
-                    items(5) {
-                        ShimmerUserCard()
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                } else {
-                    items(filteredList) { user ->
-                        UserCard(navController, user)
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
+                }
 
-                    if (isLoadingMore) {
-                        item {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = listState,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    if (isLoading) {
+                        items(5) {
                             ShimmerUserCard()
                             Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    } else {
+                        items(filteredList) { user ->
+                            UserCard(navController, user)
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+
+                        if (isLoadingMore) {
+                            item {
+                                ShimmerUserCard()
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
                         }
                     }
                 }
             }
         }
     }
+
 }
 
 suspend fun fetchUsersPaged(

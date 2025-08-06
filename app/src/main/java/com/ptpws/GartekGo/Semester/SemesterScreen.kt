@@ -104,7 +104,7 @@ fun SemesterScreen(
         }
 
         2 -> {
-            ProjectScreen(navController)
+            ProjectScreen(navController,semester)
         }
 
 
@@ -217,7 +217,7 @@ fun SemesterScreen(
                         }
 
                         1 -> {
-                            ProjectScreen(navController)
+                            ProjectScreen(navController,semester)
                         }
                     }
                 }

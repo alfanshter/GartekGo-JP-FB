@@ -1,7 +1,5 @@
 package com.ptpws.GartekGo.Semester
 
-import android.R.attr.button
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
@@ -23,31 +21,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,15 +66,14 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
-import com.ptpws.GartekGo.model.UploadModel
 import com.ptpws.GartekGo.Commond.jostfamily
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.Dialog.SuccessDialog
 import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.Utils
+import com.ptpws.GartekGo.model.UploadModel
 import java.io.ByteArrayOutputStream
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -196,7 +184,11 @@ fun UploadScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xffF5F9FF))
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(
+                        0xffF5F9FF
+                    )
+                )
             )
         }, contentWindowInsets = WindowInsets(0),
         containerColor = Color(0xFFF7F9FC)
@@ -281,9 +273,19 @@ fun UploadScreen(
                                 .height(48.dp),
                             shape = RoundedCornerShape(24.dp)
                         ) {
-                            Icon(painter = painterResource(id = R.drawable.edit), contentDescription = null, tint = Color.Unspecified)
+                            Icon(
+                                painter = painterResource(id = R.drawable.edit),
+                                contentDescription = null,
+                                tint = Color.Unspecified
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("EDIT", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                            Text(
+                                "EDIT",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                fontSize = 18.sp
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -299,9 +301,19 @@ fun UploadScreen(
                                 .height(48.dp),
                             shape = RoundedCornerShape(24.dp)
                         ) {
-                            Icon(painter = painterResource(id = R.drawable.hapus), tint = Color.Unspecified, contentDescription = null)
+                            Icon(
+                                painter = painterResource(id = R.drawable.hapus),
+                                tint = Color.Unspecified,
+                                contentDescription = null
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("HAPUS", fontFamily = jostfamily, fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 18.sp)
+                            Text(
+                                "HAPUS",
+                                fontFamily = jostfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                fontSize = 18.sp
+                            )
                         }
                     }
                 } else {
@@ -359,129 +371,124 @@ fun UploadScreen(
                             return@Button
                         }
 
-                        try {
-                            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-                            val baos = ByteArrayOutputStream()
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                            val bytes = baos.toByteArray()
+                        val uid = user.uid
+                        val fileName = "${uid}_${System.currentTimeMillis()}.jpg"
+                        val storageRef =
+                            FirebaseStorage.getInstance().reference.child("public/project_gambar/$fileName")
 
-                            val storageRef = FirebaseStorage.getInstance().reference
-                            val fileName = "${user.uid}_${System.currentTimeMillis()}.jpg"
-                            val imageRef = storageRef.child("public/project_gambar/$fileName")
+                        val bitmap =
+                            MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                        val baos = ByteArrayOutputStream()
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                        val bytes = baos.toByteArray()
 
-                            val uploadTask = imageRef.putBytes(bytes)
-                            isUploading = true
+                        isUploading = true
+                        val uploadTask = storageRef.putBytes(bytes)
 
-                            uploadTask
-                                .addOnProgressListener { taskSnapshot ->
-                                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toFloat()
-                                    uploadProgress = progress
-                                }
-                                .addOnSuccessListener {
-                                    imageRef.downloadUrl.addOnSuccessListener { uri ->
-                                        val db = FirebaseFirestore.getInstance()
-                                        val uid = user.uid
 
-                                        //ambil data users
-                                        db.collection("users").document(uid).get()
-                                            .addOnSuccessListener { document ->
-                                                val nama = document.getString("nama") ?: ""
-                                                val kelas = document.getString("kelas") ?: ""
-                                                val program_keahlian =
-                                                    document.getString("program_keahlian") ?: ""
+                        uploadTask
+                            .addOnProgressListener { taskSnapshot ->
+                                uploadProgress =
+                                    (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toFloat()
+                            }
+                            .continueWithTask { storageRef.downloadUrl } // Lanjut ambil URL download
 
+                            .addOnSuccessListener { uri ->
+                                val db = FirebaseFirestore.getInstance()
+
+                                // Ambil data user
+                                db.collection("users").document(uid).get()
+                                    .addOnSuccessListener { userDoc ->
+                                        val nama = userDoc.getString("nama") ?: ""
+                                        val kelas = userDoc.getString("kelas") ?: ""
+                                        val programKeahlian =
+                                            userDoc.getString("program_keahlian") ?: ""
+
+                                        // Ambil data topik
+                                        db.collection("topik").document(idtopik).get()
+                                            .addOnSuccessListener { topikDoc ->
+                                                val namaTopik = topikDoc.getString("nama") ?: ""
+                                                val nomorTopik =
+                                                    topikDoc.getLong("nomor")?.toInt() ?: 0
+                                                val semester =
+                                                    topikDoc.getLong("semester")?.toInt() ?: 0
 
                                                 val upload = UploadModel(
-                                                    uid = user.uid,
-                                                    kelas = kelas,
+                                                    uid = uid,
                                                     nama = nama,
-                                                    program_keahlian = program_keahlian,
+                                                    kelas = kelas,
+                                                    program_keahlian = programKeahlian,
                                                     id_topik = idtopik,
+                                                    nama_topik = namaTopik,
+                                                    nomor_topik = nomorTopik,
+                                                    semester = semester,
                                                     imageUrl = uri.toString(),
-                                                    timestamp = Timestamp.now()
+                                                    timestamp = Timestamp.now(),
+                                                    status = false
                                                 )
 
-                                                // Ambil data topik dari ID
-                                                db.collection("topik").document(idtopik).get()
-                                                    .addOnSuccessListener { topikDoc ->
-                                                        if (topikDoc != null && topikDoc.exists()) {
-                                                            val namaTopik =
-                                                                topikDoc.getString("nama") ?: ""
-                                                            val nomorTopik =
-                                                                topikDoc.getLong("nomor") ?: 0L
-                                                            val semester =
-                                                                topikDoc.getLong("semester") ?: 0L
-
-                                                            // Buat UploadModel dengan nama topik & nomor
-                                                            val upload = UploadModel(
-                                                                uid = uid,
-                                                                nama = nama,
-                                                                kelas = kelas,
-                                                                program_keahlian = program_keahlian,
-                                                                id_topik = idtopik,
-                                                                nama_topik = namaTopik, // tambahkan di model
-                                                                nomor_topik = nomorTopik.toInt(), // tambahkan di model
-                                                                imageUrl = uri.toString(),
-                                                                timestamp = Timestamp.now(),
-                                                                status = false,
-                                                                semester = semester.toInt(),
-                                                            )
-
-
+                                                // Cek apakah dokumen sudah ada
+                                                db.collection("project_uploads")
+                                                    .whereEqualTo("uid", uid)
+                                                    .whereEqualTo("id_topik", idtopik)
+                                                    .limit(1)
+                                                    .get()
+                                                    .addOnSuccessListener { querySnapshot ->
+                                                        if (!querySnapshot.isEmpty) {
+                                                            val id =
+                                                                querySnapshot.documents[0].id
+                                                            db.collection("project_uploads")
+                                                                .document(id)
+                                                                .set(
+                                                                    upload,
+                                                                    SetOptions.merge()
+                                                                ) // update aman
+                                                                .addOnSuccessListener {
+                                                                    onUploadSelesai(
+                                                                        setIsUploading = { isUploading = it },
+                                                                        setUploadProgress = { uploadProgress = it },
+                                                                        setGambarSuksesDikirim = { gambarsuksesdikirim = it },
+                                                                        setSudahUpload = { sudahUpload = it },
+                                                                        onFetchImage = { fetchLastUploadedImage() }
+                                                                    )
+                                                                }
+                                                        } else {
+                                                            // Dokumen belum ada, buat baru
                                                             db.collection("project_uploads")
                                                                 .add(upload)
-                                                                .addOnSuccessListener { documentRef ->
-                                                                    val idProject = documentRef.id // Ambil ID dokumen
-
-                                                                    // Update field id_project di dokumen yang barusan dibuat
-                                                                    db.collection("project_uploads").document(idProject)
-                                                                        .update("id_project", idProject)
-                                                                        .addOnSuccessListener {
-                                                                            isUploading = false
-                                                                            uploadProgress = 0f
-                                                                            gambarsuksesdikirim = true
-                                                                            sudahUpload = true //Untuk disable tombol
-                                                                            fetchLastUploadedImage()
-                                                                        }
-                                                                        .addOnFailureListener {
-                                                                            isUploading = false
-                                                                            uploadProgress = 0f
-                                                                            Toast.makeText(
-                                                                                context,
-                                                                                "Gagal update id_project",
-                                                                                Toast.LENGTH_SHORT
-                                                                            ).show()
-                                                                        }
+                                                                .addOnSuccessListener {
+                                                                    onUploadSelesai(
+                                                                        setIsUploading = { isUploading = it },
+                                                                        setUploadProgress = { uploadProgress = it },
+                                                                        setGambarSuksesDikirim = { gambarsuksesdikirim = it },
+                                                                        setSudahUpload = { sudahUpload = it },
+                                                                        onFetchImage = { fetchLastUploadedImage() }
+                                                                    )
                                                                 }
-                                                                .addOnFailureListener {
-                                                                    isUploading = false
-                                                                    uploadProgress = 0f
-                                                                    Toast.makeText(
-                                                                        context,
-                                                                        "Gagal simpan URL Firestore",
-                                                                        Toast.LENGTH_SHORT
-                                                                    ).show()
-                                                                }
-
                                                         }
                                                     }
                                             }
-                                        }
-                                    }
-                                .addOnFailureListener {
-                                    isUploading = false
-                                    uploadProgress = 0f
-                                    Toast.makeText(context, "Gagal upload gambar", Toast.LENGTH_SHORT).show()
-                                }
 
-                        } catch (e: Exception) {
-                            isUploading = false
-                            uploadProgress = 0f
-                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                        }
+                                    }
+
+                                //ambil data users
+
+                            }
+
+                            .addOnFailureListener {
+                                isUploading = false
+                                uploadProgress = 0f
+                                Toast.makeText(context, "Gagal upload gambar atau simpan data", Toast.LENGTH_SHORT).show()
+
+                            }
+
+
                     },
                     shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0961F5), contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF0961F5),
+                        contentColor = Color.White
+                    ),
                     modifier = Modifier
                         .constrainAs(button) {
                             if (showActionButtons) {
@@ -547,22 +554,24 @@ fun UploadScreen(
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
+fun onUploadSelesai(
+    setIsUploading: (Boolean) -> Unit,
+    setUploadProgress: (Float) -> Unit,
+    setGambarSuksesDikirim: (Boolean) -> Unit,
+    setSudahUpload: (Boolean) -> Unit,
+    onFetchImage: () -> Unit
+) {
+    setIsUploading(false)
+    setUploadProgress(0f)
+    setGambarSuksesDikirim(true)
+    setSudahUpload(true)
+    onFetchImage()
+}
 @Preview(showBackground = true)
 @Composable
 private fun UploadScreenPreview() {
     UploadScreen(navController = rememberNavController(), idtopik = "")
-    
+
 }
 
 

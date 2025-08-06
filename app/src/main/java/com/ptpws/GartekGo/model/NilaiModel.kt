@@ -6,7 +6,7 @@ import com.google.firebase.firestore.DocumentReference
 
 data class NilaiModel(
     val uid: String = "",
-    val semester: String = "",
+    val semester: Int? = null,
     val topik: DocumentReference? = null,
     val nilai: Int = 0,
     val jawaban_siswa: List<String> = emptyList(),

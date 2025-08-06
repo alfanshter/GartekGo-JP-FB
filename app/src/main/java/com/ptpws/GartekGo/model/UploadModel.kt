@@ -10,7 +10,7 @@ data class UploadModel(
     val id_topik: String = "",
     val nama_topik: String = "",
     val nomor_topik: Int = 0,
-    val imageUrl: String = "",
+    val imageUrl: String ? = null,
     val timestamp: Timestamp = Timestamp.now(),
     val status: Boolean = false,
     val id_project: String = "",
