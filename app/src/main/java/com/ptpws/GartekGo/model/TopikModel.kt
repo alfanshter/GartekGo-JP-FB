@@ -32,4 +32,6 @@ data class TopikModel(
     var vidio:String? = null,
 
     var uploadedMateriBy:String? = null,
-    )
+    val projectUpload: ProjectUploadData? = null
+
+)

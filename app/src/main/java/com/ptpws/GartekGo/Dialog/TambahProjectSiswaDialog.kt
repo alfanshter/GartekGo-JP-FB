@@ -80,21 +80,18 @@ fun TambahProjectSiswaDialog(
     onDismiss: () -> Unit = {},
     topikModel: TopikModel,
     onSave: (TopikModel) -> Unit,
-    gambarSoalProject: String?,
-    idProject: String,
     kelas: String,
     program_keahlian: String,
 
     ) {
 
-    println(gambarSoalProject)
 
     var context = LocalContext.current
     var imageUri = remember { mutableStateOf<Uri?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var uploadProgress by remember { mutableStateOf(0f) } // 0f sampai 100f
     var selectedIdTopik by remember { mutableStateOf(topikModel?.id ?: "") }
-    val initialGambarProject = gambarSoalProject ?: ""
+    val initialGambarProject = topikModel.projectUpload?.imageUrl ?: ""
     val initialuploadedGambarProjectAt = topikModel?.uploadedGambarProjectAt
     val initialNamaFileProject = topikModel?.nama_file_project ?: ""
 
@@ -108,14 +105,16 @@ fun TambahProjectSiswaDialog(
             rememberAsyncImagePainter(imageUri.value)
         }
 
-        !gambarSoalProject.isNullOrBlank() -> {
-            rememberAsyncImagePainter(model = gambarSoalProject)
+        !gambarProject.isNullOrBlank() -> {
+            rememberAsyncImagePainter(model = gambarProject)
         }
 
         else -> {
             painterResource(id = R.drawable.gambartugas)
         }
     }
+
+
 
 
     val showChooserDialog = remember { mutableStateOf(false) }
@@ -247,7 +246,7 @@ fun TambahProjectSiswaDialog(
                                                         ).show()
                                                     },
                                                     namaFileProject = namaFileProject,
-                                                    idProject,
+                                                    idProject = topikModel.projectUpload!!.id_project!!,
                                                     kelas,program_keahlian
                                                 )
                                             },
@@ -301,7 +300,7 @@ fun TambahProjectSiswaDialog(
                                                         ).show()
                                                     },
                                                     namaFileProject = namaFileProject,
-                                                    idProject = idProject,
+                                                    idProject = topikModel.projectUpload!!.id_project!!,
                                                     kelas = kelas,
                                                     program_keahlian = program_keahlian
                                                 )
@@ -510,8 +509,6 @@ private fun NamaTopikDialogPreview() {
         onDismiss = {},
         topikModel = TopikModel(),
         onSave = {},
-        gambarSoalProject = "",
-        idProject = "idProject",
         kelas = "kelas",
         program_keahlian = "program_keahlian"
     )

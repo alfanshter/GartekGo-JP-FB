@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,54 +56,72 @@ fun ProjectScreen(navController: NavController, semester: Int) {
     val userUid = FirebaseAuth.getInstance().uid
 
     // Map: idTopik -> Pair(status, nilai)
-    val projectUploadMap = mutableMapOf<String, ProjectUploadData>()
+    val projectUploadMap = remember { mutableStateMapOf<String, ProjectUploadData>() }
+
     var isAddProject by remember { mutableStateOf(false) }
     var topikModel by remember { mutableStateOf(TopikModel()) }
     var gambarSoalProject by remember { mutableStateOf("") }
-    var idProject by remember { mutableStateOf("") }
+//    var idProject by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var program_keahlian by remember { mutableStateOf("") }
+    var statusProject by remember { mutableStateOf(false) }
+    var nilaiProject by remember { mutableStateOf(0) }
+    var dataIdProject by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
-        val getdata = db.collection("topik")
-            .whereEqualTo("semester", semester)
-            .orderBy("nomor").get()
-        getdata.addOnSuccessListener { data ->
-            listData.clear()
-            for (datas in data.documents) {
-                val topik = datas.toObject(TopikModel::class.java)
-                if (topik != null) {
-                    listData.add(topik.copy(id = datas.id))
-                }
-            }
-        }
-
-        // Ambil data user
+        // 1. Ambil data user
         db.collection("users").document(userUid.toString()).get()
             .addOnSuccessListener { userDoc ->
-                val dataKelas = userDoc.getString("kelas") ?: ""
-                val dataProgramKeahlian =
-                    userDoc.getString("program_keahlian") ?: ""
-
-                kelas = dataKelas
-                program_keahlian = dataProgramKeahlian
+                kelas = userDoc.getString("kelas") ?: ""
+                program_keahlian = userDoc.getString("program_keahlian") ?: ""
             }
 
+        // 2. Ambil semua topik
+        db.collection("topik")
+            .whereEqualTo("semester", semester)
+            .orderBy("nomor")
+            .get()
+            .addOnSuccessListener { topikSnapshot ->
+                val tempTopikList = mutableListOf<TopikModel>()
 
-        db.collection("project_uploads")
-            .whereEqualTo("uid", userUid)
-            .get().addOnSuccessListener { snapshot ->
-                for (projDoc in snapshot.documents) {
-                    val idTopik = projDoc.getString("id_topik")
-                    val idproject = projDoc.getString("id_project")
-                    val nilai = projDoc.getLong("nilai")?.toInt()
-                    val imageUrl = projDoc.getString("imageUrl").toString()
-                    val status = projDoc.getBoolean("status")
-
-                    if (idTopik != null) {
-                        projectUploadMap[idTopik] =
-                            ProjectUploadData(status, nilai, imageUrl, idTopik, idproject)
+                for (doc in topikSnapshot.documents) {
+                    val topik = doc.toObject(TopikModel::class.java)?.copy(id = doc.id)
+                    if (topik != null) {
+                        tempTopikList.add(topik)
                     }
                 }
+
+                // 3. Ambil project uploads user
+                db.collection("project_uploads")
+                    .whereEqualTo("uid", userUid)
+                    .get()
+                    .addOnSuccessListener { projectSnapshot ->
+                        val projectMap = mutableMapOf<String, ProjectUploadData>()
+
+                        for (projDoc in projectSnapshot.documents) {
+                            val idTopik = projDoc.getString("id_topik") ?: continue
+                            val idProject = projDoc.getString("id_project")
+                            val nilai = projDoc.getLong("nilai")?.toInt()
+                            val imageUrl = projDoc.getString("imageUrl").orEmpty()
+                            val status = projDoc.getBoolean("status")
+
+                            projectMap[idTopik] = ProjectUploadData(
+                                status, nilai, imageUrl, idTopik, idProject
+                            )
+                        }
+
+                        // 4. Gabungkan topik + project_uploads
+                        val mergedList = tempTopikList.map { topik ->
+                            val uploadData = projectMap[topik.id]
+                            topik.copy(
+                                projectUpload = uploadData // pastikan TopikModel punya field ini
+                            )
+
+                        }
+
+                        listData.clear()
+                        listData.addAll(mergedList)
+
+                    }
             }
     }
 
@@ -114,20 +133,18 @@ fun ProjectScreen(navController: NavController, semester: Int) {
     ) {
         itemsIndexed(listData) { _, data ->
 
-            val projectData = projectUploadMap[data.id]
-            val statusProject = projectData?.status
-            val nilaiProject = projectData?.nilai
-            val gambarProject = projectData?.imageUrl
-            val dataIdProject = projectData?.id_project
-            if (dataIdProject != null) {
-                idProject = dataIdProject
+            if (data.projectUpload!=null){
+                if (!data.projectUpload.imageUrl.isNullOrEmpty()){
+                    gambarSoalProject = data.projectUpload.imageUrl
+                }
+
+                if (!data.projectUpload.id_project.isNullOrEmpty()){
+                    dataIdProject = data.projectUpload.id_project
+                }
             }
 
-
-            val initialProjectData = remember { projectUploadMap[data.id] }
-
             // Gunakan warna biru jika data ada, abu-abu jika tidak
-            val cardColor = if (initialProjectData != null) {
+            val cardColor = if (data.projectUpload != null) {
                 Color(0xFFC2D8FF) // biru
             } else {
                 Color(0xFFE0E0E0) // abu
@@ -135,11 +152,11 @@ fun ProjectScreen(navController: NavController, semester: Int) {
 
             // Pilih ikon berdasarkan statusProject (atau idTopik, sesuai maksud kamu)
             val iconVector = when {
-                initialProjectData != null -> Icons.Default.PlayArrow
+                data.projectUpload != null -> Icons.Default.PlayArrow
                 else -> Icons.Default.Refresh
             }
 
-            val iconBgColor = if (initialProjectData != null) {
+            val iconBgColor = if (data.projectUpload != null) {
                 Color(0xFF3366FF) // biru
             } else {
                 Color(0xFF00AA00) // hijau
@@ -152,9 +169,12 @@ fun ProjectScreen(navController: NavController, semester: Int) {
                     .fillMaxWidth()
                     .padding(start = 34.dp, end = 34.dp)
                     .clickable {
-                        topikModel = data
-                        gambarSoalProject = gambarProject.toString()
-                        isAddProject = true
+                        // Gunakan warna biru jika data ada, abu-abu jika tidak
+                        if (data.projectUpload != null) {
+                            isAddProject = true
+                            topikModel = data
+
+                        }
                     },
                 colors = CardDefaults.cardColors(containerColor = cardColor),
                 shape = RoundedCornerShape(16.dp),
@@ -201,15 +221,36 @@ fun ProjectScreen(navController: NavController, semester: Int) {
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (data.projectUpload!=null){
+                                    if (data.projectUpload.status == true) "Sudah dinilai" else "Belum Dinilai"
+                                } else "Belum dinilai",
+                                fontFamily = poppinsfamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = if (data.projectUpload!=null) {
+                                    if (data.projectUpload.nilai!=null){
+                                        "Nilai : ${data.projectUpload.nilai}"
+                                    }else  "Nilai : -"
+
+                                }else "Nilai : -",
+                                fontFamily = poppinsfamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+
                         Text(
-                            text = if (statusProject == true) "Sudah dinilai" else "Belum dinilai",
-                            fontFamily = poppinsfamily,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = if (nilaiProject != null) "Nilai : $nilaiProject" else "Nilai : -",
+                            text = if (data.projectUpload!=null) {
+                                if (!data.projectUpload.imageUrl.isNullOrEmpty() ){
+                                    println("dindasayang ${data.projectUpload.imageUrl}")
+                                    "Status : Sudah upload gambar"
+                                }else  {"Status : Belum upload gambar"}
+
+                            }else {"Status : Belum upload gambar"},
                             fontFamily = poppinsfamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -222,6 +263,8 @@ fun ProjectScreen(navController: NavController, semester: Int) {
             }
             Spacer(Modifier.height(12.dp))
         }
+
+
     }
 
 
@@ -230,7 +273,7 @@ fun ProjectScreen(navController: NavController, semester: Int) {
             isAddProject = false
         }, topikModel = topikModel, onSave = {
 
-        }, gambarSoalProject, idProject,kelas,program_keahlian)
+        },  kelas = kelas, program_keahlian = program_keahlian)
 
     }
 }

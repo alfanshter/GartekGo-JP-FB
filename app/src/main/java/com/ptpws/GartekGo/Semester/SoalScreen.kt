@@ -351,140 +351,140 @@ fun SoalScreen(navController: NavController, idtopik: String) {
             Button(
                 onClick = {
                     if (modeReview || sudahLulus) {
-                        if (currentIndex < soalList.size - 1) {
-                            currentIndex++
-                        } else {
-                            tampilkannilai = true
+                        when {
+                            currentIndex < soalList.size - 1 -> currentIndex++
+                            else -> tampilkannilai = true
                         }
-                    } else {
-                        if (selectedOption.isEmpty()) {
-                            Toast.makeText(
-                                context,
-                                "Masukkan dulu jawaban Anda",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            jawabansiswa.add(selectedOption)
+                        return@Button // langsung keluar supaya bagian bawah nggak ikut dijalankan
+                    }
+                    if (selectedOption.isEmpty()) {
+                        Toast.makeText(context, "Masukkan dulu jawaban Anda", Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
+                    }
 
-                            if (currentIndex < soalList.size - 1) {
-                                currentIndex++
-                                selectedOption = ""
+                    jawabansiswa.add(selectedOption)
+
+                    if (currentIndex < soalList.size - 1) {
+                        currentIndex++
+                        selectedOption = ""
+                        return@Button
+                    }
+
+                    // Hitung nilai
+                    val benar = soalList.indices.count { i ->
+                        soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
+                    }
+                    val score = ((benar.toDouble() / soalList.size) * 100).toInt()
+                    nilai = score
+
+                    //update nilai difirestore
+                    val uid = auth.currentUser?.uid ?: ""
+                    val namaUser = auth.currentUser?.displayName ?: "Unknown"
+
+                    val nilaiModel = NilaiModel(
+                        uid = uid,
+                        semester = semester,
+                        topik = topikRef,
+                        nilai = score,
+                        jawaban_siswa = jawabansiswa,
+                        jawaban_benar = soalList.map { it.jawaban_benar },
+                        benar_siswa = benar,
+                        total_soal = soalList.size,
+                        status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
+                        timestamp = Timestamp.now()
+                    )
+
+                    // Buat UploadModel dengan nama topik & nomor
+                    val upload = UploadModel(
+                        uid = uid,
+                        nama = namaUser,
+                        id_topik = idtopik,
+                        nama_topik = namaTopik, // tambahkan di model
+                        nomor_topik = nomorTopik.toInt(), // tambahkan di model
+                        status = false,
+                        semester = semester.toInt(),
+                    )
+
+                    val userTopikRef =
+                        db.collection("users").document(uid).collection("topik")
+                            .document(idtopik)
+                    val nilaiRef = db.collection("nilai")
+
+                    // Cek apakah dokumen sudah ada
+                    nilaiRef
+                        .whereEqualTo("uid", uid)
+                        .whereEqualTo("topik", topikRef)
+                        .get()
+                        .addOnSuccessListener { result ->
+                            if (!result.isEmpty) {
+                                // 🔁 Dokumen sudah ada, update (pakai ID dokumen lama)
+                                val existingDocId = result.documents[0].id
+                                nilaiRef.document(existingDocId)
+                                    .set(nilaiModel)
+                                    .addOnSuccessListener {
+                                        //upload project model untuk sementara
+                                        tampilkannilai = true
+                                    }
                             } else {
-
-
-                                val benar = soalList.indices.count { i ->
-                                    soalList[i].jawaban_benar == jawabansiswa.getOrNull(i)
-                                }
-                                val score = ((benar.toDouble() / soalList.size) * 100).toInt()
-                                nilai = score
-                                //update nilai difirestore
-                                val uid = auth.currentUser?.uid ?: ""
-
-                                val nilaiModel = NilaiModel(
-                                    uid = auth.currentUser?.uid ?: "unknown",
-                                    semester = semester,
-                                    topik = topikRef,
-                                    nilai = score,
-                                    jawaban_siswa = jawabansiswa,
-                                    jawaban_benar = soalList.map { it.jawaban_benar },
-                                    benar_siswa = benar,
-                                    total_soal = soalList.size,
-                                    status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
-                                    timestamp = Timestamp.now()
-                                )
-
-                                // Buat UploadModel dengan nama topik & nomor
-                                val upload = UploadModel(
-                                    uid = uid,
-                                    nama = auth.currentUser!!.displayName!!,
-                                    id_topik = idtopik,
-                                    nama_topik = namaTopik, // tambahkan di model
-                                    nomor_topik = nomorTopik.toInt(), // tambahkan di model
-                                    status = false,
-                                    semester = semester.toInt(),
-                                )
-
-                                val userTopikRef =
-                                    db.collection("users").document(uid).collection("topik")
-                                        .document(idtopik)
-                                val nilaiRef = db.collection("nilai")
-                                db.collection("nilai")
-                                    .whereEqualTo("uid", uid)
-                                    .whereEqualTo("topik", topikRef)
-                                    .get()
-                                    .addOnSuccessListener { result ->
-                                        if (!result.isEmpty) {
-                                            // 🔁 Dokumen sudah ada, update (pakai ID dokumen lama)
-                                            val existingDocId = result.documents[0].id
-                                            nilaiRef.document(existingDocId)
-                                                .set(nilaiModel)
+                                //tambahkan nilai baru
+                                nilaiRef
+                                    .add(nilaiModel)
+                                    .addOnSuccessListener {
+                                        if (score >= 65) {
+                                            userTopikRef.update("soal", "1")
                                                 .addOnSuccessListener {
-                                                    //upload project model untuk sementara
-                                                    tampilkannilai = true
-                                                }
-                                        } else {
-                                            db.collection("nilai")
-                                                .add(nilaiModel)
-                                                .addOnSuccessListener {
-                                                    if (score >= 65) {
-                                                        userTopikRef.update("soal", "1")
-                                                            .addOnSuccessListener {
-                                                                db.collection("project_uploads")
-                                                                    .add(upload)
-                                                                    .addOnSuccessListener { documentRef ->
-                                                                        val idProject =
-                                                                            documentRef.id // Ambil ID dokumen
-                                                                        // Update field id_project di dokumen yang barusan dibuat
-                                                                        db.collection("project_uploads")
-                                                                            .document(idProject)
-                                                                            .update("id_project", idProject)
-                                                                            .addOnSuccessListener {
-                                                                                tampilkannilai = true
-                                                                            }
-                                                                    }.addOnFailureListener {
-                                                                        Toast.makeText(
-                                                                            context,
-                                                                            "Gagal upload project",
-                                                                            Toast.LENGTH_SHORT
-                                                                        ).show()
-                                                                        tampilkannilai = true
+                                                    db.collection("project_uploads")
+                                                        .add(upload)
+                                                        .addOnSuccessListener { documentRef ->
+                                                            // Update field id_project di dokumen yang barusan dibuat
+                                                            db.collection("project_uploads")
+                                                                .document(documentRef.id)
+                                                                .update("id_project", documentRef.id)
+                                                                .addOnSuccessListener {
+                                                                    tampilkannilai = true
+                                                                }
+                                                        }.addOnFailureListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Gagal upload project",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            tampilkannilai = true
 
-                                                                    }
-                                                                    .addOnFailureListener {
-                                                                        Toast.makeText(
-                                                                            context,
-                                                                            "Gagal update progres topik",
-                                                                            Toast.LENGTH_SHORT
-                                                                        ).show()
-                                                                        tampilkannilai = true
-                                                                    }
-                                                             }
-                                                            .addOnFailureListener {
-                                                                Toast.makeText(
-                                                                    context,
-                                                                    "Gagal update progres topik",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                                tampilkannilai = true
-                                                            }
-                                                    } else {
-                                                        tampilkannilai = true
-                                                    }
+                                                        }
+                                                        .addOnFailureListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Gagal update progres topik",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            tampilkannilai = true
+                                                        }
                                                 }
                                                 .addOnFailureListener {
                                                     Toast.makeText(
                                                         context,
-                                                        "Gagal menyimpan nilai",
+                                                        "Gagal update progres topik",
                                                         Toast.LENGTH_SHORT
                                                     ).show()
+                                                    tampilkannilai = true
                                                 }
+                                        } else {
+                                            tampilkannilai = true
                                         }
                                     }
-
-
+                                    .addOnFailureListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Gagal menyimpan nilai",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                             }
                         }
-                    }
+
+
                 },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009A0F)),
