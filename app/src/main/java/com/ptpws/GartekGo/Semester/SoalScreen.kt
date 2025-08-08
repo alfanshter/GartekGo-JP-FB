@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -204,7 +205,13 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        if (currentIndex > 0) {
+                            currentIndex--
+                        } else {
+                            navController.popBackStack()
+                        }
+                    }) {
                         Icon(
                             painter = painterResource(id = R.drawable.back),
                             contentDescription = null,
@@ -227,6 +234,13 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                 .padding(innerPadding)
         ) {
             val (content, button) = createRefs()
+            // State untuk menyimpan jawaban tiap soal
+            val jawabanUser = remember { mutableStateMapOf<Int, String>() }
+
+            // Sinkronkan saat ganti soal
+            LaunchedEffect(currentIndex) {
+                selectedOption = jawabanUser[currentIndex] ?: ""
+            }
 
             LazyColumn(
                 modifier = Modifier
@@ -270,8 +284,10 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                     val optionKey = option.key
                     val optionValue = option.value
 
-                    val isSelected =
-                        if (modeReview || sudahLulus) optionKey == jawabanSiswa else optionKey == selectedOption
+//                    val isSelected =
+//                        if (modeReview || sudahLulus) optionKey == jawabanSiswa else optionKey == selectedOption
+//
+
                     val isBenar = optionKey == jawabanBenar
                     val isSalahDipilih = optionKey == jawabanSiswa && optionKey != jawabanBenar
 
@@ -289,16 +305,20 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = isSelected,
+                            selected = jawabanUser[currentIndex] == optionKey,
                             onClick = {
                                 if (!modeReview && !sudahLulus) {
                                     selectedOption = optionKey
+                                    jawabanUser[currentIndex] = optionKey // simpan pilihan user
+
                                 }
                             },
                             enabled = !modeReview && !sudahLulus,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = radioColor,
-                                unselectedColor = if ((modeReview || sudahLulus) && isSelected) radioColor else Color.Gray
+//                                unselectedColor = if ((modeReview || sudahLulus) && isSelected) radioColor else Color.Gray
+                                unselectedColor = if ((modeReview || sudahLulus) && optionKey == jawabanUser[currentIndex]) radioColor else Color.Gray
+
                             )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
