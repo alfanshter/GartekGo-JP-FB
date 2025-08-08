@@ -424,7 +424,48 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                     .set(nilaiModel)
                                     .addOnSuccessListener {
                                         //upload project model untuk sementara
-                                        tampilkannilai = true
+                                        if (score >= 65) {
+                                            userTopikRef.update("soal", "1")
+                                                .addOnSuccessListener {
+                                                    db.collection("project_uploads")
+                                                        .add(upload)
+                                                        .addOnSuccessListener { documentRef ->
+                                                            // Update field id_project di dokumen yang barusan dibuat
+                                                            db.collection("project_uploads")
+                                                                .document(documentRef.id)
+                                                                .update("id_project", documentRef.id)
+                                                                .addOnSuccessListener {
+                                                                    tampilkannilai = true
+                                                                }
+                                                        }.addOnFailureListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Gagal upload project",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            tampilkannilai = true
+
+                                                        }
+                                                        .addOnFailureListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Gagal update progres topik",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            tampilkannilai = true
+                                                        }
+                                                }
+                                                .addOnFailureListener {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Gagal update progres topik",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    tampilkannilai = true
+                                                }
+                                        } else {
+                                            tampilkannilai = true
+                                        }
                                     }
                             } else {
                                 //tambahkan nilai baru
