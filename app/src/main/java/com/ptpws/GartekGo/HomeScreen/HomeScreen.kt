@@ -137,7 +137,7 @@ fun HomeScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.profile),
+                        painter = painterResource(id = R.drawable.outline_person_24),
                         contentDescription = "Foto Profil",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

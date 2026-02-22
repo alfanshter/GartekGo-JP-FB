@@ -150,7 +150,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
     }
 
     if (tampilkannilai) {
-        if (nilai >= 65) {
+        if (nilai >= 75) {
             CardLulus(
                 nilai = nilai,
                 onReview = {
@@ -411,7 +411,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                         jawaban_benar = soalList.map { it.jawaban_benar },
                         benar_siswa = benar,
                         total_soal = soalList.size,
-                        status_lulus = if (score >= 65) "LULUS" else "TIDAK LULUS",
+                        status_lulus = if (score >= 75) "LULUS" else "TIDAK LULUS",
                         timestamp = Timestamp.now()
                     )
 
@@ -444,7 +444,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                     .set(nilaiModel)
                                     .addOnSuccessListener {
                                         //upload project model untuk sementara
-                                        if (score >= 65) {
+                                        if (score >= 75) {
                                             userTopikRef.update("soal", "1")
                                                 .addOnSuccessListener {
                                                     db.collection("project_uploads")
@@ -492,7 +492,7 @@ fun SoalScreen(navController: NavController, idtopik: String) {
                                 nilaiRef
                                     .add(nilaiModel)
                                     .addOnSuccessListener {
-                                        if (score >= 65) {
+                                        if (score >= 75) {
                                             userTopikRef.update("soal", "1")
                                                 .addOnSuccessListener {
                                                     db.collection("project_uploads")

@@ -289,10 +289,11 @@ fun VidioListContent(
                                 .padding(start = 22.dp, bottom = 12.dp)
                         )
                         val videoCount = data.videos?.size ?: run {
-                            if (data.file_video != null) 1 else 0
+                            // Cek apakah file_video tidak null DAN tidak kosong
+                            if (!data.file_video.isNullOrBlank()) 1 else 0
                         }
                         Text(
-                            text = if (videoCount > 0) "$videoCount Video" else "Tidak ada video",
+                            text = if (videoCount > 0) "$videoCount Video" else "0 Video",
                             fontSize = 12.sp,
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,

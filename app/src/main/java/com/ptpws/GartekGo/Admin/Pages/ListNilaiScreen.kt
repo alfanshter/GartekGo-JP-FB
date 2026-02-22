@@ -1,18 +1,18 @@
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -24,8 +24,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -79,18 +77,47 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
 
     val listState = rememberLazyListState()
 
-    // Tambahan: filter
-    var selectedKelas by remember { mutableStateOf<String?>(null) }
-    var selectedProgram by remember { mutableStateOf<String?>(null) }
+    // Filter untuk tingkat kelas
+    val tingkatOptions = listOf("Semua", "X", "XI", "XII")
+    var selectedTingkat by remember { mutableStateOf("Semua") }
+
+    // Filter untuk program keahlian
+    val programKeahlianOptions = listOf("Semua", "TKP1", "TKP2", "GEO1", "GEO2", "DPIB1", "DPIB2")
+    var selectedProgramKeahlian by remember { mutableStateOf("Semua") }
 
 
-    val filteredList by remember(selectedKelas, selectedProgram, userList) {
+    val filteredList by remember(selectedTingkat, selectedProgramKeahlian, userList) {
         derivedStateOf {
             userList.filter { user ->
-                val matchKelas = selectedKelas?.let { user.kelas == it } ?: true
-                val matchProgram = selectedProgram?.let { user.program_keahlian == it } ?: true
-                matchKelas && matchProgram
-            }
+                // Filter tingkat berdasarkan field kelas (X, XI, XII)
+                val tingkatMatch = if (selectedTingkat == "Semua") {
+                    true
+                } else {
+                    user.kelas.trim().uppercase() == selectedTingkat.uppercase()
+                }
+
+                // Filter program keahlian berdasarkan field program_keahlian (TKP2, GEO1, dll)
+                val programMatch = if (selectedProgramKeahlian == "Semua") {
+                    true
+                } else {
+                    // Normalisasi program keahlian user (hapus spasi, uppercase)
+                    val userProgram = user.program_keahlian.trim().replace(" ", "").uppercase()
+                    val selectedProgramNormalized = selectedProgramKeahlian.trim().replace(" ", "").uppercase()
+
+                    when {
+                        // Exact match setelah normalisasi (TKP2 = TKP2, GEO1 = GEO1, dll)
+                        userProgram == selectedProgramNormalized -> true
+
+                        // Jika user program tanpa angka (TKP, GEO, DPIB) dan filter adalah kategori 1
+                        selectedProgramNormalized.endsWith("1") &&
+                        userProgram == selectedProgramNormalized.dropLast(1) -> true
+
+                        else -> false
+                    }
+                }
+
+                tingkatMatch && programMatch
+            }.sortedBy { it.nomor_absen }
         }
     }
 
@@ -102,46 +129,25 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
         fetchUsersPaged(
             db = db,
             userList = userList,
-            limit = 10,
+            limit = 100,
             lastVisible = null,
             onLastVisibleChanged = { lastVisible = it },
             onLoadingChanged = { isLoading = it },
             onEndReached = { endReached = it }
         )
-    }
-
-    LaunchedEffect(selectedKelas, selectedProgram) {
-        userList.clear()
-        endReached = false
-        lastVisible = null
-
-        fetchUsersPaged(
-            db = db,
-            userList = userList,
-            limit = 10,
-            lastVisible = null,
-            selectedKelas = selectedKelas,
-            selectedProgram = selectedProgram,
-            onLastVisibleChanged = { lastVisible = it },
-            onLoadingChanged = { isLoading = it },
-            onEndReached = { endReached = it }
-        )
-
     }
 
     // Scroll detect for auto-load
-    LaunchedEffect(listState, selectedKelas, selectedProgram) {
+    LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { index ->
-                if (index != null && index >= userList.size - 3 && !isLoadingMore && !endReached) {
+                if (index != null && index >= userList.size - 3 && !isLoadingMore && !endReached && !isLoading) {
                     isLoadingMore = true
                     fetchUsersPaged(
                         db = db,
                         userList = userList,
-                        limit = 10,
+                        limit = 100,
                         lastVisible = lastVisible,
-                        selectedKelas = selectedKelas,
-                        selectedProgram = selectedProgram,
                         onLastVisibleChanged = { lastVisible = it },
                         onLoadingChanged = { isLoadingMore = it },
                         onEndReached = { endReached = it }
@@ -159,12 +165,12 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
                 onResult = {
                     userList.clear()
                     userList.addAll(it)
-                    endReached = true // supaya paging tidak trigger saat search
+                    endReached = true
                 },
                 onLoadingChanged = { isLoading = it }
             )
-        } else {
-            // Reset ke paging awal
+        } else if (isSearching) {
+            // Reset ke paging awal hanya jika sebelumnya sedang search
             isSearching = false
             userList.clear()
             endReached = false
@@ -172,10 +178,8 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
             fetchUsersPaged(
                 db = db,
                 userList = userList,
-                limit = 10,
+                limit = 100,
                 lastVisible = null,
-                selectedKelas = selectedKelas,
-                selectedProgram = selectedProgram,
                 onLastVisibleChanged = { lastVisible = it },
                 onLoadingChanged = { isLoading = it },
                 onEndReached = { endReached = it }
@@ -234,29 +238,91 @@ fun ListNilaiScreen(navController: NavController, outerPadding: PaddingValues = 
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
+            // Filter Tingkat
+            Text(
+                text = "Filter Tingkat:",
+                fontFamily = poppinsfamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+            )
+            FlowRow(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp)
+                    .background(color = Color(0xffF5F9FF)),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CustomDropdownChip(
-                    label = "Kelas",
-                    options = listOf("-", "X", "XI", "XII"),
-                    selectedOption = selectedKelas,
-                    onOptionSelected = { selectedKelas = if (it == "-") null else it }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                CustomDropdownChip(
-                    label = "Program Keahlian",
-                    options = listOf("-", "TKP", "GEO", "DPIB"),
-                    selectedOption = selectedProgram,
-                    onOptionSelected = { selectedProgram = if (it == "-") null else it }
-                )
+                tingkatOptions.forEach { tingkat ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = if (selectedTingkat == tingkat) Color(0xFF2962FF) else Color.Gray
+                        ),
+                        color = if (selectedTingkat == tingkat) Color(0xFFE3F2FD) else Color.Transparent,
+                        modifier = Modifier
+                            .height(30.dp)
+                            .clickable { selectedTingkat = tingkat }
+                    ) {
+                        Text(
+                            text = tingkat,
+                            fontWeight = if (selectedTingkat == tingkat) FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = poppinsfamily,
+                            fontSize = 11.sp,
+                            color = if (selectedTingkat == tingkat) Color(0xFF2962FF) else Color.Gray,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             }
+
+            // Filter Program Keahlian
+            Text(
+                text = "Filter Program Keahlian:",
+                fontFamily = poppinsfamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
+            FlowRow(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                    .background(color = Color(0xffF5F9FF)),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                programKeahlianOptions.forEach { programKeahlian ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = if (selectedProgramKeahlian == programKeahlian) Color(0xFF2962FF) else Color.Gray
+                        ),
+                        color = if (selectedProgramKeahlian == programKeahlian) Color(0xFFE3F2FD) else Color.Transparent,
+                        modifier = Modifier
+                            .height(30.dp)
+                            .clickable { selectedProgramKeahlian = programKeahlian }
+                    ) {
+                        Text(
+                            text = programKeahlian,
+                            fontWeight = if (selectedProgramKeahlian == programKeahlian) FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = poppinsfamily,
+                            fontSize = 11.sp,
+                            color = if (selectedProgramKeahlian == programKeahlian) Color(0xFF2962FF) else Color.Gray,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
             Text(
                 "Hasil (${filteredList.size} data)",
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
+                color = Color.Black,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
             )
 
             LazyColumn(
@@ -292,8 +358,6 @@ suspend fun fetchUsersPaged(
     userList: SnapshotStateList<UsersModel>,
     limit: Long,
     lastVisible: DocumentSnapshot?,
-    selectedKelas: String? = null,
-    selectedProgram: String? = null,
     onLastVisibleChanged: (DocumentSnapshot?) -> Unit,
     onLoadingChanged: (Boolean) -> Unit,
     onEndReached: (Boolean) -> Unit
@@ -305,12 +369,8 @@ suspend fun fetchUsersPaged(
             .orderBy("nama")
             .limit(limit)
 
-        if (selectedKelas != null) {
-            query = query.whereEqualTo("kelas", selectedKelas)
-        }
-        if (selectedProgram != null) {
-            query = query.whereEqualTo("program_keahlian", selectedProgram)
-        }
+        // Filtering dilakukan di filteredList dengan logika kompleks
+        // (termasuk handling TKP → TKP1, X vs XI vs XII, dll)
 
         if (lastVisible != null) {
             query = query.startAfter(lastVisible)
@@ -323,9 +383,19 @@ suspend fun fetchUsersPaged(
             val newUsers = snapshot.documents.mapNotNull { doc ->
                 doc.toObject(UsersModel::class.java)?.copy(uid = doc.id)
             }
-            userList.addAll(newUsers)
-            println("📈 userList.size = ${userList.size}")
+
+            // Filter duplikat berdasarkan uid sebelum menambahkan
+            val existingUids = userList.map { it.uid }.toSet()
+            val uniqueNewUsers = newUsers.filter { it.uid !in existingUids }
+
+            userList.addAll(uniqueNewUsers)
+            println("📈 userList.size = ${userList.size} (added ${uniqueNewUsers.size} unique users)")
             onLastVisibleChanged(snapshot.documents.last())
+
+            // Jika tidak ada data baru yang ditambahkan, berarti sudah sampai akhir
+            if (uniqueNewUsers.isEmpty() && newUsers.isNotEmpty()) {
+                onEndReached(true)
+            }
         } else {
             onEndReached(true)
         }
@@ -376,10 +446,10 @@ fun UserCard(navController: NavController, user: UsersModel) {
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Nama: ${user.nama}")
-            Text("Email: ${user.email}")
-            Text("Kelas: ${user.kelas}")
-            Text("Program: ${user.program_keahlian}")
+            Text("No. Absen: ${user.nomor_absen}", color = Color.Black, fontFamily = poppinsfamily, fontWeight = FontWeight.Bold)
+            Text("Nama: ${user.nama}", color = Color.Black, fontFamily = poppinsfamily)
+            Text("Email: ${user.email}", color = Color.Black, fontFamily = poppinsfamily)
+            Text("Kelas: ${user.kelas} ${user.program_keahlian}", color = Color.Black, fontFamily = poppinsfamily)
         }
     }
 }
@@ -398,56 +468,5 @@ fun ShimmerUserCard() {
     )
 }
 
-@Composable
-fun CustomDropdownChip(
-    label: String,
-    options: List<String>,
-    selectedOption: String?,
-    onOptionSelected: (String?) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (selectedOption != null) Color(0xFF2962FF) else Color.Gray
-        ),
-        color = Color.Transparent,
-        modifier = Modifier
-            .height(30.dp)
-            .clickable { expanded = !expanded }
-    ) {
-        Text(
-            text = selectedOption ?: label,
-            fontWeight = if (selectedOption != null) FontWeight.Bold else FontWeight.Normal,
-            fontFamily = poppinsfamily,
-            fontSize = 11.sp,
-            color = if (selectedOption != null) Color(0xFF2962FF) else Color.Gray,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
-    }
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        options.forEach { item ->
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = item,
-                        fontWeight = if (item == selectedOption) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = poppinsfamily
-                    )
-                },
-                onClick = {
-                    onOptionSelected(if (item == "-") null else item)
-                    expanded = false
-                }
-            )
-        }
-    }
-}
 
 

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,12 +72,19 @@ fun NilaiSiswa(
         listOf("Semester 1", "Semester 2")
     var selectedChipnilaisiswa by remember { mutableStateOf(1) } // index chip yang aktif
 
-
     var isLoading by remember { mutableStateOf(false) }
 
     val userList = remember { mutableStateListOf<NilaiModel>() }
     var lastVisible by remember { mutableStateOf<DocumentSnapshot?>(null) }
     var endReached by remember { mutableStateOf(false) }
+
+    // State untuk rata-rata nilai
+    var rataSoalSem1 by remember { mutableStateOf(0.0) }
+    var rataSoalSem2 by remember { mutableStateOf(0.0) }
+    var rataProjectSem1 by remember { mutableStateOf(0.0) }
+    var rataProjectSem2 by remember { mutableStateOf(0.0) }
+    var rataKeseluruhanSem1 by remember { mutableStateOf(0.0) }
+    var rataKeseluruhanSem2 by remember { mutableStateOf(0.0) }
 
 
     LaunchedEffect(Unit) {
@@ -89,6 +97,58 @@ fun NilaiSiswa(
             onLoadingChanged = { isLoading = it },
             onEndReached = { endReached = it }
         )
+    }
+
+    // Fetch rata-rata nilai soal dan project
+    LaunchedEffect(usersModel.uid) {
+        val db = Firebase.firestore
+
+        // Hitung rata-rata nilai soal per semester
+        db.collection("nilai")
+            .whereEqualTo("uid", usersModel.uid)
+            .get()
+            .await()
+            .let { snapshot ->
+                val nilaiSem1 = snapshot.documents
+                    .mapNotNull { it.toObject(NilaiModel::class.java) }
+                    .filter { it.semester == 1 }
+                    .mapNotNull { it.nilai?.toDouble() }
+
+                val nilaiSem2 = snapshot.documents
+                    .mapNotNull { it.toObject(NilaiModel::class.java) }
+                    .filter { it.semester == 2 }
+                    .mapNotNull { it.nilai?.toDouble() }
+
+                rataSoalSem1 = if (nilaiSem1.isNotEmpty()) nilaiSem1.average() else 0.0
+                rataSoalSem2 = if (nilaiSem2.isNotEmpty()) nilaiSem2.average() else 0.0
+            }
+
+        // Hitung rata-rata nilai project per semester
+        db.collection("project_uploads")
+            .whereEqualTo("uid", usersModel.uid)
+            .get()
+            .await()
+            .let { snapshot ->
+                val projectSem1 = snapshot.documents
+                    .filter { it.getLong("semester") == 1L }
+                    .mapNotNull { it.getLong("nilai")?.toDouble() }
+
+                val projectSem2 = snapshot.documents
+                    .filter { it.getLong("semester") == 2L }
+                    .mapNotNull { it.getLong("nilai")?.toDouble() }
+
+                rataProjectSem1 = if (projectSem1.isNotEmpty()) projectSem1.average() else 0.0
+                rataProjectSem2 = if (projectSem2.isNotEmpty()) projectSem2.average() else 0.0
+            }
+
+        // Hitung rata-rata keseluruhan (soal + project)
+        rataKeseluruhanSem1 = if (rataSoalSem1 > 0 || rataProjectSem1 > 0) {
+            (rataSoalSem1 + rataProjectSem1) / 2
+        } else 0.0
+
+        rataKeseluruhanSem2 = if (rataSoalSem2 > 0 || rataProjectSem2 > 0) {
+            (rataSoalSem2 + rataProjectSem2) / 2
+        } else 0.0
     }
 
 
@@ -149,18 +209,20 @@ fun NilaiSiswa(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Soal          : 90",
+                        "Soal          : ${String.format("%.0f", rataSoalSem1)}",
                         fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
                     )
                     Text(
-                        "Project       : 90", fontFamily = poppinsfamily,
+                        "Project       : ${String.format("%.0f", rataProjectSem1)}",
+                        fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
                     )
                     Text(
-                        "Keseluruhan   : 90", fontFamily = poppinsfamily,
+                        "Keseluruhan   : ${String.format("%.0f", rataKeseluruhanSem1)}",
+                        fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
                     )
@@ -181,19 +243,19 @@ fun NilaiSiswa(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Soal          : 95",
+                        "Soal          : ${String.format("%.0f", rataSoalSem2)}",
                         fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
                     )
                     Text(
-                        "Project       : 85",
+                        "Project       : ${String.format("%.0f", rataProjectSem2)}",
                         fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
                     )
                     Text(
-                        "Keseluruhan   : 90",
+                        "Keseluruhan   : ${String.format("%.0f", rataKeseluruhanSem2)}",
                         fontFamily = poppinsfamily,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black, fontSize = 14.sp
@@ -230,7 +292,13 @@ fun NilaiSiswa(
                     }
                 }
             }
-            TopikCard(navController, userList)
+
+            // Filter data berdasarkan semester yang dipilih
+            val filteredUserList = userList.filter {
+                it.semester == (selectedChipnilaisiswa + 1) // index 0 = semester 1, index 1 = semester 2
+            }
+
+            TopikCard(navController, filteredUserList, usersModel.uid ?: "")
 
         }
     }
@@ -262,50 +330,80 @@ private fun NilaiSiwaPreview() {
 
 
 @Composable
-fun TopikCard(navController: NavController, nilaiList: SnapshotStateList<NilaiModel>) {
+fun TopikCard(navController: NavController, nilaiList: List<NilaiModel>, uid: String) {
+    val db = Firebase.firestore
+    val projectMap = remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
+
+    // Fetch data project berdasarkan uid
+    LaunchedEffect(uid) {
+        db.collection("project_uploads")
+            .whereEqualTo("uid", uid)
+            .get()
+            .await()
+            .let { snapshot ->
+                val map = mutableMapOf<String, Long>()
+                snapshot.documents.forEach { doc ->
+                    val idTopik = doc.getString("id_topik")
+                    val nilai = doc.getLong("nilai")
+                    if (idTopik != null && nilai != null) {
+                        map[idTopik] = nilai
+                    }
+                }
+                projectMap.value = map
+            }
+    }
+
     LazyColumn {
-        items(nilaiList){data ->
+        items(nilaiList) { data ->
+            var namaTopik by remember { mutableStateOf("") }
+            var nomorTopik by remember { mutableStateOf(0) }
+
+            // Fetch nama topik dari DocumentReference
+            LaunchedEffect(data.topik) {
+                data.topik?.get()?.await()?.let { doc ->
+                    namaTopik = doc.getString("nama") ?: ""
+                    nomorTopik = doc.getLong("nomor")?.toInt() ?: 0
+                }
+            }
+
+            // Ambil nilai project untuk topik ini
+            val nilaiProject = projectMap.value[data.topik?.id] ?: 0L
+
             Card(
                 shape = RoundedCornerShape(22.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .clickable {
-//                            navController.navigate(AppScreen.Home.Admin.NilaiSiswa.createRoute(data))
-                    }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                        Text(
-                            text = "Topik :",
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp, color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "",
-                            fontFamily = poppinsfamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color.Black
-                        )
-                    }
+                    // Topik dengan format: "Topik 1 : Nama topik..."
+                    Text(
+                        text = if (namaTopik.isNotEmpty()) "Topik $nomorTopik : $namaTopik" else "Loading...",
+                        fontFamily = poppinsfamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                     Row(modifier = Modifier.padding(vertical = 2.dp)) {
                         Text(
                             text = "Nilai Soal :",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp, color = Color.Black
+                            fontSize = 16.sp,
+                            color = Color.Black
                         )
-
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "",
+                            text = "${data.nilai ?: 0}",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color.Black
+                            fontSize = 16.sp,
+                            color = Color.Black
                         )
                     }
                     Row(modifier = Modifier.padding(vertical = 2.dp)) {
@@ -313,46 +411,48 @@ fun TopikCard(navController: NavController, nilaiList: SnapshotStateList<NilaiMo
                             text = "Nilai Project :",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp, color = Color.Black
+                            fontSize = 16.sp,
+                            color = Color.Black
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-
                         Text(
-                            text = "",
+                            text = "$nilaiProject",
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color.Black
+                            fontSize = 16.sp,
+                            color = Color.Black
                         )
                     }
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = "Lihat Gambar",
-                            color = Color(0xFF167F71),
-                            fontFamily = poppinsfamily,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            textDecoration = TextDecoration.Underline,
-                            modifier = Modifier.clickable {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                            }
-                        )
-
+                    // Button Lihat Gambar
+                    if (nilaiProject > 0) {
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                // Navigate ke halaman lihat gambar project
+                                // Bisa pass id_topik atau data yang dibutuhkan
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF0961F5)
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Lihat Gambar Project",
+                                fontFamily = poppinsfamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                color = Color.White
+                            )
+                        }
                     }
-
-
                 }
             }
         }
     }
-
 }
-
-
 
 
 suspend fun fetchUsers(

@@ -61,9 +61,14 @@ import com.ptpws.GartekGo.R
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TambahSiswaScreen(navController: NavController) {
-    val chipLabels =
-        listOf("Program Keahlian", "Kelas")
-    var selectedChipsiswaIndex by remember { mutableStateOf(1) } // index chip yang aktif
+    // Filter untuk tingkat kelas
+    val tingkatOptions = listOf("Semua", "X", "XI", "XII")
+    var selectedTingkat by remember { mutableStateOf("Semua") }
+
+    // Filter untuk program keahlian
+    val programKeahlianOptions = listOf("Semua", "TKP1", "TKP2", "GEO1", "GEO2", "DPIB1", "DPIB2")
+    var selectedProgramKeahlian by remember { mutableStateOf("Semua") }
+
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     val userList = remember { mutableStateListOf<UsersModel>() }
@@ -141,37 +146,119 @@ fun TambahSiswaScreen(navController: NavController) {
                 .background(color = Color(0xffF5F9FF))
                 .padding(innerPadding)
         ) {
+            // Filter Tingkat
+            Text(
+                text = "Filter Tingkat:",
+                fontFamily = poppinsfamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
             FlowRow(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
                     .background(color = Color(0xffF5F9FF)),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                chipLabels.forEachIndexed { index, label ->
+                tingkatOptions.forEach { tingkat ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(
                             width = 1.dp,
-                            color = if (selectedChipsiswaIndex == index) Color(0xFF2962FF) else Color.Gray
+                            color = if (selectedTingkat == tingkat) Color(0xFF2962FF) else Color.Gray
                         ),
-                        color = Color.Transparent,
+                        color = if (selectedTingkat == tingkat) Color(0xFFE3F2FD) else Color.Transparent,
                         modifier = Modifier
                             .height(30.dp)
-                            .clickable { selectedChipsiswaIndex = index }
+                            .clickable { selectedTingkat = tingkat }
                     ) {
                         Text(
-                            text = label,
-                            fontWeight = if (selectedChipsiswaIndex == index) FontWeight.Bold else FontWeight.Normal,
+                            text = tingkat,
+                            fontWeight = if (selectedTingkat == tingkat) FontWeight.Bold else FontWeight.Normal,
                             fontFamily = poppinsfamily,
                             fontSize = 11.sp,
-                            color = if (selectedChipsiswaIndex == index) Color(0xFF2962FF) else Color.Gray,
+                            color = if (selectedTingkat == tingkat) Color(0xFF2962FF) else Color.Gray,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                         )
                     }
                 }
             }
 
+            // Filter Program Keahlian
+            Text(
+                text = "Filter Program Keahlian:",
+                fontFamily = poppinsfamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
+            FlowRow(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                    .background(color = Color(0xffF5F9FF)),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                programKeahlianOptions.forEach { programKeahlian ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = if (selectedProgramKeahlian == programKeahlian) Color(0xFF2962FF) else Color.Gray
+                        ),
+                        color = if (selectedProgramKeahlian == programKeahlian) Color(0xFFE3F2FD) else Color.Transparent,
+                        modifier = Modifier
+                            .height(30.dp)
+                            .clickable { selectedProgramKeahlian = programKeahlian }
+                    ) {
+                        Text(
+                            text = programKeahlian,
+                            fontWeight = if (selectedProgramKeahlian == programKeahlian) FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = poppinsfamily,
+                            fontSize = 11.sp,
+                            color = if (selectedProgramKeahlian == programKeahlian) Color(0xFF2962FF) else Color.Gray,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            // Filter dan sort data siswa
+            val filteredUserList = userList
+                .filter { user ->
+                    // Filter tingkat berdasarkan field kelas (X, XI, XII)
+                    val tingkatMatch = if (selectedTingkat == "Semua") {
+                        true
+                    } else {
+                        user.kelas.trim().uppercase() == selectedTingkat.uppercase()
+                    }
+
+                    // Filter program keahlian berdasarkan field program_keahlian (TKP2, GEO1, dll)
+                    val programMatch = if (selectedProgramKeahlian == "Semua") {
+                        true
+                    } else {
+                        // Normalisasi program keahlian user (hapus spasi, uppercase)
+                        val userProgram = user.program_keahlian.trim().replace(" ", "").uppercase()
+                        val selectedProgramNormalized = selectedProgramKeahlian.trim().replace(" ", "").uppercase()
+
+                        when {
+                            // Exact match setelah normalisasi (TKP1 = TKP1, TKP2 = TKP2, GEO2 = GEO2, dll)
+                            userProgram == selectedProgramNormalized -> true
+
+                            // Jika user program tanpa angka, cocokkan dengan kategori 1
+                            selectedProgramNormalized.endsWith("1") &&
+                            userProgram == selectedProgramNormalized.dropLast(1) -> true
+
+                            else -> false
+                        }
+                    }
+
+                    tingkatMatch && programMatch
+                }
+                .sortedBy { it.nomor_absen }
 
             // LazyColumn content di bawahnya
             LazyColumn(
@@ -179,7 +266,7 @@ fun TambahSiswaScreen(navController: NavController) {
                     .fillMaxSize()
                     .background(color = Color(0xffF5F9FF))
             ) {
-                items(userList) { data ->
+                items(filteredUserList) { data ->
                     Card(
                         shape = RoundedCornerShape(22.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
