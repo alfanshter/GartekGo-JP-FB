@@ -84,7 +84,7 @@ fun TambahsiswaDialog(
     val kelasList = listOf("X", "XI", "XII")
     var expanded by remember { mutableStateOf(false) }
     var expandedkeahlian by remember { mutableStateOf(false) }
-    val keahlianList = listOf("TKP", "GEO", "DPIB")
+    val keahlianList = listOf("TKP1", "TKP2", "GEO1", "GEO2", "DPIB1", "DPIB2")
 
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }

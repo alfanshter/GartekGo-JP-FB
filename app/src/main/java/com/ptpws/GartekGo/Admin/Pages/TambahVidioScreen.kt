@@ -62,6 +62,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.ptpws.GartekGo.Admin.Dialog.TambahMateriDialog
 import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialog
+import com.ptpws.GartekGo.Admin.Dialog.TambahVidioDialogNew
 import com.ptpws.GartekGo.model.TopikModel
 import com.ptpws.GartekGo.Commond.poppinsfamily
 import com.ptpws.GartekGo.R
@@ -279,7 +280,7 @@ fun VidioListContent(
                     Row(modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(end = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         // Bagian bawah kiri: tanggal upload
                         Text(
-                            text = "${tanggalUpload}",
+                            text = tanggalUpload,
                             fontSize = 12.sp,
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
@@ -287,9 +288,11 @@ fun VidioListContent(
                             modifier = Modifier
                                 .padding(start = 22.dp, bottom = 12.dp)
                         )
-
+                        val videoCount = data.videos?.size ?: run {
+                            if (data.file_video != null) 1 else 0
+                        }
                         Text(
-                            text = if (data.file_video!=null) "Video ada" else "Video tidak ada",
+                            text = if (videoCount > 0) "$videoCount Video" else "Tidak ada video",
                             fontSize = 12.sp,
                             fontFamily = poppinsfamily,
                             fontWeight = FontWeight.Medium,
@@ -307,7 +310,7 @@ fun VidioListContent(
     }
 
     if (showDialogvidio == true){
-        TambahVidioDialog(
+        TambahVidioDialogNew(
             onDismis = {
                 showDialogvidio = false
 
@@ -319,11 +322,9 @@ fun VidioListContent(
                     val index = topikList.indexOfFirst { it.id == topik.id }
                     if (index != -1) {
                         val topikLama = topikList[index]
-                        // Hanya update file_materi dan nama_file, field lain tetap
+                        // Update dengan videos baru
                         topikList[index] = topikLama.copy(
-                            file_video = topik.file_video,
-                            nama_video = topik.nama_video,
-                            path_video = topik.path_video
+                            videos = topik.videos
                         )
                     }
                 }

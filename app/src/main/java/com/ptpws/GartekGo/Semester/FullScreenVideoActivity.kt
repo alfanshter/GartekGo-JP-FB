@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -23,6 +24,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.ptpws.GartekGo.Semester.ui.theme.GartekGoTheme
@@ -71,6 +74,7 @@ class FullScreenVideoActivity : ComponentActivity() {
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun FullscreenVideoPlayer(videoUrl: String, startPosition: Long, onExit: (Long) -> Unit) {
     val context = LocalContext.current
@@ -84,7 +88,18 @@ fun FullscreenVideoPlayer(videoUrl: String, startPosition: Long, onExit: (Long) 
     }
 
     DisposableEffect(Unit) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) {
+                    // Video selesai - set position ke duration agar dianggap selesai
+                    onExit(exoPlayer.duration)
+                }
+            }
+        }
+        exoPlayer.addListener(listener)
+
         onDispose {
+            exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
     }
@@ -94,10 +109,25 @@ fun FullscreenVideoPlayer(videoUrl: String, startPosition: Long, onExit: (Long) 
     }
 
     AndroidView(
-        factory = {
-            PlayerView(context).apply {
+        factory = { ctx ->
+            PlayerView(ctx).apply {
                 player = exoPlayer
                 useController = true
+                controllerShowTimeoutMs = 5000
+                controllerHideOnTouch = false
+                setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+
+                // Disable semua bentuk seeking
+                setShowRewindButton(false)
+                setShowFastForwardButton(false)
+                setShowPreviousButton(false)
+                setShowNextButton(false)
+
+                // Disable progress bar interaction
+                post {
+                    disableSeekingRecursivelyFullscreen(this)
+                }
+
                 systemUiVisibility = (
                         View.SYSTEM_UI_FLAG_FULLSCREEN or
                                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
@@ -107,5 +137,23 @@ fun FullscreenVideoPlayer(videoUrl: String, startPosition: Long, onExit: (Long) 
         },
         modifier = Modifier.fillMaxSize()
     )
+}
+
+// Helper function untuk disable seeking pada semua child views
+private fun disableSeekingRecursivelyFullscreen(view: View) {
+    // Jika ini adalah DefaultTimeBar, disable touch
+    if (view.javaClass.name.contains("TimeBar") || view.javaClass.name.contains("DefaultTimeBar")) {
+        view.isEnabled = false
+        view.isClickable = false
+        view.isFocusable = false
+        view.setOnTouchListener { _, _ -> true } // Consume semua touch events
+    }
+
+    // Jika ViewGroup, iterate semua children
+    if (view is ViewGroup) {
+        for (i in 0 until view.childCount) {
+            disableSeekingRecursivelyFullscreen(view.getChildAt(i))
+        }
+    }
 }
 

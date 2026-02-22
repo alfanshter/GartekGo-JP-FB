@@ -5,6 +5,14 @@ import com.google.firebase.dataconnect.serializers.TimestampSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class VideoItem(
+    var url: String? = null,
+    var nama: String? = null,
+    var path: String? = null,
+    var urutan: Int = 0
+)
+
+@Serializable
 data class TopikModel(
     var id: String = "",
     var nama: String ? = null,
@@ -14,9 +22,14 @@ data class TopikModel(
     var nama_file : String? = null,
     @Serializable(with = TimestampSerializer::class)
     var uploadedMateriAt : Timestamp? = null,
+
+    // Keep old fields for backward compatibility
     var file_video : String ? = null,
     var nama_video : String? = null,
     var path_video : String? = null,
+
+    // New field for multiple videos
+    var videos: List<VideoItem>? = null,
 
     @Serializable(with = TimestampSerializer::class)
     var uploadedGambarProjectAt : Timestamp? = null,
