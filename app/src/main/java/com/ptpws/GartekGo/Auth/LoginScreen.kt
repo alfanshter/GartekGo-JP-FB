@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -93,9 +94,9 @@ fun LoginScreen(navController: NavController) {
             Spacer(Modifier.height(57.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Image(
-                    painter = painterResource(id = R.drawable.illustration_2),
+                    painter = painterResource(id = R.drawable.ilustration2),
                     contentDescription = null,
-                    modifier = Modifier.size(260.dp)
+                    modifier = Modifier.size(260.dp).clip(shape = RoundedCornerShape(26.dp))
                 )
 
             }

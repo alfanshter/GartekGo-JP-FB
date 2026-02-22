@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GartekGo</string>
+    <string name="app_name">BuildSketch</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="home">Home</string>
     <string name="nilai">Nilai</string>
