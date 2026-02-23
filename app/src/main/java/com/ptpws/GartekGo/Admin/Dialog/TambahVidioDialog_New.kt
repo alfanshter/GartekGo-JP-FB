@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,18 +52,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.ptpws.GartekGo.Commond.poppinsfamily
+import com.ptpws.GartekGo.R
 import com.ptpws.GartekGo.model.TopikModel
 import com.ptpws.GartekGo.model.VideoItem
 
@@ -98,6 +108,9 @@ fun TambahVidioDialogNew(
     }
 
     var selectedVideoIndex by remember { mutableStateOf(-1) }
+
+    // State untuk preview video
+    var previewVideoItem by remember { mutableStateOf<VideoUploadItem?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -192,13 +205,26 @@ fun TambahVidioDialogNew(
                                     }
 
                                     Row {
+                                        // Button preview video
+                                        if (item.uri != null || item.uploadedData?.url != null) {
+                                            IconButton(onClick = {
+                                                previewVideoItem = item
+                                            }) {
+                                                Icon(
+                                                    Icons.Default.PlayArrow,
+                                                    contentDescription = "Preview",
+                                                    tint = Color(0xFF00C853)
+                                                )
+                                            }
+                                        }
+
                                         // Button ganti video
                                         IconButton(onClick = {
                                             selectedVideoIndex = index
                                             launcher.launch("video/*")
                                         }) {
                                             Icon(
-                                                painter = androidx.compose.ui.res.painterResource(id = com.ptpws.GartekGo.R.drawable.ic_launcher_foreground),
+                                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.edit),
                                                 contentDescription = "Ganti",
                                                 tint = Color.Blue
                                             )
@@ -327,6 +353,105 @@ fun TambahVidioDialogNew(
             confirmButton = {}
         )
     }
+
+    // Video Preview Dialog
+    if (previewVideoItem != null) {
+        VideoPreviewDialog(
+            videoItem = previewVideoItem!!,
+            onDismiss = { previewVideoItem = null }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VideoPreviewDialog(
+    videoItem: VideoUploadItem,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+
+    // Get video source - either from local Uri or from uploaded URL
+    val videoSource = when {
+        videoItem.uri != null -> videoItem.uri.toString()
+        videoItem.uploadedData?.url != null -> videoItem.uploadedData.url
+        else -> null
+    }
+
+    if (videoSource == null) {
+        onDismiss()
+        return
+    }
+
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(videoSource))
+            prepare()
+            playWhenReady = true
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.stop()
+            exoPlayer.release()
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Black)
+            ) {
+                Column {
+                    // Video player
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16f / 9f)
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .background(Color.Black)
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                PlayerView(ctx).apply {
+                                    player = exoPlayer
+                                    useController = true
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Close button
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3D5CFF)),
+                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Tutup",
+                            fontFamily = poppinsfamily,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun uploadMultipleVideos(
@@ -454,4 +579,3 @@ fun saveVideosToFirestore(
         }
         .addOnFailureListener { onFailure(it) }
 }
-
